@@ -1,0 +1,73 @@
+../.deploy/$(scheme)/options/app.$(environment).option       = Zongsoft.Hosting.Daemon.option   <!debug:on>
+../.deploy/$(scheme)/options/app.$(environment)-debug.option = Zongsoft.Hosting.Daemon.option    <debug:on>
+
+[plugins]
+nuget:Zongsoft.Plugins/plugins/Main.plugin
+nuget:Zongsoft.Plugins/plugins/Terminal.plugin
+
+[plugins zongsoft net]
+nuget:Zongsoft.Net
+
+[plugins zongsoft data]
+nuget:Zongsoft.Data
+
+[plugins zongsoft data mysql]
+nuget:Zongsoft.Data.MySql
+
+[plugins zongsoft data tdengine]
+nuget:Zongsoft.Data.TDengine
+
+[plugins zongsoft data clickhouse]
+nuget:Zongsoft.Data.ClickHouse
+
+[plugins zongsoft commands]
+nuget:Zongsoft.Commands
+
+[plugins zongsoft reporting]
+nuget:Zongsoft.Reporting
+
+[plugins zongsoft security]
+nuget:Zongsoft.Security
+
+[plugins zongsoft externals aliyun]
+nuget:Zongsoft.Externals.Aliyun
+
+[plugins zongsoft externals redis]
+nuget:Zongsoft.Externals.Redis
+
+[plugins zongsoft externals wechat]
+nuget:Zongsoft.Externals.Wechat
+
+[plugins zongsoft externals scriban]
+nuget:Zongsoft.Externals.Scriban
+
+[plugins zongsoft externals closedxml]
+nuget:Zongsoft.Externals.ClosedXml
+
+[plugins zongsoft externals hangfire]
+nuget:Zongsoft.Externals.Hangfire
+[plugins zongsoft externals hangfire redis]
+nuget:Zongsoft.Externals.Hangfire.Storages.Redis
+
+[plugins zongsoft messaging mqtt]
+nuget:Zongsoft.Messaging.Mqtt
+delete:Zongsoft.Messaging.Mqtt.option
+
+[plugins zongsoft messaging kafka]
+nuget:Zongsoft.Messaging.Kafka
+delete:Zongsoft.Messaging.Kafka.option
+
+[plugins zongsoft security]
+../.deploy/$(scheme)/options/Zongsoft.Security.option
+../.deploy/$(scheme)/options/Zongsoft.Security.$(environment).option
+../.deploy/$(scheme)/options/Zongsoft.Security.$(environment)-debug.option  <debug:on>
+
+[plugins zongsoft externals aliyun]
+../.deploy/$(scheme)/options/Zongsoft.Externals.Aliyun.option
+../.deploy/$(scheme)/options/Zongsoft.Externals.Aliyun.$(environment).option
+../.deploy/$(scheme)/options/Zongsoft.Externals.Aliyun.$(environment)-debug.option  <debug:on>
+
+[plugins zongsoft externals hangfire redis]
+../.deploy/$(scheme)/options/Zongsoft.Externals.Hangfire.option
+../.deploy/$(scheme)/options/Zongsoft.Externals.Hangfire.$(environment).option
+../.deploy/$(scheme)/options/Zongsoft.Externals.Hangfire.$(environment)-debug.option  <debug:on>

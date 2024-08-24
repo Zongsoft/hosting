@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<options>
+	<option path="/Externals/Aliyun">
+		<general name="Hangzhou" intranet="false">
+			<certificates default="main">
+				<certificate certificate.name="main" code="xxxxxxxxxx" secret="xxxxxxxxxx" />
+			</certificates>
+		</general>
+
+		<oss region="Hangzhou" certificate="">
+			<bucket bucket.name="zongsoft-files-test" region="Hangzhou" certificate="" />
+		</oss>
+	</option>
+</options>

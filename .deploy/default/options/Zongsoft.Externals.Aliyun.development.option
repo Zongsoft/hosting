@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<options>
+	<option path="/Externals/Aliyun">
+		<general name="Hangzhou" intranet="true">
+			<certificates default="main">
+				<certificate certificate.name="main" code="xxxxxxxxxx" secret="xxxxxxxxxx" />
+			</certificates>
+		</general>
+
+		<oss region="Hangzhou" certificate="">
+			<bucket bucket.name="zongsoft-files-dev" region="Hangzhou" certificate="" />
+		</oss>
+
+		<messaging name="12345678">
+			<queues region="Hangzhou" certificate="">
+				<queue queue.name="TheQueueName-dev" region="Hangzhou" certificate="" />
+			</queues>
+
+			<topics region="Hangzhou">
+				<topic topic.name="TheTopicName-dev" region="Hangzhou" certificate="" />
+			</topics>
+		</messaging>
+	</option>
+</options>

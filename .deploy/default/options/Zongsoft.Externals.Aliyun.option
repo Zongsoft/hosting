@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<options>
+	<option path="/Externals/Aliyun">
+		<!-- 阿里云的标准配置项：name 属性表示默认服务中心的名称（Hangzhou, Shenzhen, Qingdao, Beijing, Hongkong）；intranet 属性为真(true)表示以内网地址访问，为假(false)表示以外网地址访问。 -->
+		<general name="Hangzhou" intranet="true">
+			<certificates default="main">
+				<certificate certificate.name="main" code="xxxxxxxxxx" secret="xxxxxxxxxx" />
+			</certificates>
+		</general>
+
+		<!-- 阿里云OSS的配置项 -->
+		<oss region="Hangzhou" certificate="">
+			<bucket bucket.name="zongsoft-files" region="Hangzhou" certificate="" />
+		</oss>
+
+		<!-- 阿里云电信服务的配置项 -->
+		<telecom region="Hangzhou" certificate="">
+			<message>
+				<template template.name="Authentication" code="SMS_100" scheme="Zongsoft" />
+			</message>
+
+			<voice numbers="073112345678">
+				<template template.name="Authentication" code="TTS_100" />
+			</voice>
+		</telecom>
+
+		<!-- 阿里云移动推送的配置项 -->
+		<pushing region="Hangzhou" certificate="">
+			<app app.name="TheFriendlyName" code="The App Key" secret="The App Secret" />
+		</pushing>
+
+		<!-- 阿里云消息服务的配置项-->
+		<messaging name="1234567890">
+			<queues region="Hangzhou" certificate="">
+				<queue queue.name="TheQueueName" region="Hangzhou" certificate="" />
+			</queues>
+
+			<topics region="Hangzhou">
+				<topic topic.name="TheTopicName" region="Hangzhou" certificate="" />
+			</topics>
+		</messaging>
+	</option>
+</options>
