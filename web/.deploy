@@ -1,12 +1,8 @@
-../.deploy/$(scheme)/options/app.$(environment).option       = Zongsoft.Hosting.Daemon.option   <!debug:on>
-../.deploy/$(scheme)/options/app.$(environment)-debug.option = Zongsoft.Hosting.Daemon.option    <debug:on>
+../.deploy/$(scheme)/options/app.$(environment).option       = web.option   <!debug:on>
+../.deploy/$(scheme)/options/app.$(environment)-debug.option = web.option    <debug:on>
 
 [plugins]
 nuget:Zongsoft.Plugins/plugins/Main.plugin
-nuget:Zongsoft.Plugins/plugins/Terminal.plugin
-
-[plugins zongsoft net]
-nuget:Zongsoft.Net
 
 [plugins zongsoft data]
 nuget:Zongsoft.Data
@@ -28,6 +24,7 @@ nuget:Zongsoft.Reporting
 
 [plugins zongsoft security]
 nuget:Zongsoft.Security
+nuget:Zongsoft.Security.Web
 
 [plugins zongsoft externals aliyun]
 nuget:Zongsoft.Externals.Aliyun
@@ -37,6 +34,7 @@ nuget:Zongsoft.Externals.Redis
 
 [plugins zongsoft externals wechat]
 nuget:Zongsoft.Externals.Wechat
+nuget:Zongsoft.Externals.Wechat.Web
 
 [plugins zongsoft externals scriban]
 nuget:Zongsoft.Externals.Scriban
@@ -46,6 +44,7 @@ nuget:Zongsoft.Externals.ClosedXml
 
 [plugins zongsoft externals hangfire]
 nuget:Zongsoft.Externals.Hangfire
+nuget:Zongsoft.Externals.Hangfire.Web
 [plugins zongsoft externals hangfire redis]
 nuget:Zongsoft.Externals.Hangfire.Storages.Redis
 
@@ -56,6 +55,10 @@ delete:Zongsoft.Messaging.Mqtt.option
 [plugins zongsoft messaging kafka]
 nuget:Zongsoft.Messaging.Kafka
 delete:Zongsoft.Messaging.Kafka.option
+
+[plugins zongsoft administratives]
+nuget:Zongsoft.Administratives
+nuget:Zongsoft.Administratives.Web
 
 
 [plugins zongsoft security]

@@ -1,4 +1,3 @@
-var cloud = Argument("cloud", "aliyun");
 var scheme = Argument("scheme", "default");
 var target = Argument("target", "default");
 var edition = Argument("edition", "Debug");
@@ -39,7 +38,7 @@ Task("deploy")
 	.Description("部署插件")
 	.Does(() =>
 {
-	DotNetTool(solutionFile, "deploy", $" -site:daemon -cloud:{cloud} -scheme:{scheme} -edition:{edition} -framework:{framework} -verbosity:quiet");
+	DotNetTool(solutionFile, "deploy", $" -host:daemon -site:daemon -scheme:{scheme} -edition:{edition} -framework:{framework} -verbosity:quiet");
 });
 
 Task("default")

@@ -12,8 +12,8 @@ if "%debug%"=="" (SET debug=on)
 dotnet deploy                ^
 	-verbosity:normal    ^
 	-overwrite:newest    ^
+	-host:daemon         ^
 	-site:daemon         ^
-	-cloud:aliyun        ^
 	-edition:Debug       ^
 	-debug:%debug%       ^
 	-scheme:%scheme%     ^

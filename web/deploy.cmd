@@ -10,14 +10,13 @@ SET /p debug=Do you want to turn on remote debug mode?(On/Off)
 if "%debug%"=="" (SET debug=on)
 
 dotnet deploy                ^
-	-verbosity:normal    ^
-	-overwrite:newest    ^
-	-host:daemon         ^
-	-site:daemon         ^
+	-verbosity:quiet     ^
+	-overwrite:latest    ^
+	-host:web            ^
+	-site:web            ^
+	-scheme:%scheme%     ^
 	-edition:Debug       ^
 	-debug:%debug%       ^
-	-scheme:%scheme%     ^
 	-framework:net8.0    ^
-	-destination:bin/^$^(edition^)/^$^(framework^) ^
-	.deploy  ^
-	..\\.deploy\\%scheme%\\^$^(site^).deploy
+	.deploy              ^
+	..\\..\\.deploy\\%scheme%\\web.deploy

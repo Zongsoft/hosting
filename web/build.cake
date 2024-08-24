@@ -2,7 +2,7 @@ var scheme = Argument("scheme", "default");
 var target = Argument("target", "default");
 var edition = Argument("edition", "Debug");
 var framework = Argument("framework", "net8.0");
-var solutionFile  = "Zongsoft.Hosting.Daemon.sln";
+var solutionFile  = "Zongsoft.Hosting.Web.sln";
 
 Task("clean")
 	.Description("清理解决方案")
@@ -38,7 +38,7 @@ Task("deploy")
 	.Description("部署插件")
 	.Does(() =>
 {
-	DotNetTool(solutionFile, "deploy", $" -host:daemon -site:daemon -scheme:{scheme} -edition:{edition} -framework:{framework} -verbosity:quiet");
+	DotNetTool(solutionFile, "deploy", $" -host:web -site:web -scheme:{scheme} -edition:{edition} -framework:{framework} -verbosity:quiet");
 });
 
 Task("default")

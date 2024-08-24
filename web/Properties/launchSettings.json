@@ -1,0 +1,22 @@
+{
+	"profiles": {
+		"Zongsoft.Hosting.Web": {
+			"commandName": "Project",
+			"launchBrowser": false,
+			"applicationUrl": "http://localhost:8069",
+			"environmentVariables": {
+				"Environment": "development",
+				"ASPNETCORE_ENVIRONMENT": "development"
+			}
+		},
+		"WSL": {
+			"commandName": "WSL2",
+			"launchBrowser": false,
+			"distributionName": "",
+			"environmentVariables": {
+				"Environment": "development",
+				"ASPNETCORE_ENVIRONMENT": "development"
+			}
+		}
+	}
+}
