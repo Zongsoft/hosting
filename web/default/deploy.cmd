@@ -3,7 +3,6 @@
 SET scheme=
 SET /p scheme=Please enter the scheme name you want to deploy: 
 if "%scheme%"=="" (SET scheme=default)
-echo The scheme you want to deploy is: %scheme%
 
 SET debug=
 SET /p debug=Do you want to turn on remote debug mode?(On/Off)
