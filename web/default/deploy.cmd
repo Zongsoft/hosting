@@ -19,4 +19,5 @@ dotnet deploy                ^
 	-debug:%debug%       ^
 	-framework:net8.0    ^
 	.deploy              ^
-	..\\..\\.deploy\\%scheme%\\web.deploy
+	..\\..\\.deploy\\%scheme%\\^$^(host^).deploy ^
+	..\\..\\.deploy\\%scheme%\\^$^(site^).deploy
