@@ -19,5 +19,6 @@ dotnet deploy                ^
 	-scheme:%scheme%     ^
 	-framework:net8.0    ^
 	-destination:bin/^$^(edition^)/^$^(framework^) ^
-	.deploy  ^
+	.deploy                                        ^
+	..\\.deploy\\%scheme%\\^$^(host^).deploy       ^
 	..\\.deploy\\%scheme%\\^$^(site^).deploy
