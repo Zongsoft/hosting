@@ -13,9 +13,9 @@ dotnet deploy                ^
 	-overwrite:newest    ^
 	-host:terminal       ^
 	-site:daemon         ^
-	-edition:Debug       ^
-	-debug:%debug%       ^
 	-scheme:%scheme%     ^
+	-debug:%debug%       ^
+	-edition:Debug       ^
 	-framework:net8.0    ^
 	-destination:bin/^$^(edition^)/^$^(framework^) ^
 	.deploy                                        ^
