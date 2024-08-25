@@ -3,7 +3,6 @@
 
 [plugins]
 nuget:Zongsoft.Plugins/plugins/Main.plugin
-nuget:Zongsoft.Plugins/plugins/Terminal.plugin
 
 [plugins zongsoft net]
 nuget:Zongsoft.Net
