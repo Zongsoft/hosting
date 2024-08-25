@@ -1,4 +1,138 @@
-## 调试
+## 目录结构
+
+通常 Web 宿主程序下分为不同的站点，譬如在 **SaaS** 应用中通常分为：
+- 管理端 (`administration`)
+	> 为 SaaS 平台方提供业务功能。
+- 商家端 (`business`)
+	> 为 SaaS 商家用户提供业务功能。
+- 客户端 (`customer`)
+	> 为 SaaS 终端用户提供业务功能。
+- 网关端 (`gateway`)
+	> 为外部系统提供回调、与互联互通等功能，为 _非人工_ 入口。
+- 设备端 (`iot`)
+	> 为物联网设备提供接入相关的功能，为 _非人工_ 入口。
+
+> 本例只定义了 `default` 站点，可根据需要构建相应的站点目录，其内容与 `default` 站点基本一致，但需要调整 *编译脚本* 和 *部署脚本* 文件内 `site` 参数的值。
+
+## 服务
+
+### REST Client
+
+安装 **V**isual **S**tudio **C**ode 的 [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) 插件，并在 **VS** **C**ode 的配置文件中添加该插件的相关配置：
+
+```json
+{
+	"rest-client.requestNameAsResponseTabTitle": true,
+	"rest-client.defaultHeaders": {
+		"X-Json-Behaviors": "casing:camel;ignores:null,empty",
+		"User-Agent": "vscode-restclient"
+	},
+	"rest-client.environmentVariables": {
+		"$shared": {
+			"scenario": "api"
+		},
+		"local": {
+			"host": "127.0.0.1",
+			"port": "8069",
+			"url": "{{host}}:{{port}}"
+		},
+
+		"production.a": {
+			"host": "api.a.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+		"production.b": {
+			"host": "api.b.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+		"production.c": {
+			"host": "api.c.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+		"production.iot": {
+			"host": "api.iot.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+		"production.gateway": {
+			"host": "api.gateway.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+
+		"development.a": {
+			"host": "api.dev.a.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+		"development.b": {
+			"host": "api.dev.b.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+		"development.c": {
+			"host": "api.dev.c.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+		"development.iot": {
+			"host": "api.dev.iot.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+		"development.gateway": {
+			"host": "api.dev.gateway.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+
+		"test.a": {
+			"host": "api.test.a.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+		"test.b": {
+			"host": "api.test.b.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+		"test.c": {
+			"host": "api.test.c.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+		"test.iot": {
+			"host": "api.test.iot.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		},
+		"test.gateway": {
+			"host": "api.test.gateway.zongsoft.com",
+			"port": "80",
+			"url": "{{host}}:{{port}}"
+		}
+	}
+}
+```
+
+> 注：请根据实际情况调整上述配置中的相关域名、端口号等设置。
+
+### 目录文件
+
+在 `.http` 目录内存放相关 *REST Client* 的服务文件，其中 `application.http` 为应用相关的服务内容。
+
+在 `.http/sites` 目录包含各服务站点目录，各站点服务目录中的 `.env` 文件即为 *REST Client* 的环境文件，其中定义了该站点的通用环境参数。
+
+> 💡 提示：站点服务目录下按照应用模块构建相应子目录，并按照模块内的目标构建相应的 `*.http` 服务文件，以方便查找使用。
+
+## 部署
+
+有关部署相关信息请参考上级目录中的 [README](../README.md) 文件。
+
+## 其他
 
 ### 站点绑定
 
