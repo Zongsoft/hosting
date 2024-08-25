@@ -38,7 +38,7 @@ Task("deploy")
 	.Description("部署插件")
 	.Does(() =>
 {
-	DotNetTool(solutionFile, "deploy", $" -host:web -site:web -scheme:{scheme} -edition:{edition} -framework:{framework} -verbosity:quiet");
+	DotNetTool(solutionFile, "deploy", $" -host:web -site:default -scheme:{scheme} -edition:{edition} -framework:{framework} -verbosity:quiet");
 });
 
 Task("default")

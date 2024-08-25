@@ -1,5 +1,5 @@
-../.deploy/$(scheme)/options/app.$(environment).option       = web.option   <!debug:on>
-../.deploy/$(scheme)/options/app.$(environment)-debug.option = web.option    <debug:on>
+../../.deploy/$(scheme)/options/app.$(environment).option       = web.option   <!debug:on>
+../../.deploy/$(scheme)/options/app.$(environment)-debug.option = web.option    <debug:on>
 
 [plugins]
 nuget:Zongsoft.Plugins/plugins/Main.plugin
@@ -62,16 +62,16 @@ nuget:Zongsoft.Administratives.Web
 
 
 [plugins zongsoft security]
-../.deploy/$(scheme)/options/Zongsoft.Security.option
-../.deploy/$(scheme)/options/Zongsoft.Security.$(environment).option
-../.deploy/$(scheme)/options/Zongsoft.Security.$(environment)-debug.option  <debug:on>
+../../.deploy/$(scheme)/options/Zongsoft.Security.option
+../../.deploy/$(scheme)/options/Zongsoft.Security.$(environment).option
+../../.deploy/$(scheme)/options/Zongsoft.Security.$(environment)-debug.option  <debug:on>
 
 [plugins zongsoft externals aliyun]
-../.deploy/$(scheme)/options/Zongsoft.Externals.Aliyun.option
-../.deploy/$(scheme)/options/Zongsoft.Externals.Aliyun.$(environment).option
-../.deploy/$(scheme)/options/Zongsoft.Externals.Aliyun.$(environment)-debug.option  <debug:on>
+../../.deploy/$(scheme)/options/Zongsoft.Externals.Aliyun.option
+../../.deploy/$(scheme)/options/Zongsoft.Externals.Aliyun.$(environment).option
+../../.deploy/$(scheme)/options/Zongsoft.Externals.Aliyun.$(environment)-debug.option  <debug:on>
 
 [plugins zongsoft externals hangfire]
-../.deploy/$(scheme)/options/Zongsoft.Externals.Hangfire.option
-../.deploy/$(scheme)/options/Zongsoft.Externals.Hangfire.$(environment).option
-../.deploy/$(scheme)/options/Zongsoft.Externals.Hangfire.$(environment)-debug.option  <debug:on>
+../../.deploy/$(scheme)/options/Zongsoft.Externals.Hangfire.option
+../../.deploy/$(scheme)/options/Zongsoft.Externals.Hangfire.$(environment).option
+../../.deploy/$(scheme)/options/Zongsoft.Externals.Hangfire.$(environment)-debug.option  <debug:on>

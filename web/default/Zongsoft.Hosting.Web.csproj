@@ -43,6 +43,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Compile Include="..\ApplicationController.cs" Link="Controllers\ApplicationController.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Remove="plugins\**" />
 		<Compile Remove="plugins\**" />
 		<Content Remove="plugins\**" />

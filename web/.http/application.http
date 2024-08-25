@@ -1,0 +1,31 @@
+### 应用信息
+GET /Application HTTP/1.1
+Host: {{host}}:{{port}}
+
+### 事件列表
+GET /Application/Events HTTP/1.1
+Host: {{host}}:{{port}}
+
+### 事件处理器列表
+GET /Application/Events/Handlers HTTP/1.1
+Host: {{host}}:{{port}}
+
+### 应用模块
+GET /Application/Modules HTTP/1.1
+Host: {{host}}:{{port}}
+
+### 应用模块(指定模块)
+# @prompt module 模块标识(星号表示所有)
+GET /Application/Modules/{{module}} HTTP/1.1
+Host: {{host}}:{{port}}
+
+### 应用目标
+# @prompt module 模块标识
+GET /Application/Modules/{{module}}/Targets HTTP/1.1
+Host: {{host}}:{{port}}
+
+### 应用目标
+# @prompt module  模块标识
+# @prompt targets 目标标识(以逗号分隔,星号表示所有)
+GET /Application/Modules/{{module}}/Targets/{{targets}} HTTP/1.1
+Host: {{host}}:{{port}}

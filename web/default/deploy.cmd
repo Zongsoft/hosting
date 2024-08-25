@@ -13,7 +13,7 @@ dotnet deploy                ^
 	-verbosity:quiet     ^
 	-overwrite:latest    ^
 	-host:web            ^
-	-site:web            ^
+	-site:default        ^
 	-scheme:%scheme%     ^
 	-edition:Debug       ^
 	-debug:%debug%       ^
