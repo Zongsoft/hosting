@@ -110,7 +110,7 @@ namespace Zongsoft.Hosting.Web.Controllers
 			if(string.IsNullOrEmpty(module) || module == "*")
 				return this.Ok(applicationContext.Modules.Select(GetApplicationModule));
 
-			if(applicationContext.Modules.TryGet(module, out var applicationModule))
+			if(applicationContext.Modules.TryGetValue(module, out var applicationModule))
 				return this.Ok(GetApplicationModule(applicationModule));
 			else
 				return this.NotFound();
@@ -163,7 +163,7 @@ namespace Zongsoft.Hosting.Web.Controllers
 			if(module == null || module == "_")
 				module = string.Empty;
 
-			if(applicationContext.Modules.TryGet(module, out var applicationModule))
+			if(applicationContext.Modules.TryGetValue(module, out var applicationModule))
 			{
 				if(string.IsNullOrEmpty(targets) || targets == "*")
 					return this.Ok(applicationModule.Schemas);
