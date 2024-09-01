@@ -2,6 +2,7 @@ var scheme = Argument("scheme", "default");
 var target = Argument("target", "default");
 var edition = Argument("edition", "Debug");
 var framework = Argument("framework", "net8.0");
+var architecture = Argument("architecture", "x64");
 var solutionFile  = "Zongsoft.Hosting.Web.sln";
 
 Task("clean")
@@ -38,7 +39,7 @@ Task("deploy")
 	.Description("部署插件")
 	.Does(() =>
 {
-	DotNetTool(solutionFile, "deploy", $" -host:web -site:default -scheme:{scheme} -edition:{edition} -framework:{framework} -verbosity:quiet");
+	DotNetTool(solutionFile, "deploy", $" -host:web -site:default -scheme:{scheme} -edition:{edition} -framework:{framework} -architecture:{architecture} -verbosity:quiet");
 });
 
 Task("default")
