@@ -22,6 +22,10 @@
 		<GenerateDocumentationFile>false</GenerateDocumentationFile>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<ZongsoftFrameworkPath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..\framework`))</ZongsoftFrameworkPath>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<None Include="$(MSBuildThisFileDirectory)zongsoft-logo.png" Pack="true" PackagePath="\" Visible="false"  />    
 	</ItemGroup>
