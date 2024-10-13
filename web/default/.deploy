@@ -25,6 +25,7 @@ nuget:Zongsoft.Reporting
 [plugins zongsoft security]
 nuget:Zongsoft.Security
 nuget:Zongsoft.Security.Web
+nuget:Zongsoft.Security.Captcha
 
 [plugins zongsoft externals aliyun]
 nuget:Zongsoft.Externals.Aliyun
