@@ -1,0 +1,23 @@
+### 文件信息
+HEAD /Files/wwwroot/attachments/photo.jpg HTTP/1.1
+Host: {{host}}:{{port}}
+
+### 下载文件
+GET /Files/wwwroot/attachments/photo.jpg HTTP/1.1
+Host: {{host}}:{{port}}
+
+### 删除文件
+DELETE /Files/wwwroot/attachments/photo.jpg HTTP/1.1
+Host: {{host}}:{{port}}
+
+### 上传文件
+POST /Files/wwwroot/attachments HTTP/1.1
+Host: {{host}}:{{port}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="Photo"; filename="photo.jpg"
+Content-Type: image/jpeg
+
+< ../../samples/photo.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
