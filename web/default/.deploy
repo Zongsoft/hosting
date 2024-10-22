@@ -4,6 +4,9 @@
 [plugins]
 nuget:Zongsoft.Plugins/plugins/Main.plugin
 
+[plugins zongsoft net]
+nuget:Zongsoft.Net
+
 [plugins zongsoft data]
 nuget:Zongsoft.Data
 
