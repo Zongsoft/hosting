@@ -24,6 +24,7 @@
 
 	<PropertyGroup>
 		<ZongsoftFrameworkPath>$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), `..\framework`))</ZongsoftFrameworkPath>
+		<ZongsoftFrameworkPathReferenced>true</ZongsoftFrameworkPathReferenced>
 	</PropertyGroup>
 
 	<ItemGroup>

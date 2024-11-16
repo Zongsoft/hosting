@@ -6,7 +6,7 @@
 	</ItemGroup>
 
 	<Choose>
-		<When Condition="Exists('$(ZongsoftFrameworkPath)')">
+		<When Condition="$(ZongsoftFrameworkPathReferenced) And Exists('$(ZongsoftFrameworkPath)')">
 			<ItemGroup>
 				<Reference Include="Zongsoft.Core">
 					<HintPath>$(ZongsoftFrameworkPath)\Zongsoft.Core\src\bin\$(Configuration)\$(TargetFramework)\Zongsoft.Core.dll</HintPath>
@@ -22,7 +22,6 @@
 				</Reference>
 			</ItemGroup>
 		</When>
-
 		<Otherwise>
 			<ItemGroup>
 				<PackageReference Include="Zongsoft.Core" />

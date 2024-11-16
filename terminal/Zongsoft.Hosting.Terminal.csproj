@@ -10,10 +10,24 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Zongsoft.Core" />
-		<PackageReference Include="Zongsoft.Plugins" />
-	</ItemGroup>
+	<Choose>
+		<When Condition="$(ZongsoftFrameworkPathReferenced) And Exists('$(ZongsoftFrameworkPath)')">
+			<ItemGroup>
+				<Reference Include="Zongsoft.Core">
+					<HintPath>$(ZongsoftFrameworkPath)\Zongsoft.Core\src\bin\$(Configuration)\$(TargetFramework)\Zongsoft.Core.dll</HintPath>
+				</Reference>
+				<Reference Include="Zongsoft.Plugins">
+					<HintPath>$(ZongsoftFrameworkPath)\Zongsoft.Plugins\src\bin\$(Configuration)\$(TargetFramework)\Zongsoft.Plugins.dll</HintPath>
+				</Reference>
+			</ItemGroup>
+		</When>
+		<Otherwise>
+			<ItemGroup>
+				<PackageReference Include="Zongsoft.Core" />
+				<PackageReference Include="Zongsoft.Plugins" />
+			</ItemGroup>
+		</Otherwise>
+	</Choose>
 
 	<ItemGroup>
 		<None Remove=".deploy" />
