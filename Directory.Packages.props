@@ -76,7 +76,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageVersion Include="Zongsoft.Core" Version="6.25.2" />
+		<PackageVersion Include="Zongsoft.Core" Version="6.25.3" />
 		<PackageVersion Include="Zongsoft.Web" Version="6.7.4" />
 		<PackageVersion Include="Zongsoft.Plugins" Version="6.7.1" />
 		<PackageVersion Include="Zongsoft.Plugins.Web" Version="6.7.2" />
