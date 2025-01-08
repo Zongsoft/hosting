@@ -4,6 +4,9 @@
 [plugins]
 nuget:Zongsoft.Plugins/plugins/Main.plugin
 
+[plugins zongsoft diagnostics]
+../../../framework/Zongsoft.Diagnostics/src/Zongsoft.Diagnostics.deploy
+
 [plugins zongsoft net]
 nuget:Zongsoft.Net
 
@@ -40,6 +43,12 @@ nuget:Zongsoft.Externals.Redis
 nuget:Zongsoft.Externals.Wechat
 nuget:Zongsoft.Externals.Wechat.Web
 
+[plugins zongsoft externals lua]
+nuget:Zongsoft.Externals.Lua
+
+[plugins zongsoft externals python]
+nuget:Zongsoft.Externals.Python
+
 [plugins zongsoft externals scriban]
 nuget:Zongsoft.Externals.Scriban
 
@@ -59,6 +68,10 @@ delete:Zongsoft.Messaging.Mqtt.option
 [plugins zongsoft messaging kafka]
 nuget:Zongsoft.Messaging.Kafka
 delete:Zongsoft.Messaging.Kafka.option
+
+[plugins zongsoft messaging zeromq]
+nuget:Zongsoft.Messaging.ZeroMQ
+delete:Zongsoft.Messaging.ZeroMQ.option
 
 [plugins zongsoft administratives]
 nuget:Zongsoft.Administratives
