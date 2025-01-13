@@ -5,7 +5,7 @@
 nuget:Zongsoft.Plugins/plugins/Main.plugin
 
 [plugins zongsoft diagnostics]
-../../../framework/Zongsoft.Diagnostics/src/Zongsoft.Diagnostics.deploy
+nuget:Zongsoft.Diagnostics
 
 [plugins zongsoft net]
 nuget:Zongsoft.Net
