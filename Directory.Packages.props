@@ -92,9 +92,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageVersion Include="Zongsoft.Core" Version="6.34.1" />
-		<PackageVersion Include="Zongsoft.Web" Version="6.7.6" />
+		<PackageVersion Include="Zongsoft.Core" Version="6.34.2" />
+		<PackageVersion Include="Zongsoft.Web" Version="6.7.7" />
 		<PackageVersion Include="Zongsoft.Plugins" Version="6.7.5" />
-		<PackageVersion Include="Zongsoft.Plugins.Web" Version="6.7.5" />
+		<PackageVersion Include="Zongsoft.Plugins.Web" Version="6.7.6" />
 	</ItemGroup>
 </Project>
