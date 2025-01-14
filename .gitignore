@@ -399,3 +399,6 @@ FodyWeavers.xsd
 
 # options
 .deploy/*/options/app.*.option
+
+# MIME files in a specific host directory
+*/**/mime

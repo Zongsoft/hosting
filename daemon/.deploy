@@ -1,5 +1,6 @@
 ../.deploy/$(scheme)/options/app.$(environment).option       = Zongsoft.Hosting.Daemon.option   <!debug:on>
 ../.deploy/$(scheme)/options/app.$(environment)-debug.option = Zongsoft.Hosting.Daemon.option    <debug:on>
+../mime
 
 [plugins]
 nuget:Zongsoft.Plugins/plugins/Main.plugin

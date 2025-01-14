@@ -1,5 +1,6 @@
 ../../.deploy/$(scheme)/options/app.$(environment).option       = web.option   <!debug:on>
 ../../.deploy/$(scheme)/options/app.$(environment)-debug.option = web.option    <debug:on>
+../../mime
 
 [plugins]
 nuget:Zongsoft.Plugins/plugins/Main.plugin
