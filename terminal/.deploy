@@ -67,6 +67,10 @@ delete:Zongsoft.Messaging.Mqtt.option
 nuget:Zongsoft.Messaging.Kafka
 delete:Zongsoft.Messaging.Kafka.option
 
+[plugins zongsoft messaging rabbitmq]
+nuget:Zongsoft.Messaging.RabbitMQ
+delete:Zongsoft.Messaging.RabbitMQ.option
+
 [plugins zongsoft messaging zeromq]
 nuget:Zongsoft.Messaging.ZeroMQ
 delete:Zongsoft.Messaging.ZeroMQ.option
