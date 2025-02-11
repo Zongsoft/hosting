@@ -60,7 +60,7 @@ nuget:Zongsoft.Externals.Hangfire@1.6.4
 nuget:Zongsoft.Externals.Hangfire.Storages.Redis@2.0.0
 
 [plugins zongsoft messaging mqtt]
-nuget:Zongsoft.Messaging.Mqtt@6.16.2
+nuget:Zongsoft.Messaging.Mqtt@6.16.3
 delete:Zongsoft.Messaging.Mqtt.option
 
 [plugins zongsoft messaging kafka]
