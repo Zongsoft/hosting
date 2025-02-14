@@ -1,5 +1,5 @@
 [plugins zongsoft diagnostics]
-nuget:Zongsoft.Diagnostics@0.3.0
+nuget:Zongsoft.Diagnostics@0.4.0
 
 [plugins zongsoft net]
 nuget:Zongsoft.Net@6.7.0
