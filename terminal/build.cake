@@ -1,7 +1,7 @@
 var scheme = Argument("scheme", "default");
 var target = Argument("target", "default");
 var edition = Argument("edition", "Debug");
-var framework = Argument("framework", "net8.0");
+var framework = Argument("framework", "net9.0");
 var architecture = Argument("architecture", "x64");
 var solutionFile  = "Zongsoft.Hosting.Terminal.sln";
 

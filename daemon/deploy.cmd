@@ -23,7 +23,7 @@ dotnet deploy                ^
 	-scheme:%scheme%     ^
 	-debug:%debug%       ^
 	-edition:Debug       ^
-	-framework:net8.0    ^
+	-framework:net9.0    ^
 	-platform:%platform% ^
 	-architecture:x64    ^
 	-destination:bin/^$^(edition^)/^$^(framework^) ^
