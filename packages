@@ -1,11 +1,11 @@
 [plugins zongsoft diagnostics]
-nuget:Zongsoft.Diagnostics@1.0.0
+nuget:Zongsoft.Diagnostics@1.1.0
 
 [plugins zongsoft net]
 nuget:Zongsoft.Net@7.0.0
 
 [plugins zongsoft data]
-nuget:Zongsoft.Data@7.3.0
+nuget:Zongsoft.Data@7.4.0
 
 [plugins zongsoft data mysql]
 nuget:Zongsoft.Data.MySql@7.1.0
@@ -26,7 +26,7 @@ nuget:Zongsoft.Commands@7.0.0
 nuget:Zongsoft.Reporting@7.0.0
 
 [plugins zongsoft security]
-nuget:Zongsoft.Security@7.0.0
+nuget:Zongsoft.Security@7.1.0
 
 [plugins zongsoft externals aliyun]
 nuget:Zongsoft.Externals.Aliyun@7.0.0
