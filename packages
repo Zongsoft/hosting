@@ -20,7 +20,7 @@ nuget:Zongsoft.Data.TDengine@2.0.0
 nuget:Zongsoft.Data.ClickHouse@2.0.0
 
 [plugins zongsoft commands]
-nuget:Zongsoft.Commands@7.2.0
+nuget:Zongsoft.Commands@7.3.0
 
 [plugins zongsoft reporting]
 nuget:Zongsoft.Reporting@7.0.0
@@ -29,10 +29,10 @@ nuget:Zongsoft.Reporting@7.0.0
 nuget:Zongsoft.Security@7.5.1
 
 [plugins zongsoft externals aliyun]
-nuget:Zongsoft.Externals.Aliyun@7.2.0
+nuget:Zongsoft.Externals.Aliyun@7.3.0
 
 [plugins zongsoft externals redis]
-nuget:Zongsoft.Externals.Redis@7.2.0
+nuget:Zongsoft.Externals.Redis@7.3.0
 
 [plugins zongsoft externals wechat]
 nuget:Zongsoft.Externals.Wechat@7.1.0
@@ -50,7 +50,7 @@ nuget:Zongsoft.Externals.Scriban@2.0.0
 nuget:Zongsoft.Externals.ClosedXml@3.0.0
 
 [plugins zongsoft externals hangfire]
-nuget:Zongsoft.Externals.Hangfire@2.2.2
+nuget:Zongsoft.Externals.Hangfire@2.3.0
 [plugins zongsoft externals hangfire redis]
 nuget:Zongsoft.Externals.Hangfire.Storages.Redis@3.0.0
 
