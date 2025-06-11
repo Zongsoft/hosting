@@ -20,7 +20,7 @@ nuget:Zongsoft.Data.TDengine@2.0.0
 nuget:Zongsoft.Data.ClickHouse@2.0.0
 
 [plugins zongsoft commands]
-nuget:Zongsoft.Commands@7.3.0
+nuget:Zongsoft.Commands@7.4.0
 
 [plugins zongsoft reporting]
 nuget:Zongsoft.Reporting@7.0.0
@@ -33,6 +33,9 @@ nuget:Zongsoft.Externals.Aliyun@7.3.0
 
 [plugins zongsoft externals redis]
 nuget:Zongsoft.Externals.Redis@7.3.0
+
+[plugins zongsoft externals polly]
+nuget:Zongsoft.Externals.Polly@0.1.0
 
 [plugins zongsoft externals wechat]
 nuget:Zongsoft.Externals.Wechat@7.1.0
