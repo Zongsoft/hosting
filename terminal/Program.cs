@@ -2,15 +2,14 @@
 
 using Microsoft.Extensions.Hosting;
 
-namespace Zongsoft.Hosting.Terminal
+namespace Zongsoft.Hosting.Terminal;
+
+internal class Program
 {
-	internal class Program
+	static void Main(string[] args)
 	{
-		static void Main(string[] args)
-		{
-			Zongsoft.Plugins.Hosting.Application
-				.Terminal(args)
-				.Run();
-		}
+		Zongsoft.Plugins.Hosting.Application
+			.Terminal(args)
+			.Run();
 	}
 }
