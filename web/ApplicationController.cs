@@ -33,40 +33,43 @@
 
 using System;
 using System.Linq;
-using System.Collections.Generic;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 
+using Zongsoft.Web;
 using Zongsoft.Common;
 using Zongsoft.Services;
 using Zongsoft.Components;
-using Zongsoft.ComponentModel;
 
-namespace Zongsoft.Hosting.Web.Controllers
+namespace Zongsoft.Hosting.Web.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class ApplicationController : ControllerBase
 {
-	[ApiController]
-	[Route("[controller]")]
-	public class ApplicationController : ControllerBase
+	[HttpGet]
+	public IActionResult Get()
 	{
-		[HttpGet]
-		public IActionResult Get()
+		var applicationContext = ApplicationContext.Current;
+		if(applicationContext == null)
+			return this.StatusCode(StatusCodes.Status405MethodNotAllowed);
+
+		return this.Ok(new
 		{
-			var applicationContext = ApplicationContext.Current;
-			if(applicationContext == null)
-				return this.StatusCode(StatusCodes.Status405MethodNotAllowed);
+			applicationContext.Name,
+			applicationContext.Title,
+			applicationContext.Version,
+			applicationContext.Description,
+			Environment = applicationContext.Environment.Name,
+		});
+	}
 
-			return this.Ok(new
-			{
-				applicationContext.Name,
-				applicationContext.Title,
-				applicationContext.Description,
-				Environment = applicationContext.Environment.Name,
-			});
-		}
-
-		[HttpGet("Events/{name?}")]
-		public IActionResult GetEvents(string name = null)
+	[ControllerName("Events")]
+	public sealed class EventController : ControllerBase
+	{
+		[HttpGet("{name?}")]
+		public IActionResult Get(string name = null)
 		{
 			if(string.IsNullOrWhiteSpace(name))
 				return this.Ok(Events.GetEvents());
@@ -75,14 +78,16 @@ namespace Zongsoft.Hosting.Web.Controllers
 			return @event == null ? this.NoContent() : this.Ok(@event);
 		}
 
-		[HttpGet("Events/Handlers")]
-		public IActionResult GetEventHandlers()
+		[ActionName("Handlers")]
+		[HttpGet("[action]")]
+		public IActionResult GetHandlers()
 		{
 			var applicationContext = ApplicationContext.Current;
 			if(applicationContext == null)
 				return this.StatusCode(StatusCodes.Status405MethodNotAllowed);
 
-			return this.Ok(applicationContext.Services.ResolveAll<IHandler<EventContext>>().Select(GetHandlerDescriptor));
+			var handlers = applicationContext.Services.ResolveAll<IHandler<EventContext>>().Select(GetHandlerDescriptor);
+			return handlers.Any() ? this.Ok(handlers) : this.NoContent();
 
 			static object GetHandlerDescriptor(object handler)
 			{
@@ -99,18 +104,22 @@ namespace Zongsoft.Hosting.Web.Controllers
 				};
 			}
 		}
+	}
 
-		[HttpGet("Modules/{module?}")]
-		public IActionResult GetModules(string module = null)
+	[ControllerName("Modules")]
+	public sealed class ModuleController : ControllerBase
+	{
+		[HttpGet("{name?}")]
+		public IActionResult Get(string name = null)
 		{
 			var applicationContext = ApplicationContext.Current;
 			if(applicationContext == null)
 				return this.StatusCode(StatusCodes.Status405MethodNotAllowed);
 
-			if(string.IsNullOrEmpty(module) || module == "*")
-				return this.Ok(applicationContext.Modules.Select(GetApplicationModule));
+			if(string.IsNullOrEmpty(name) || name == "*")
+				return this.Ok(applicationContext.Modules.Select(GetApplicationModule).Where(p => p != null));
 
-			if(applicationContext.Modules.TryGetValue(module, out var applicationModule))
+			if(applicationContext.Modules.TryGetValue(name, out var applicationModule))
 				return this.Ok(GetApplicationModule(applicationModule));
 			else
 				return this.NotFound();
@@ -120,65 +129,46 @@ namespace Zongsoft.Hosting.Web.Controllers
 				if(module == null)
 					return null;
 
+				var events = module.GetEvents().Select(@event => new
+				{
+					Name = @event.QualifiedName,
+					@event.Title,
+					@event.Description,
+				});
+
 				return new
 				{
 					module.Name,
 					module.Title,
+					module.Version,
 					module.Description,
-					Events = module.GetEvents().Select(@event => new
-					{
-						Name = @event.QualifiedName,
-						@event.Title,
-						@event.Description,
-					}),
-					Targets = module.Schemas,
+					Events = events != null && events.Any() ? events : null,
 				};
 			}
 		}
 
-		[HttpGet("Modules/{module}/Targets/{targets?}")]
-		public IActionResult GetTargets(string module, string targets = null)
+		[ActionName("Services")]
+		[HttpGet("[action]/{name?}")]
+		[HttpGet("{module}/[action]/{name?}")]
+		public IActionResult GetServices(string module, string name = null)
 		{
-			var applicationContext = ApplicationContext.Current;
-			if(applicationContext == null)
-				return this.StatusCode(StatusCodes.Status405MethodNotAllowed);
+			if(!ApplicationContext.Current.Properties.TryGetValue<ControllerServiceDescriptorCollection>(out var descriptors))
+				return this.NotFound();
 
-			if(module == "*")
+			if(string.IsNullOrEmpty(module) || module == "*")
 			{
-				var result = string.IsNullOrWhiteSpace(targets) || targets == "*" ?
-					applicationContext.Modules.Select(m => new
-					{
-						Module = m.Name,
-						Targets = (IEnumerable<Schema>)m.Schemas,
-					}):
-					applicationContext.Modules.Select(m => new
-					{
-						Module = m.Name,
-						Targets = m.Schemas.Where(target => targets.Split(',', StringSplitOptions.TrimEntries).Contains(target.Name, StringComparer.OrdinalIgnoreCase)),
-					});
+				if(string.IsNullOrEmpty(name) || name == "*")
+					return this.Ok(descriptors.Select(ControllerUtility.Serializable));
 
-				return this.Ok(result);
+				return descriptors.TryGetValue(name, out var descriptor) ? this.Ok(descriptor.Serializable()) : this.NotFound();
 			}
-
-			if(module == null || module == "_")
-				module = string.Empty;
-
-			if(applicationContext.Modules.TryGetValue(module, out var applicationModule))
+			else
 			{
-				if(string.IsNullOrEmpty(targets) || targets == "*")
-					return this.Ok(applicationModule.Schemas);
+				if(string.IsNullOrEmpty(name) || name == "*")
+					return this.Ok(descriptors.Where(descriptor => string.Equals(descriptor.Module, module, StringComparison.OrdinalIgnoreCase)).Select(ControllerUtility.Serializable));
 
-				var array = targets.Split(',', StringSplitOptions.TrimEntries);
-				var result = applicationModule.Schemas
-					.Where(target => array.Contains(target.Name, StringComparer.OrdinalIgnoreCase));
-
-				if(result == null || !result.Any())
-					return this.NoContent();
-
-				return array.Length == 1 ? this.Ok(result.FirstOrDefault()) : this.Ok(result);
+				return descriptors.TryGetValue(module, name, out var descriptor) ? this.Ok(descriptor.Serializable()) : this.NotFound();
 			}
-
-			return this.NotFound();
 		}
 	}
 }
