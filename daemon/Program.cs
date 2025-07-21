@@ -9,7 +9,7 @@ internal class Program
 	static void Main(string[] args)
 	{
 		Zongsoft.Plugins.Hosting.Application
-			.Daemon(args)
+			.Daemon([.. args, "host=daemon", "site=daemon"])
 			.Run();
 	}
 }
