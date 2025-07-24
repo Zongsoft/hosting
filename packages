@@ -26,7 +26,7 @@ nuget:Zongsoft.Commands@7.5.0
 nuget:Zongsoft.Reporting@7.0.0
 
 [plugins zongsoft security]
-nuget:Zongsoft.Security@7.5.3
+nuget:Zongsoft.Security@7.5.4
 
 [plugins zongsoft externals aliyun]
 nuget:Zongsoft.Externals.Aliyun@7.3.0
