@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<configuration>
+	<option path="kestrel">
+		<endpoints>
+			<endpoint endpoint.name="http" url="http://*:8069" protocols="Http1" />
+		</endpoints>
+	</option>
+</configuration>
