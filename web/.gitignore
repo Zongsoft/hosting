@@ -3,3 +3,4 @@
 [Pp]lugins/
 [Ww]eb.option
 addresses*.json
+*/web.*.option

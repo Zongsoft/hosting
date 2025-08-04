@@ -1,5 +1,7 @@
 ../../.deploy/$(scheme)/options/app.$(environment).option       = web.option   <!debug:on>
 ../../.deploy/$(scheme)/options/app.$(environment)-debug.option = web.option    <debug:on>
+../../.deploy/$(scheme)/options/web.$(site).option
+../../.deploy/$(scheme)/options/web.$(site).$(environment).option
 ../../mime
 
 #@import ../web.deploy
