@@ -3,6 +3,9 @@
 [plugins zongsoft grpc]
 nuget:Zongsoft.Web.Grpc@1.1.0
 
+[plugins zongsoft ai]
+nuget:Zongsoft.Intelligences.Web@0.0.1
+
 [plugins zongsoft diagnostics server]
 nuget:Zongsoft.Diagnostics.Protocols.Server@1.0.0
 
