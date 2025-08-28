@@ -1,8 +1,8 @@
 [plugins zongsoft diagnostics]
-nuget:Zongsoft.Diagnostics@1.5.0
+nuget:Zongsoft.Diagnostics@1.6.0
 
 [plugins zongsoft ai]
-nuget:Zongsoft.Intelligences@0.0.2
+nuget:Zongsoft.Intelligences@0.0.3
 
 [plugins zongsoft net]
 nuget:Zongsoft.Net@7.0.1
@@ -23,13 +23,13 @@ nuget:Zongsoft.Data.TDengine@2.1.0
 nuget:Zongsoft.Data.ClickHouse@2.1.0
 
 [plugins zongsoft commands]
-nuget:Zongsoft.Commands@7.5.0
+nuget:Zongsoft.Commands@7.6.0
 
 [plugins zongsoft reporting]
 nuget:Zongsoft.Reporting@7.0.0
 
 [plugins zongsoft security]
-nuget:Zongsoft.Security@7.5.4
+nuget:Zongsoft.Security@7.6.0
 
 [plugins zongsoft externals aliyun]
 nuget:Zongsoft.Externals.Aliyun@7.3.0
@@ -56,7 +56,7 @@ nuget:Zongsoft.Externals.Scriban@2.0.0
 nuget:Zongsoft.Externals.ClosedXml@4.0.0
 
 [plugins zongsoft externals hangfire]
-nuget:Zongsoft.Externals.Hangfire@2.4.0
+nuget:Zongsoft.Externals.Hangfire@2.5.0
 [plugins zongsoft externals hangfire redis]
 nuget:Zongsoft.Externals.Hangfire.Storages.Redis@3.0.0
 
