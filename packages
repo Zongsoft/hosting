@@ -2,7 +2,7 @@
 nuget:Zongsoft.Diagnostics@1.6.0
 
 [plugins zongsoft ai]
-nuget:Zongsoft.Intelligences@0.1.0
+nuget:Zongsoft.Intelligences@0.1.1
 
 [plugins zongsoft net]
 nuget:Zongsoft.Net@7.1.0
