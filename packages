@@ -2,7 +2,7 @@
 nuget:Zongsoft.Diagnostics@1.6.0
 
 [plugins zongsoft ai]
-nuget:Zongsoft.Intelligences@0.0.3
+nuget:Zongsoft.Intelligences@0.1.0
 
 [plugins zongsoft net]
 nuget:Zongsoft.Net@7.1.0
@@ -47,7 +47,7 @@ nuget:Zongsoft.Externals.Wechat@7.2.0
 nuget:Zongsoft.Externals.Lua@2.2.0
 
 [plugins zongsoft externals python]
-nuget:Zongsoft.Externals.Python@2.0.0
+nuget:Zongsoft.Externals.Python@2.1.0
 
 [plugins zongsoft externals scriban]
 nuget:Zongsoft.Externals.Scriban@2.0.0
