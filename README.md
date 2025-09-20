@@ -69,28 +69,27 @@ dotnet tool update -g zongsoft.tools.deployer
 
 ## 容器化
 
-由于一些插件需要使用到 _**R**edis_、_**M**y**SQL**_ 或 _**P**ostgre**SQL**_ 数据库等，因此可以使用容器化这些依赖的服务。
+由于一些插件需要使用到 _**R**edis_、_**M**y**SQL**_ 或 _**P**ostgre**SQL**_ 数据库等，因此可以容器化这些依赖的服务。
 
-> 建议安装 _**P**odman_ _**CLI**_ 进行容器化处理，下面是它的安装程序地址：
+> 建议安装 _**P**odman_ _**CLI**_ 进行容器化处理，下面是它的下载地址：
 > - https://podman.io
 > - https://github.com/containers/podman/releases
 
-> 💡 如果是 _**W**indows_ 环境，请确保安装了 WSL-2。参考：https://learn.microsoft.com/zh-cn/windows/wsl/install
+> 💡 如果是 _**W**indows_ 环境，请确保安装了 [_WSL-2_](https://learn.microsoft.com/zh-cn/windows/wsl/install)。
 
 
 我们准备了一个名为 [_zongsoft.pod.yaml_](./zongsoft.pod.yaml) 的 _**P**od_ 文件，该文件定义了 _**R**edis_ 和 _**M**ySQL_ 两个容器和一个名为 `zongsoft` 数据库，确保开箱即用。
-
-> 💡 请确保在 [_hosting_](https://github.com/Zongsoft/hosting) 同级路径中有 [adadministratives](https://github.com/Zongsoft/administratives) 仓库和 [framework](https://github.com/Zongsoft/framework) 仓库，因为 `zongsoft` 数据库创建后会加载运行这两个仓库中的 _SQL_ 脚本，以完成建表和数据初始化。
+> 💡 请确保 [_hosting_](https://github.com/Zongsoft/hosting) 的同级位置有 [adadministratives](https://github.com/Zongsoft/administratives) 和 [framework](https://github.com/Zongsoft/framework) 仓库，因为 `zongsoft` 数据库创建后会加载运行这两个仓库中的 _SQL_ 脚本，以完成建表和数据初始化。
 
 ### 操作步骤
 
-1. 打开 _**P**ower**S**hell_ 终端，使用如下命令运行我们准备好的 _Pod_ 容器
+1. 打开 _**P**ower**S**hell_ 终端，使用如下命令启动 _Pod_ 容器化服务
 ```powershell
 podman kube play --replace .\zongsoft.pod.yaml
 ```
 
 2. 使用下列命令检查 _Pod_ 是否成功运行
-> 💡 如果成功则稍等一会再连接数据库，因为容器加载后会自动创建依赖的数据库表和初始化数据。
+> 💡 启动成功后稍等一会再连接数据库，因为建表和初始化数据的 _SQL_ 脚本可能需要运行一会。
 
 ```powershell
 podman pod ps
