@@ -69,7 +69,7 @@ dotnet tool update -g zongsoft.tools.deployer
 
 ## 容器化
 
-由于一些插件需要使用到 _**R**edis_、_**M**y**SQL**_ 或 _**P**ostgre**SQL**_ 数据库等，因此可以容器化这些依赖的服务。
+由于一些插件需要使用到 _**R**edis_、_**M**y**SQL**_ 或 _**P**ostgre**SQL**_ 等，因此可以容器化这些依赖的服务。
 
 > 建议安装 _**P**odman_ _**CLI**_ 进行容器化处理，下面是它的下载地址：
 > - https://podman.io
@@ -98,6 +98,12 @@ podman ps --pod -a
 
 > 如果启动失败，可通过下列命令查看日志
 > ```powershell
-> podman logs zongsoft.mysql
-> podman logs zongsoft.redis
+> podman logs zongsoft-mysql
+> podman logs zongsoft-redis
+> ```
+
+> 可通过下列命令进入指定容器的 _bash_
+> ```powershell
+> podman exec -it zongsoft-mysql bash
+> podman exec -it zongsoft-redis bash
 > ```
