@@ -14,7 +14,7 @@ spec:
           hostPort: 6379
       env:
         - name: REDIS_PASSWORD
-          value: "Zongsoft.Redis2025"
+          value: "xxxxxx"
       command: ["redis-server"]
       args: ["--requirepass", "$(REDIS_PASSWORD)"]
 
@@ -28,7 +28,7 @@ spec:
         - name: MYSQL_USER
           value: program
         - name: MYSQL_PASSWORD
-          value: "Zongsoft.MySql2025"
+          value: "xxxxxx"
         - name: MYSQL_DATABASE
           value: zongsoft
         - name: MYSQL_RANDOM_ROOT_PASSWORD
