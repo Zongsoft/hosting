@@ -79,7 +79,10 @@ dotnet tool update -g zongsoft.tools.deployer
 
 
 我们准备了一个名为 [_zongsoft.pod.yaml_](./zongsoft.pod.yaml) 的 _**P**od_ 文件，该文件定义了 _**R**edis_ 和 _**M**ySQL_ 两个容器和一个名为 `zongsoft` 数据库，确保开箱即用。
-> 💡 请确保 [_hosting_](https://github.com/Zongsoft/hosting) 的同级位置有 [adadministratives](https://github.com/Zongsoft/administratives) 和 [framework](https://github.com/Zongsoft/framework) 仓库，因为 `zongsoft` 数据库创建后会加载运行这两个仓库中的 _SQL_ 脚本，以完成建表和数据初始化。
+> 💡 请确保 [_hosting_](https://github.com/Zongsoft/hosting) 的同级位置有如下仓库，因为 `zongsoft` 数据库创建后会加载运行这些仓库中的 _SQL_ 脚本，以完成建表和数据初始化。
+> - [adadministratives](https://github.com/Zongsoft/administratives)
+> - [discussions](https://github.com/Zongsoft/discussions)
+> - [framework](https://github.com/Zongsoft/framework)
 
 ### 操作步骤
 
