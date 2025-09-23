@@ -20,7 +20,7 @@ nuget:Zongsoft.Data.Influx@0.2.0
 nuget:Zongsoft.Data.TDengine@2.1.0
 
 [plugins zongsoft data clickhouse]
-nuget:Zongsoft.Data.ClickHouse@2.1.0
+nuget:Zongsoft.Data.ClickHouse@2.2.0
 
 [plugins zongsoft commands]
 nuget:Zongsoft.Commands@7.6.0
