@@ -33,6 +33,10 @@ spec:
           value: zongsoft
         - name: MYSQL_RANDOM_ROOT_PASSWORD
           value: "yes"
+        - name: MYSQL_CHARSET
+          value: utf8mb4
+        - name: MYSQL_COLLATION
+          value: utf8mb4_0900_ai_ci
       volumeMounts:
         - name: security-sql
           mountPath: /docker-entrypoint-initdb.d/Zongsoft.Security-mysql.sql
