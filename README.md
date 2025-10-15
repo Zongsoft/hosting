@@ -78,7 +78,7 @@ dotnet tool update -g zongsoft.tools.deployer
 > 💡 如果是 _**W**indows_ 环境，请确保安装了 [_WSL-2_](https://learn.microsoft.com/zh-cn/windows/wsl/install)。
 
 
-我们准备了一个名为 [_zongsoft.pod.yaml_](./zongsoft.pod.yaml) 的 _**P**od_ 文件，该文件定义了 _**R**edis_ 和 _**M**ySQL_ 两个容器和一个名为 `zongsoft` 数据库，确保开箱即用。
+我们准备了一个名为 [_zongsoft.pod.yaml_](./zongsoft.pod.yaml) 的 _**P**od_ 文件，该文件定义了 _**R**edis_ 和 _**M**ySQL_、_**P**ostgre**SQL**_ 容器，以及数据库容器内名为 `zongsoft` 的数据库，确保开箱即用。
 > 💡 请确保 [_hosting_](https://github.com/Zongsoft/hosting) 的同级位置有如下仓库，因为 `zongsoft` 数据库创建后会加载运行这些仓库中的 _SQL_ 脚本，以完成建表和数据初始化。
 > - [adadministratives](https://github.com/Zongsoft/administratives)
 > - [discussions](https://github.com/Zongsoft/discussions)
@@ -101,12 +101,19 @@ podman ps --pod -a
 
 > 如果启动失败，可通过下列命令查看日志
 > ```powershell
-> podman logs zongsoft-mysql
 > podman logs zongsoft-redis
+> podman logs zongsoft-mysql
+> podman logs zongsoft-postgres
 > ```
 
 > 可通过下列命令进入指定容器的 _bash_
 > ```powershell
-> podman exec -it zongsoft-mysql bash
 > podman exec -it zongsoft-redis bash
+> podman exec -it zongsoft-mysql bash
+> podman exec -it zongsoft-postgres bash
+> ```
+
+> 可通过下列命令关闭 _Pod_
+> ```powershell
+> podman play kube .\zongsoft.pod.yaml --down
 > ```

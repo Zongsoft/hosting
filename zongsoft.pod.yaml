@@ -18,6 +18,20 @@ spec:
       command: ["redis-server"]
       args: ["--requirepass", "$(REDIS_PASSWORD)"]
 
+    - name: postgres
+      image: postgres:18.0
+      ports:
+        - containerPort: 5432
+          protocol: TCP
+          hostPort: 5432
+      env:
+        - name: POSTGRES_USER
+          value: program
+        - name: POSTGRES_PASSWORD
+          value: "xxxxxx"
+        - name: POSTGRES_DB
+          value: zongsoft
+
     - name: mysql
       image: mysql:8.4.6
       ports:
