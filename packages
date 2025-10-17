@@ -35,7 +35,7 @@ nuget:Zongsoft.Security@7.6.0
 nuget:Zongsoft.Externals.Aliyun@7.4.0
 
 [plugins zongsoft externals redis]
-nuget:Zongsoft.Externals.Redis@7.7.0
+nuget:Zongsoft.Externals.Redis@7.9.0
 
 [plugins zongsoft externals polly]
 nuget:Zongsoft.Externals.Polly@0.1.0
