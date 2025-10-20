@@ -39,6 +39,8 @@ spec:
           protocol: TCP
           hostPort: 3306
       env:
+        - name: LANG
+          value: C.UTF-8
         - name: MYSQL_USER
           value: program
         - name: MYSQL_PASSWORD
