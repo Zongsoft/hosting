@@ -1,0 +1,128 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: zongsoft
+  labels:
+    app: zongsoft
+spec:
+  containers:
+    - name: redis
+      image: redis:latest
+      ports:
+        - containerPort: 6379
+          protocol: TCP
+          hostPort: 6379
+      env:
+        - name: REDIS_PASSWORD
+          value: "xxxxxx"
+      command: ["redis-server"]
+      args: ["--requirepass", "$(REDIS_PASSWORD)"]
+
+    - name: mysql
+      image: mysql:8.4.6
+      ports:
+        - containerPort: 3306
+          protocol: TCP
+          hostPort: 3306
+      env:
+        - name: LANG
+          value: C.UTF-8
+        - name: MYSQL_USER
+          value: program
+        - name: MYSQL_PASSWORD
+          value: "xxxxxx"
+        - name: MYSQL_DATABASE
+          value: zongsoft
+        - name: MYSQL_RANDOM_ROOT_PASSWORD
+          value: "yes"
+        - name: MYSQL_CHARSET
+          value: utf8mb4
+        - name: MYSQL_COLLATION
+          value: utf8mb4_0900_ai_ci
+      volumeMounts:
+        - name: security-sql
+          mountPath: /docker-entrypoint-initdb.d/Zongsoft.Security-mysql.sql
+        - name: discussions-sql
+          mountPath: /docker-entrypoint-initdb.d/Zongsoft.Discussions-mysql.sql
+        - name: administratives-tables-sql
+          mountPath: /docker-entrypoint-initdb.d/Administratives-China($tables).sql
+        - name: administratives-data-sql
+          mountPath: /docker-entrypoint-initdb.d/Administratives-China(Province-City-District).sql
+        - name: administratives-data-street0-sql
+          mountPath: /docker-entrypoint-initdb.d/Administratives-China(Street)-0.sql
+        - name: administratives-data-street1-sql
+          mountPath: /docker-entrypoint-initdb.d/Administratives-China(Street)-1.sql
+        - name: administratives-data-street2-sql
+          mountPath: /docker-entrypoint-initdb.d/Administratives-China(Street)-2.sql
+        - name: administratives-data-street3-sql
+          mountPath: /docker-entrypoint-initdb.d/Administratives-China(Street)-3.sql
+        - name: administratives-data-street4-sql
+          mountPath: /docker-entrypoint-initdb.d/Administratives-China(Street)-4.sql
+        - name: administratives-data-street5-sql
+          mountPath: /docker-entrypoint-initdb.d/Administratives-China(Street)-5.sql
+        - name: administratives-data-street6-sql
+          mountPath: /docker-entrypoint-initdb.d/Administratives-China(Street)-6.sql
+        - name: administratives-data-street7-sql
+          mountPath: /docker-entrypoint-initdb.d/Administratives-China(Street)-7.sql
+        - name: administratives-data-street8-sql
+          mountPath: /docker-entrypoint-initdb.d/Administratives-China(Street)-8.sql
+        - name: administratives-data-street9-sql
+          mountPath: /docker-entrypoint-initdb.d/Administratives-China(Street)-9.sql
+
+  volumes:
+    - name: security-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/framework/Zongsoft.Security/database/Zongsoft.Security-mysql.sql
+        type: File
+    - name: discussions-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/discussions/database/Zongsoft.Discussions-mysql.sql
+        type: File
+    - name: administratives-tables-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/administratives/database/Administratives-China-Tables(mysql).sql
+        type: File
+    - name: administratives-data-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Province-City-District).sql
+        type: File
+    - name: administratives-data-street0-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-0.sql
+        type: File
+    - name: administratives-data-street1-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-1.sql
+        type: File
+    - name: administratives-data-street2-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-2.sql
+        type: File
+    - name: administratives-data-street3-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-3.sql
+        type: File
+    - name: administratives-data-street4-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-4.sql
+        type: File
+    - name: administratives-data-street5-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-5.sql
+        type: File
+    - name: administratives-data-street6-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-6.sql
+        type: File
+    - name: administratives-data-street7-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-7.sql
+        type: File
+    - name: administratives-data-street8-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-8.sql
+        type: File
+    - name: administratives-data-street9-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-9.sql
+        type: File

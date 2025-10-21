@@ -5,8 +5,8 @@
 运行 `deploy.cmd` _(**W**indows)_ 或 `deploy.sh` _(**L**inux/**U**nix)_ 脚本以执行由部署文件 _(`*.deploy`)_ 所定义的部署内容。
 
 > 提示：部署脚本依赖 **Z**ongsoft.**T**ools.**D**eployer 工具进行部署操作，有关该工具的使用说明，请参考其开源项目的相关文档：
-> - 英文：[https://github.com/Zongsoft/Zongsoft.Tools.Deployer/blob/master/README.md](https://github.com/Zongsoft/Zongsoft.Tools.Deployer/blob/master/README.md)
-> - 中文：[https://github.com/Zongsoft/Zongsoft.Tools.Deployer/blob/master/README-zh_CN.md](https://github.com/Zongsoft/Zongsoft.Tools.Deployer/blob/master/README-zh_CN.md)
+> - 英文：[https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
+> - 中文：[https://github.com/Zongsoft/tools/blob/main/deployer/README-zh_CN.md](https://github.com/Zongsoft/tools/blob/main/deployer/README-zh_CN.md)
 
 ### 部署文件
 
@@ -64,7 +64,7 @@ dotnet tool install -g zongsoft.tools.deployer
 dotnet tool update -g zongsoft.tools.deployer
 ```
 
-> 有关 **Z**ongsoft.**T**ools.**D**eployer 部署工具的更多内部原理与实现，请访问该项目的开源网址：[https://github.com/Zongsoft/Zongsoft.Tools.Deployer](https://github.com/Zongsoft/Zongsoft.Tools.Deployer)
+> 有关 **Z**ongsoft.**T**ools.**D**eployer 部署工具的更多内部原理与实现，请访问该项目的开源网址：[https://github.com/Zongsoft/tools/deployer](https://github.com/Zongsoft/tools/tree/main/deployer)
 
 
 ## 容器化
@@ -78,7 +78,10 @@ dotnet tool update -g zongsoft.tools.deployer
 > 💡 如果是 _**W**indows_ 环境，请确保安装了 [_WSL-2_](https://learn.microsoft.com/zh-cn/windows/wsl/install)。
 
 
-我们准备了一个名为 [_zongsoft.pod.yaml_](./zongsoft.pod.yaml) 的 _**P**od_ 文件，该文件定义了 _**R**edis_ 和 _**M**ySQL_、_**P**ostgre**SQL**_ 容器，以及数据库容器内名为 `zongsoft` 的数据库，确保开箱即用。
+我们提供了按数据库分类的 _**P**od_ 文件：
+- [_zongsoft.pod-mysql.yaml_](./zongsoft.pod-mysql.yaml) 该文件定义了 _**R**edis_ 和 _**M**ySQL_ 容器，以及一个为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
+- [_zongsoft.pod-postgres.yaml_](./zongsoft.pod-postgres.yaml) 该文件定义了 _**R**edis_ 和 _**P**ostgre**SQL**_ 容器，以及一个名为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
+
 > 💡 请确保 [_hosting_](https://github.com/Zongsoft/hosting) 的同级位置有如下仓库，因为 `zongsoft` 数据库创建后会加载运行这些仓库中的 _SQL_ 脚本，以完成建表和数据初始化。
 > - [adadministratives](https://github.com/Zongsoft/administratives)
 > - [discussions](https://github.com/Zongsoft/discussions)
@@ -88,7 +91,8 @@ dotnet tool update -g zongsoft.tools.deployer
 
 1. 打开 _**P**ower**S**hell_ 终端，使用如下命令启动 _Pod_ 容器化服务
 ```powershell
-podman kube play --replace .\zongsoft.pod.yaml
+podman kube play --replace .\zongsoft.pod-mysql.yaml
+podman kube play --replace .\zongsoft.pod-postgres.yaml
 ```
 
 2. 使用下列命令检查 _Pod_ 是否成功运行
@@ -115,5 +119,6 @@ podman ps --pod -a
 
 > 可通过下列命令关闭 _Pod_
 > ```powershell
-> podman play kube .\zongsoft.pod.yaml --down
+> podman kube play --down .\zongsoft.pod-mysql.yaml
+> podman kube play --down .\zongsoft.pod-postgres.yaml
 > ```
