@@ -120,7 +120,7 @@
 
 	<ItemGroup>
 		<PackageVersion Include="Zongsoft.Core" Version="7.22.0" />
-		<PackageVersion Include="Zongsoft.Web" Version="7.7.10" />
+		<PackageVersion Include="Zongsoft.Web" Version="7.7.11" />
 		<PackageVersion Include="Zongsoft.Plugins" Version="7.12.0" />
 		<PackageVersion Include="Zongsoft.Plugins.Web" Version="7.4.0" />
 	</ItemGroup>
