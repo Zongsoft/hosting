@@ -1,0 +1,1 @@
+podman kube down .\zongsoft.pod-mysql.yaml

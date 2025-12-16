@@ -1,0 +1,1 @@
+podman kube down .\zongsoft.pod-postgres.yaml

@@ -1,0 +1,1 @@
+podman kube play --replace .\zongsoft.pod-postgres.yaml
