@@ -402,3 +402,6 @@ FodyWeavers.xsd
 
 # MIME files in a specific host directory
 */**/mime
+
+# distributed file system
+.attachments/
