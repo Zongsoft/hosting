@@ -5,7 +5,7 @@ nuget:Zongsoft.Diagnostics@1.6.0
 nuget:Zongsoft.Intelligences@0.3.0
 
 [plugins zongsoft net]
-nuget:Zongsoft.Net@7.1.0
+nuget:Zongsoft.Net@7.2.0
 
 [plugins zongsoft data]
 nuget:Zongsoft.Data@7.8.0
@@ -35,7 +35,10 @@ nuget:Zongsoft.Reporting@7.0.0
 nuget:Zongsoft.Security@7.6.0
 
 [plugins zongsoft externals aliyun]
-nuget:Zongsoft.Externals.Aliyun@7.4.0
+nuget:Zongsoft.Externals.Aliyun@7.5.0
+
+[plugins zongsoft externals amazon]
+nuget:Zongsoft.Externals.Amazon@1.0.0
 
 [plugins zongsoft externals redis]
 nuget:Zongsoft.Externals.Redis@7.9.1
