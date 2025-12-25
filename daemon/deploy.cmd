@@ -30,7 +30,7 @@ dotnet deploy                      ^
 	-environment:%environment% ^
 	-debug:%debug%             ^
 	-edition:Debug             ^
-	-framework:net9.0          ^
+	-framework:net10.0         ^
 	-platform:%platform%       ^
 	-architecture:x64          ^
 	-destination:bin/^$^(edition^)/^$^(framework^) ^
