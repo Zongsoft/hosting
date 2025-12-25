@@ -119,6 +119,16 @@ podman ps --pod -a
 
 > 可通过下列命令关闭 _Pod_
 > ```powershell
-> podman kube play --down .\zongsoft.pod-mysql.yaml
-> podman kube play --down .\zongsoft.pod-postgres.yaml
+> podman kube down .\zongsoft.pod-mysql.yaml
+> podman kube down .\zongsoft.pod-postgres.yaml
+> ```
+
+> 停止所有容器服务
+> ```powershell
+> podman stop -a
+> ```
+
+> 停止并移除所有容器及卷
+> ```powershell
+> podman rm -afv
 > ```
