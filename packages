@@ -38,7 +38,7 @@ nuget:Zongsoft.Security@7.6.0
 nuget:Zongsoft.Externals.Aliyun@7.5.0
 
 [plugins zongsoft externals amazon]
-nuget:Zongsoft.Externals.Amazon@1.0.0
+nuget:Zongsoft.Externals.Amazon@1.0.1
 
 [plugins zongsoft externals redis]
 nuget:Zongsoft.Externals.Redis@7.9.1
