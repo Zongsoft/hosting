@@ -27,5 +27,5 @@ nuget:Zongsoft.Administratives@1.1.0
 nuget:Zongsoft.Administratives.Web@1.1.0
 
 [plugins zongsoft discussions]
-nuget:Zongsoft.Discussions@0.4.0
-nuget:Zongsoft.Discussions.Web@0.4.0
+nuget:Zongsoft.Discussions@0.5.0
+nuget:Zongsoft.Discussions.Web@0.5.0
