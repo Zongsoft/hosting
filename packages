@@ -1,5 +1,5 @@
 [plugins zongsoft diagnostics]
-nuget:Zongsoft.Diagnostics@1.6.0
+nuget:Zongsoft.Diagnostics@1.7.0
 
 [plugins zongsoft ai]
 nuget:Zongsoft.Intelligences@0.4.0
@@ -35,7 +35,7 @@ nuget:Zongsoft.Reporting@7.0.0
 nuget:Zongsoft.Security@7.6.0
 
 [plugins zongsoft externals aliyun]
-nuget:Zongsoft.Externals.Aliyun@7.6.0
+nuget:Zongsoft.Externals.Aliyun@7.7.0
 
 [plugins zongsoft externals amazon]
 nuget:Zongsoft.Externals.Amazon@1.0.3
@@ -47,7 +47,7 @@ nuget:Zongsoft.Externals.Redis@7.10.0
 nuget:Zongsoft.Externals.Polly@0.1.0
 
 [plugins zongsoft externals wechat]
-nuget:Zongsoft.Externals.Wechat@7.2.0
+nuget:Zongsoft.Externals.Wechat@7.4.0
 
 [plugins zongsoft externals lua]
 nuget:Zongsoft.Externals.Lua@2.2.0
@@ -62,12 +62,12 @@ nuget:Zongsoft.Externals.Scriban@2.0.0
 nuget:Zongsoft.Externals.ClosedXml@4.0.0
 
 [plugins zongsoft externals hangfire]
-nuget:Zongsoft.Externals.Hangfire@2.7.0
+nuget:Zongsoft.Externals.Hangfire@2.8.0
 [plugins zongsoft externals hangfire redis]
 nuget:Zongsoft.Externals.Hangfire.Storages.Redis@3.1.0
 
 [plugins zongsoft messaging mqtt]
-nuget:Zongsoft.Messaging.Mqtt@7.0.0
+nuget:Zongsoft.Messaging.Mqtt@7.1.0
 delete:Zongsoft.Messaging.Mqtt.option
 
 [plugins zongsoft messaging kafka]

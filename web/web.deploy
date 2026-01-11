@@ -17,7 +17,7 @@ nuget:Zongsoft.Security.Web@7.6.3
 nuget:Zongsoft.Security.Captcha@2.1.0
 
 [plugins zongsoft externals wechat]
-nuget:Zongsoft.Externals.Wechat.Web@7.1.0
+nuget:Zongsoft.Externals.Wechat.Web@7.2.0
 
 [plugins zongsoft externals hangfire]
 nuget:Zongsoft.Externals.Hangfire.Web@2.1.0
