@@ -8,7 +8,7 @@ nuget:Zongsoft.Intelligences@0.4.0
 nuget:Zongsoft.Net@7.2.0
 
 [plugins zongsoft data]
-nuget:Zongsoft.Data@7.10.0
+nuget:Zongsoft.Data@7.11.1
 
 [plugins zongsoft data mysql]
 nuget:Zongsoft.Data.MySql@7.5.0
@@ -17,7 +17,7 @@ nuget:Zongsoft.Data.MySql@7.5.0
 nuget:Zongsoft.Data.Influx@0.4.0
 
 [plugins zongsoft data tdengine]
-nuget:Zongsoft.Data.TDengine@2.3.0
+nuget:Zongsoft.Data.TDengine@2.4.0
 
 [plugins zongsoft data postgres]
 nuget:Zongsoft.Data.PostgreSql@1.0.0
