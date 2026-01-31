@@ -10,7 +10,7 @@
 		<PackageIcon>zongsoft-logo.png</PackageIcon>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-		<PackageIconUrl>https://github.com/Zongsoft/Guidelines/raw/master/zongsoft-logo(48x48).png</PackageIconUrl>
+		<PackageIconUrl>https://github.com/Zongsoft/guidelines/raw/main/zongsoft-logo(48x48).png</PackageIconUrl>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<IncludeSymbols>true</IncludeSymbols>
