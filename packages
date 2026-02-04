@@ -8,10 +8,10 @@ nuget:Zongsoft.Intelligences@0.4.0
 nuget:Zongsoft.Net@7.2.0
 
 [plugins zongsoft data]
-nuget:Zongsoft.Data@7.13.0
+nuget:Zongsoft.Data@7.14.0
 
 [plugins zongsoft data mysql]
-nuget:Zongsoft.Data.MySql@7.6.1
+nuget:Zongsoft.Data.MySql@7.6.2
 
 [plugins zongsoft data influx]
 nuget:Zongsoft.Data.Influx@0.5.0
@@ -44,7 +44,7 @@ nuget:Zongsoft.Externals.Amazon@1.0.3
 nuget:Zongsoft.Externals.Redis@7.10.0
 
 [plugins zongsoft externals polly]
-nuget:Zongsoft.Externals.Polly@0.1.0
+nuget:Zongsoft.Externals.Polly@0.3.0
 
 [plugins zongsoft externals wechat]
 nuget:Zongsoft.Externals.Wechat@7.4.0
