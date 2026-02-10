@@ -44,7 +44,7 @@ nuget:Zongsoft.Externals.Amazon@1.0.3
 nuget:Zongsoft.Externals.Redis@7.10.0
 
 [plugins zongsoft externals polly]
-nuget:Zongsoft.Externals.Polly@0.3.0
+nuget:Zongsoft.Externals.Polly@1.0.0
 
 [plugins zongsoft externals wechat]
 nuget:Zongsoft.Externals.Wechat@7.4.0
