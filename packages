@@ -8,22 +8,22 @@ nuget:Zongsoft.Intelligences@0.4.0
 nuget:Zongsoft.Net@7.2.0
 
 [plugins zongsoft data]
-nuget:Zongsoft.Data@7.14.0
+nuget:Zongsoft.Data@7.15.0
 
 [plugins zongsoft data mysql]
-nuget:Zongsoft.Data.MySql@7.6.2
+nuget:Zongsoft.Data.MySql@7.7.0
 
 [plugins zongsoft data influx]
-nuget:Zongsoft.Data.Influx@0.5.0
+nuget:Zongsoft.Data.Influx@0.6.0
 
 [plugins zongsoft data tdengine]
-nuget:Zongsoft.Data.TDengine@2.5.0
+nuget:Zongsoft.Data.TDengine@2.6.0
 
 [plugins zongsoft data postgres]
-nuget:Zongsoft.Data.PostgreSql@1.1.0
+nuget:Zongsoft.Data.PostgreSql@1.2.0
 
 [plugins zongsoft data clickhouse]
-nuget:Zongsoft.Data.ClickHouse@2.5.0
+nuget:Zongsoft.Data.ClickHouse@2.6.0
 
 [plugins zongsoft commands]
 nuget:Zongsoft.Commands@7.10.0
@@ -47,7 +47,7 @@ nuget:Zongsoft.Externals.Redis@7.10.0
 nuget:Zongsoft.Externals.Polly@1.0.0
 
 [plugins zongsoft externals wechat]
-nuget:Zongsoft.Externals.Wechat@7.4.0
+nuget:Zongsoft.Externals.Wechat@7.5.0
 
 [plugins zongsoft externals lua]
 nuget:Zongsoft.Externals.Lua@2.2.0
