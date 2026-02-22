@@ -3,7 +3,7 @@ var target = Argument("target", "default");
 var edition = Argument("edition", "Debug");
 var framework = Argument("framework", "net9.0");
 var architecture = Argument("architecture", "x64");
-var solutionFile  = "Zongsoft.Hosting.Daemon.sln";
+var solutionFile  = "Zongsoft.Hosting.Daemon.slnx";
 
 Task("clean")
 	.Description("清理解决方案")
