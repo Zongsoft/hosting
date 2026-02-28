@@ -1,5 +1,5 @@
 [plugins zongsoft diagnostics]
-nuget:Zongsoft.Diagnostics@1.7.0
+nuget:Zongsoft.Diagnostics@1.8.0
 
 [plugins zongsoft ai]
 nuget:Zongsoft.Intelligences@0.4.0
@@ -59,7 +59,7 @@ nuget:Zongsoft.Externals.Python@2.1.0
 nuget:Zongsoft.Externals.Scriban@2.0.0
 
 [plugins zongsoft externals closedxml]
-nuget:Zongsoft.Externals.ClosedXml@4.0.0
+nuget:Zongsoft.Externals.ClosedXml@4.1.0
 
 [plugins zongsoft externals hangfire]
 nuget:Zongsoft.Externals.Hangfire@2.8.0
