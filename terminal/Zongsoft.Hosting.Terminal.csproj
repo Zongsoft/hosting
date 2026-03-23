@@ -10,6 +10,7 @@
 		<PackageReference Include="Microsoft.Extensions.ObjectPool" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+		<PackageReference Include="Velopack" VersionOverride="0.0.1298" />
 	</ItemGroup>
 
 	<Choose>
