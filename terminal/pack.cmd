@@ -28,19 +28,19 @@ SET application=Zongsoft.Hosting.Terminal
 
 if "%platform%"=="linux" (
 	vpk [linux] pack ^
-		--packId %application%                       ^
-		--packVersion %version%                      ^
-		--mainExe %application%.exe                  ^
-		--runtime %platform%^-%architecture%^        ^
-		--channel %platform%                         ^
-		--packDir bin\\%edition%\\%framework%        ^
+		--packId %application%                     ^
+		--packVersion %version%                    ^
+		--mainExe %application%.exe                ^
+		--runtime %platform%-%architecture%^       ^
+		--channel %platform%                       ^
+		--packDir bin\\%edition%\\%framework%      ^
 		--outputDir publish\\%version%\\%platform%-%architecture%
 ) else (
 	vpk pack ^
-		--packId %application%                       ^
-		--packVersion %version%                      ^
-		--framework %framework%^-%architecture%^-sdk ^
-		--channel %platform%                         ^
-		--packDir bin\\%edition%\\%framework%        ^
+		--packId %application%                     ^
+		--packVersion %version%                    ^
+		--framework %framework%-%architecture%-sdk ^
+		--channel %platform%                       ^
+		--packDir bin\\%edition%\\%framework%      ^
 		--outputDir publish\\%version%\\%platform%-%architecture%
 )
