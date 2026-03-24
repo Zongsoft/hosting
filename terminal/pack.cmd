@@ -1,9 +1,14 @@
 @echo off
 
+:platform_label
 SET /p platform=Please enter the platform(win/linux/osx) you want to publish: 
 if "%platform%"=="" (SET platform=win)
 if /i "%platform%"=="window" (SET platform=win)
 if /i "%platform%"=="windows" (SET platform=win)
+if /i "%platform%"=="osx" (
+	echo Error: The '%platform%' operating system platform is not supported.
+	goto platform_label
+)
 
 SET /p architecture=Please enter the architecture(x64/arm64) you want to publish: 
 if "%architecture%"=="" (SET architecture=x64)
@@ -22,9 +27,9 @@ SET framework=net10.0
 SET application=Zongsoft.Hosting.Terminal
 
 vpk pack ^
-	--packId %application%                  ^
-	--packVersion %version%                 ^
-	--framework %framework%^-%architecture% ^
-	--channel %platform%                    ^
-	--packDir bin\\%edition%\\%framework%   ^
+	--packId %application%                       ^
+	--packVersion %version%                      ^
+	--framework %framework%^-%architecture%^-sdk ^
+	--channel %platform%                         ^
+	--packDir bin\\%edition%\\%framework%        ^
 	--outputDir publish\\%version%\\%platform%-%architecture%
