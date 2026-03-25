@@ -25,11 +25,13 @@ if "%version%"=="" (
 SET edition=Debug
 SET framework=net10.0
 SET application=Zongsoft.Hosting.Terminal
+SET organization=Zongsoft
 
 if "%platform%"=="linux" (
 	vpk [linux] pack ^
 		--packId %application%                     ^
 		--packVersion %version%                    ^
+		--packAuthors %organization%               ^
 		--mainExe %application%.exe                ^
 		--runtime %platform%-%architecture%^       ^
 		--channel %platform%                       ^
@@ -39,6 +41,7 @@ if "%platform%"=="linux" (
 	vpk pack ^
 		--packId %application%                     ^
 		--packVersion %version%                    ^
+		--packAuthors %organization%               ^
 		--framework %framework%-%architecture%-sdk ^
 		--channel %platform%                       ^
 		--packDir bin\\%edition%\\%framework%      ^
