@@ -1,1 +1,0 @@
-podman kube down .\zongsoft.pod-redis.yaml
