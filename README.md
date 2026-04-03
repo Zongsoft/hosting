@@ -75,7 +75,7 @@ dotnet tool update -g zongsoft.tools.deployer
 
 ## 容器化
 
-由于一些插件需要使用到 _**R**edis_、_**M**y**SQL**_ 或 _**P**ostgre**SQL**_ 等，因此可以容器化这些依赖的服务。
+由于一些插件需要使用到 _**R**edis_、_**R**ust**FS**_、_**M**y**SQL**_ 或 _**P**ostgre**SQL**_ 等，因此可以容器化这些依赖的服务。
 
 > 建议安装 _**P**odman_ _**CLI**_ 进行容器化处理，下面是它的下载地址：
 > - https://podman.io
@@ -100,6 +100,8 @@ dotnet tool update -g zongsoft.tools.deployer
 podman kube play --replace .\zongsoft.pod-mysql.yaml
 podman kube play --replace .\zongsoft.pod-postgres.yaml
 ```
+
+> 💡 使用 `zongsoft.pod(start).cmd` 和 `zongsoft.pod(stop).cmd` 脚本可以更方便的启用或停止指定的容器。
 
 2. 使用下列命令检查 _Pod_ 是否成功运行
 > 💡 启动成功后稍等一会再连接数据库，因为建表和初始化数据的 _SQL_ 脚本可能需要运行一会。
@@ -137,4 +139,10 @@ podman ps --pod -a
 > 停止并移除所有容器及卷
 > ```powershell
 > podman rm -afv
+> ```
+
+> 删除本地映像
+> ```powershell
+> podman images
+> podman rmi rustfs/rustfs:latest
 > ```
