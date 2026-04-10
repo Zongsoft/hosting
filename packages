@@ -8,22 +8,22 @@ nuget:Zongsoft.Intelligences@0.4.0
 nuget:Zongsoft.Net@7.2.0
 
 [plugins zongsoft data]
-nuget:Zongsoft.Data@7.19.2
+nuget:Zongsoft.Data@7.21.0
 
 [plugins zongsoft data mysql]
-nuget:Zongsoft.Data.MySql@7.8.0
+nuget:Zongsoft.Data.MySql@7.8.1
 
 [plugins zongsoft data sqlite]
-nuget:Zongsoft.Data.SQLite@3.2.0
+nuget:Zongsoft.Data.SQLite@3.2.1
 
 [plugins zongsoft data tdengine]
-nuget:Zongsoft.Data.TDengine@2.7.0
+nuget:Zongsoft.Data.TDengine@2.7.1
 
 [plugins zongsoft data postgres]
-nuget:Zongsoft.Data.PostgreSql@1.3.0
+nuget:Zongsoft.Data.PostgreSql@1.3.1
 
 [plugins zongsoft data clickhouse]
-nuget:Zongsoft.Data.ClickHouse@2.7.0
+nuget:Zongsoft.Data.ClickHouse@2.7.1
 
 [plugins zongsoft commands]
 nuget:Zongsoft.Commands@7.12.1
