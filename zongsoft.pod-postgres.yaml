@@ -36,7 +36,7 @@ spec:
       args: ["--requirepass", "$(REDIS_PASSWORD)"]
 
     - name: postgres
-      image: postgres:18.0
+      image: postgres:18.3
       ports:
         - containerPort: 5432
           protocol: TCP
