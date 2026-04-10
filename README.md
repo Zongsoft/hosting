@@ -83,6 +83,41 @@ dotnet tool update -g zongsoft.tools.deployer
 
 > 💡 如果是 _**W**indows_ 环境，请确保安装了 [_WSL-2_](https://learn.microsoft.com/zh-cn/windows/wsl/install)。
 
+### 镜像配置
+
+基于某些众所周知的国情，务必先配置 _**D**ocker_ 镜像，步骤如下：
+
+1. 进入虚拟机
+
+	```shell
+	podman machine ssh
+	```
+
+2. 编辑容器注册表文件
+
+	```bash
+	sudo vi /etc/containers/registries.conf
+	```
+
+	> 编辑该文件内容大致如下：
+
+	```toml
+	[[registry]]
+	  prefix = "docker.io"
+	  location = "docker.io"
+
+	[[registry.mirror]]
+	  location = "docker.m.daocloud.io"
+	```
+
+3. 退出虚拟机
+4. 重启虚拟机
+	```shell
+	podman machine stop
+	podman machine start
+	```
+
+### 容器文件
 
 我们提供了按数据库分类的 _**P**od_ 文件：
 - [_zongsoft.pod-mysql.yaml_](./zongsoft.pod-mysql.yaml) 该文件定义了 _**R**edis_ 和 _**M**ySQL_ 容器，以及一个为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
@@ -96,7 +131,7 @@ dotnet tool update -g zongsoft.tools.deployer
 ### 操作步骤
 
 1. 打开 _**P**ower**S**hell_ 终端，使用如下命令启动 _Pod_ 容器化服务
-```powershell
+```shell
 podman kube play --replace .\zongsoft.pod-mysql.yaml
 podman kube play --replace .\zongsoft.pod-postgres.yaml
 ```
@@ -106,43 +141,43 @@ podman kube play --replace .\zongsoft.pod-postgres.yaml
 2. 使用下列命令检查 _Pod_ 是否成功运行
 > 💡 启动成功后稍等一会再连接数据库，因为建表和初始化数据的 _SQL_ 脚本可能需要运行一会。
 
-```powershell
+```shell
 podman pod ps
 podman ps --pod -a
 ```
 
 > 如果启动失败，可通过下列命令查看日志
-> ```powershell
+> ```shell
 > podman logs zongsoft-redis
 > podman logs zongsoft-mysql
 > podman logs zongsoft-postgres
 > ```
 
 > 可通过下列命令进入指定容器的 _bash_
-> ```powershell
+> ```shell
 > podman exec -it zongsoft-redis bash
 > podman exec -it zongsoft-mysql bash
 > podman exec -it zongsoft-postgres bash
 > ```
 
 > 可通过下列命令关闭 _Pod_
-> ```powershell
+> ```shell
 > podman kube down .\zongsoft.pod-mysql.yaml
 > podman kube down .\zongsoft.pod-postgres.yaml
 > ```
 
 > 停止所有容器服务
-> ```powershell
+> ```shell
 > podman stop -a
 > ```
 
 > 停止并移除所有容器及卷
-> ```powershell
+> ```shell
 > podman rm -afv
 > ```
 
 > 删除本地映像
-> ```powershell
+> ```shell
 > podman images
 > podman rmi rustfs/rustfs:latest
 > ```
