@@ -32,7 +32,14 @@ if "%pod%"=="" (
 )
 
 if /i "%pod%"=="zongsoft" (
-	podman kube play --replace .\zongsoft.pod.yaml
+	podman build -t zongsoft .
+	podman run -d --name zongsoft ^
+		--systemd=always ^
+		-v D:/Zongsoft:/Zongsoft ^
+		-v D:/Zongsoft/hosting/.deploy/default/nginx/zongsoft.web.conf:/etc/nginx/conf.d/zongsoft.web.conf ^
+		-v D:/Zongsoft/hosting/.deploy/default/systemd/zongsoft.web.service:/etc/systemd/multi-user.target.wants/zongsoft.web.service ^
+		-v D:/Zongsoft/hosting/.deploy/default/systemd/zongsoft.daemon.service:/etc/systemd/multi-user.target.wants/zongsoft.daemon.service ^
+		zongsoft
 ) else if /i "%pod%"=="redis" (
 	podman kube play --replace .\zongsoft.pod-redis.yaml
 ) else if /i "%pod%"=="rustfs" (

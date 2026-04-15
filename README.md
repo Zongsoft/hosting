@@ -155,6 +155,7 @@ podman ps --pod -a
 
 > 可通过下列命令进入指定容器的 _bash_
 > ```shell
+> podman exec -it zongsoft bash
 > podman exec -it zongsoft-redis bash
 > podman exec -it zongsoft-mysql bash
 > podman exec -it zongsoft-postgres bash

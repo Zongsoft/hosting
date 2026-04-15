@@ -32,7 +32,8 @@ if "%pod%"=="" (
 )
 
 if /i "%pod%"=="zongsoft" (
-	podman kube down .\zongsoft.pod.yaml
+	podman stop zongsoft
+	podman rm zongsoft
 ) else if /i "%pod%"=="redis" (
 	podman kube down .\zongsoft.pod-redis.yaml
 ) else if /i "%pod%"=="rustfs" (
