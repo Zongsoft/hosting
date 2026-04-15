@@ -6,35 +6,6 @@ metadata:
     app: zongsoft
 spec:
   containers:
-    - name: rustfs
-      image: rustfs/rustfs:latest
-      ports:
-        - containerPort: 9000
-          protocol: TCP
-          hostPort: 9000
-        - containerPort: 9001
-          protocol: TCP
-          hostPort: 9001
-      env:
-        - name: RUSTFS_CONSOLE_ENABLE
-          value: "true"
-        - name: RUSTFS_ACCESS_KEY
-          value: "rustfsadmin"
-        - name: RUSTFS_SECRET_KEY
-          value: "rustfsadmin"
-
-    - name: redis
-      image: redis:latest
-      ports:
-        - containerPort: 6379
-          protocol: TCP
-          hostPort: 6379
-      env:
-        - name: REDIS_PASSWORD
-          value: "xxxxxx"
-      command: ["redis-server"]
-      args: ["--requirepass", "$(REDIS_PASSWORD)"]
-
     - name: mysql
       image: mysql:8.4.8
       ports:
