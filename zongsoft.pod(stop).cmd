@@ -22,7 +22,7 @@ set "RESET=%ESC%[0m"
 
 :pod_label
 SET pod=
-SET /p pod=Please enter the name of the Pod you want to stop(%GREEN%redis/mysql/postgre/rustfs%RESET%): 
+SET /p pod=Please enter the name of the Pod you want to stop(%GREEN%zongsoft/redis/mysql/postgre/rustfs%RESET%): 
 
 if "%pod%"=="" (
 	echo %DARK_RED%Error: %RED%The pod name cannot be empty.%RESET%
@@ -31,7 +31,9 @@ if "%pod%"=="" (
 	goto pod_label
 )
 
-if /i "%pod%"=="redis" (
+if /i "%pod%"=="zongsoft" (
+	podman kube down .\zongsoft.pod.yaml
+) else if /i "%pod%"=="redis" (
 	podman kube down .\zongsoft.pod-redis.yaml
 ) else if /i "%pod%"=="rustfs" (
 	podman kube down .\zongsoft.pod-rustfs.yaml
