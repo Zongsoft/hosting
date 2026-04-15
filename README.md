@@ -120,8 +120,11 @@ dotnet tool update -g zongsoft.tools.deployer
 ### 容器文件
 
 我们提供了按数据库分类的 _**P**od_ 文件：
-- [_zongsoft.pod-mysql.yaml_](./zongsoft.pod-mysql.yaml) 该文件定义了 _**R**edis_ 和 _**M**ySQL_ 容器，以及一个为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
-- [_zongsoft.pod-postgres.yaml_](./zongsoft.pod-postgres.yaml) 该文件定义了 _**R**edis_ 和 _**P**ostgre**SQL**_ 容器，以及一个名为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
+- [_zongsoft.pod-redis.yaml_](./zongsoft.pod-redis.yaml) 该文件定义了 _**R**edis_ 容器，确保开箱即用。
+- [_zongsoft.pod-rustfs.yaml_](./zongsoft.pod-rustfs.yaml) 该文件定义了 _**R**ust**FS**_ 分布式文件系统容器，确保开箱即用。
+
+- [_zongsoft.pod-mysql.yaml_](./zongsoft.pod-mysql.yaml) 该文件定义了 _**M**ySQL_ 数据库容器，以及一个为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
+- [_zongsoft.pod-postgres.yaml_](./zongsoft.pod-postgres.yaml) 该文件定义了 _**P**ostgre**SQL**_ 数据库容器，以及一个名为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
 
 > 💡 请确保 [_hosting_](https://github.com/Zongsoft/hosting) 的同级位置有如下仓库，因为 `zongsoft` 数据库创建后会加载运行这些仓库中的 _SQL_ 脚本，以完成建表和数据初始化。
 > - [adadministratives](https://github.com/Zongsoft/administratives)
@@ -132,6 +135,7 @@ dotnet tool update -g zongsoft.tools.deployer
 
 1. 打开 _**P**ower**S**hell_ 终端，使用如下命令启动 _Pod_ 容器化服务
 ```shell
+podman kube play --replace .\zongsoft.pod-redis.yaml
 podman kube play --replace .\zongsoft.pod-mysql.yaml
 podman kube play --replace .\zongsoft.pod-postgres.yaml
 ```
@@ -148,6 +152,7 @@ podman ps --pod -a
 
 > 如果启动失败，可通过下列命令查看日志
 > ```shell
+> podman logs zongsoft
 > podman logs zongsoft-redis
 > podman logs zongsoft-mysql
 > podman logs zongsoft-postgres
@@ -163,6 +168,7 @@ podman ps --pod -a
 
 > 可通过下列命令关闭 _Pod_
 > ```shell
+> podman kube down .\zongsoft.pod-redis.yaml
 > podman kube down .\zongsoft.pod-mysql.yaml
 > podman kube down .\zongsoft.pod-postgres.yaml
 > ```
