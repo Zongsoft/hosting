@@ -16,4 +16,4 @@ RUN mkdir -p /etc/nginx/conf.d \
 
 WORKDIR /Zongsoft/hosting
 
-CMD ["tail", "-f", "/dev/null"]
+CMD ["/usr/sbin/init"]
