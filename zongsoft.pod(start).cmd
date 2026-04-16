@@ -22,7 +22,7 @@ set "RESET=%ESC%[0m"
 
 :pod_label
 SET pod=
-SET /p pod=Please enter the name of the Pod you want to start(%GREEN%zongsoft/redis/mysql/postgre/rustfs%RESET%): 
+SET /p pod=Please enter the name of the Pod you want to start(%GREEN%host/redis/mysql/postgre/rustfs%RESET%): 
 
 if "%pod%"=="" (
 	echo %DARK_RED%Error: %RED%The pod name cannot be empty.%RESET%
@@ -31,15 +31,16 @@ if "%pod%"=="" (
 	goto pod_label
 )
 
-if /i "%pod%"=="zongsoft" (
+if /i "%pod%"=="host" (
 	podman build -t zongsoft .
 	podman run -d --name zongsoft ^
 		--privileged ^
-		--systemd=always ^
+		--cgroupns=host ^
+		-v /sys/fs/cgroup:/sys/fs/cgroup:rw ^
 		-v D:/Zongsoft:/Zongsoft ^
-		-v D:/Zongsoft/hosting/.deploy/default/nginx/zongsoft.web.conf:/etc/nginx/conf.d/zongsoft.web.conf:ro ^
-		-v D:/Zongsoft/hosting/.deploy/default/systemd/zongsoft.web.service:/etc/systemd/multi-user.target.wants/zongsoft.web.service:ro ^
-		-v D:/Zongsoft/hosting/.deploy/default/systemd/zongsoft.daemon.service:/etc/systemd/multi-user.target.wants/zongsoft.daemon.service:ro ^
+		-v D:/Zongsoft/hosting/.deploy/default/nginx/zongsoft.web.conf:/etc/nginx/conf.d/zongsoft.web.conf ^
+		-v D:/Zongsoft/hosting/.deploy/default/systemd/zongsoft.web.service:/etc/systemd/system/zongsoft.web.service ^
+		-v D:/Zongsoft/hosting/.deploy/default/systemd/zongsoft.daemon.service:/etc/systemd/system/zongsoft.daemon.service ^
 		zongsoft
 ) else if /i "%pod%"=="redis" (
 	podman kube play --replace .\zongsoft.pod-redis.yaml
