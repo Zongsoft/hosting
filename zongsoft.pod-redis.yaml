@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: zongsoft
+  name: zongsoft.caching
   labels:
     app: zongsoft
 spec:
@@ -16,4 +16,4 @@ spec:
         - name: REDIS_PASSWORD
           value: "xxxxxx"
       command: ["redis-server"]
-      args: ["--requirepass", "$(REDIS_PASSWORD)"]
+      args: ["--bind", "0.0.0.0", "--requirepass", "$(REDIS_PASSWORD)"]

@@ -83,6 +83,30 @@ dotnet tool update -g zongsoft.tools.deployer
 
 > 💡 如果是 _**W**indows_ 环境，请确保安装了 [_WSL-2_](https://learn.microsoft.com/zh-cn/windows/wsl/install)。
 
+### 目录映射
+
+为方便开发，建议将宿主机中的开发目录映射到虚拟机的根目录中，操作步骤：
+
+- 进入虚拟机，编辑 `/etc/fstab` 文件：
+
+	```shell
+	sudo vi /etc/fstab
+	```
+
+- 在文件末尾追加 _(示例)_：
+
+	```plaintext
+	/mnt/d/Automao  /Automao  none bind 0 0
+	/mnt/d/Zongsoft /Zongsoft none bind 0 0
+	```
+
+- 重启虚拟机
+
+	```shell
+	podman machine stop
+	podman machine start
+	```
+
 ### 镜像配置
 
 基于某些众所周知的国情，务必先配置 _**D**ocker_ 镜像，步骤如下：
@@ -110,8 +134,7 @@ dotnet tool update -g zongsoft.tools.deployer
 	  location = "docker.m.daocloud.io"
 	```
 
-3. 退出虚拟机
-4. 重启虚拟机
+3. 退出并重启虚拟机
 	```shell
 	podman machine stop
 	podman machine start
@@ -119,7 +142,7 @@ dotnet tool update -g zongsoft.tools.deployer
 
 ### 容器文件
 
-我们提供了按数据库分类的 _**P**od_ 文件：
+我们提供了一些 _**P**od_ 容器文件：
 - [_zongsoft.pod-redis.yaml_](./zongsoft.pod-redis.yaml) 该文件定义了 _**R**edis_ 容器，确保开箱即用。
 - [_zongsoft.pod-rustfs.yaml_](./zongsoft.pod-rustfs.yaml) 该文件定义了 _**R**ust**FS**_ 分布式文件系统容器，确保开箱即用。
 
@@ -152,18 +175,18 @@ podman ps --pod -a
 
 > 如果启动失败，可通过下列命令查看日志
 > ```shell
-> podman logs zongsoft
-> podman logs zongsoft-redis
-> podman logs zongsoft-mysql
-> podman logs zongsoft-postgres
+> podman logs host
+> podman logs zongsoft.caching-redis
+> podman logs zongsoft.data-mysql
+> podman logs zongsoft.data-postgres
 > ```
 
 > 可通过下列命令进入指定容器的 _bash_
 > ```shell
-> podman exec -it zongsoft bash
-> podman exec -it zongsoft-redis bash
-> podman exec -it zongsoft-mysql bash
-> podman exec -it zongsoft-postgres bash
+> podman exec -it host bash
+> podman exec -it zongsoft.caching-redis bash
+> podman exec -it zongsoft.data-mysql bash
+> podman exec -it zongsoft.data-postgres bash
 > ```
 
 > 可通过下列命令关闭 _Pod_
@@ -185,6 +208,5 @@ podman ps --pod -a
 
 > 删除本地映像
 > ```shell
-> podman images
 > podman rmi rustfs/rustfs:latest
 > ```
