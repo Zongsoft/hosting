@@ -16,4 +16,10 @@ spec:
         - name: REDIS_PASSWORD
           value: "xxxxxx"
       command: ["redis-server"]
-      args: ["--bind", "0.0.0.0", "--requirepass", "$(REDIS_PASSWORD)"]
+      args:
+        - "--bind"
+        - "0.0.0.0"
+        - "--requirepass"
+        - "$(REDIS_PASSWORD)"
+        - "--protected-mode"
+        - "no"
