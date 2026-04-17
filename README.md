@@ -83,6 +83,60 @@ dotnet tool update -g zongsoft.tools.deployer
 
 > 💡 如果是 _**W**indows_ 环境，请确保安装了 [_WSL-2_](https://learn.microsoft.com/zh-cn/windows/wsl/install)。
 
+### 网络模式
+
+在 `%USERPROFILE%` 目录中可能存在名为 `.wslconfig` 文件，该文件可能指定了 _WSL_ 虚拟机的网络模式，大致如下所示：
+
+```ini
+[wsl2]
+networkingMode=Mirrored
+dnsTunneling=true
+firewall=false
+autoProxy=true
+```
+
+💡 **注意**：这表明 _WSL_ 虚拟机的网络模式为 _镜像_ 模式，这种模式下的多个容器实例之间网络很可能无法互通，即使在 `.wslconfig` 文件中添加 `hostAddressLoopback=true` 选项，同时在 `.yaml` 容器文件中指定 `hostNetwork: true` 参数也无济于事，更稳妥的方案是采用 `NAT` 网络模式。下面是重置 _WSL_ 虚拟机网络模式为 `NAT` 模式的操作步骤。
+
+1. 删除 `.wslconfig` 文件并重启
+
+> 在宿主机的 _**P**ower**S**hell_ 中执行以下命令：
+
+```shell
+# 首先关闭 WSL 实例
+wsl --shutdown
+
+# 2. 删除用户目录下的 .wslconfig 文件
+# 方法1：直接删除（推荐）
+rm $env:USERPROFILE\.wslconfig -Force
+
+# 方法2：如果方法1失败，手动删除
+# 在文件资源管理器地址栏输入：%USERPROFILE%
+# 找到并删除 .wslconfig 文件（需要显示隐藏文件）
+
+# 3. 重置网络设置（执行完下面两步后可能需要重启电脑）
+netsh winsock reset
+netsh int ip reset
+
+# 4. 重启 WSL
+wsl
+```
+
+2. 检查网络情况
+
+> 重启后，在宿主机的 _**P**ower**S**hell_ 中执行以下命令：
+
+```shell
+# 检查 WSL 网络接口状态
+wsl ip addr show eth0
+
+# 检查某个端口是否可访问(以6379为例)
+wsl ss -tlnp | grep ':6379'
+```
+
+> 预期结果：
+> - 返回的 `eth0` 网络接口状态应该变为 `UP`
+> - 应该能看到 `inet` 地址 _(通常为 `172.x.x.x` 范围)_
+
 ### 目录映射
 
 为方便开发，建议将宿主机中的开发目录映射到虚拟机的根目录中，操作步骤：
