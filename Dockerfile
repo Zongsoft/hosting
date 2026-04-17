@@ -3,15 +3,15 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-	apt-get install -y --no-install-recommends \
-		systemd \
-		nginx \
-		curl \
-		wget && \
-	apt-get clean && rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends \
+    	systemd \
+    	nginx \
+    	curl \
+    	wget && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN ln -sf /lib/systemd/systemd /sbin/init && \
-	ln -sf /lib/systemd/systemd /bin/systemd
+    ln -sf /lib/systemd/systemd /bin/systemd
 
 WORKDIR /Zongsoft/hosting
 
