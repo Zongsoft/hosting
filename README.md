@@ -97,31 +97,33 @@ autoProxy=true
 
 💡 **注意**：这表明 _WSL_ 虚拟机的网络模式为 _镜像_ 模式，这种模式下的多个容器实例之间网络很可能无法互通，即使在 `.wslconfig` 文件中添加 `hostAddressLoopback=true` 选项，同时在 `.yaml` 容器文件中指定 `hostNetwork: true` 参数也无济于事，更稳妥的方案是采用 `NAT` 网络模式。下面是重置 _WSL_ 虚拟机网络模式为 `NAT` 模式的操作步骤。
 
-1. 删除 `.wslconfig` 文件并重启
-
-> 在宿主机的 _**P**ower**S**hell_ 中执行以下命令：
+1. 关闭 _WSL_ 虚拟机
 
 ```shell
-# 首先关闭 WSL 实例
 wsl --shutdown
-
-# 2. 删除用户目录下的 .wslconfig 文件
-# 方法1：直接删除（推荐）
-rm $env:USERPROFILE\.wslconfig -Force
-
-# 方法2：如果方法1失败，手动删除
-# 在文件资源管理器地址栏输入：%USERPROFILE%
-# 找到并删除 .wslconfig 文件（需要显示隐藏文件）
-
-# 3. 重置网络设置（执行完下面两步后可能需要重启电脑）
-netsh winsock reset
-netsh int ip reset
-
-# 4. 重启 WSL
-wsl
 ```
 
-2. 检查网络情况
+2. 删除 `.wslconfig` 文件
+
+	- 方式一：在文件资源管理器地址栏输入：`%USERPROFILE%`，找到并删除 `.wslconfig` 文件。
+		> 需要在资源管理器的选项设置中开启显示隐藏文件。
+
+	- 方式二：在宿主机的 _**P**ower**S**hell_ 中执行下列命令进行删除：
+		> ```shell
+		> rm $env:USERPROFILE\.wslconfig -Force
+		> ```
+
+3. 重置网络设置
+
+> 在宿主机的 _**P**ower**S**hell_ 中执行以下命令：
+> 注：执行完下面两步后可能需要重启电脑。
+
+```shell
+netsh winsock reset
+netsh int ip reset
+```
+
+4. 检查网络情况
 
 > 重启后，在宿主机的 _**P**ower**S**hell_ 中执行以下命令：
 
@@ -201,8 +203,8 @@ wsl ss -tlnp | grep ':6379'
 ### 容器文件
 
 我们提供了一些 _**P**od_ 容器文件：
-- [_zongsoft.pod-redis.yaml_](./zongsoft.pod-redis.yaml) 该文件定义了 _**R**edis_ 容器，确保开箱即用。
-- [_zongsoft.pod-rustfs.yaml_](./zongsoft.pod-rustfs.yaml) 该文件定义了 _**R**ust**FS**_ 分布式文件系统容器，确保开箱即用。
+- [_zongsoft.pod-redis.yaml_](./zongsoft.pod-redis.yaml) 该文件定义了 _**R**edis_ 分布式缓存容器。
+- [_zongsoft.pod-rustfs.yaml_](./zongsoft.pod-rustfs.yaml) 该文件定义了 _**R**ust**FS**_ 分布式文件系统容器。
 
 - [_zongsoft.pod-mysql.yaml_](./zongsoft.pod-mysql.yaml) 该文件定义了 _**M**ySQL_ 数据库容器，以及一个为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
 - [_zongsoft.pod-postgres.yaml_](./zongsoft.pod-postgres.yaml) 该文件定义了 _**P**ostgre**SQL**_ 数据库容器，以及一个名为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
