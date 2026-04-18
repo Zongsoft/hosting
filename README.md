@@ -185,6 +185,10 @@ wsl ss -tlnp | grep ':6379'
 	  location = "docker.io"
 
 	[[registry.mirror]]
+	  prefix = "mcr.microsoft.com"
+	  location = "mcr.m.daocloud.io"
+
+	[[registry.mirror]]
 	  location = "docker.m.daocloud.io"
 	```
 
