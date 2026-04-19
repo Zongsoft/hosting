@@ -8,6 +8,13 @@ spec:
       image: dotnet/sdk:10.0
       securityContext:
         privileged: true
+      ports:
+        - containerPort: 8080
+          hostPort: 8080
+        - containerPort: 7969
+          hostPort: 7969
+        - containerPort: 6379
+          hostPort: 6379
       env:
         - name: container
           value: podman
@@ -17,7 +24,7 @@ spec:
       args:
         - "-c"
         - |
-          apt-get update && apt-get install -y --no-install-recommends systemd nginx redis-server
+          apt-get update && apt-get install -y --no-install-recommends wget unzip systemd nginx redis-server
           apt-get clean && rm -rf /var/lib/apt/lists/*
 
           ln -sf /lib/systemd/systemd /sbin/init
@@ -27,7 +34,12 @@ spec:
           ln -sf /Zongsoft/hosting/.deploy/default/systemd/zongsoft.daemon.service /etc/systemd/system/
           ln -sf /Zongsoft/hosting/.deploy/default/nginx/zongsoft.web.conf /etc/nginx/conf.d/
 
+          sed -i 's/# requirepass foobared/requirepass xxxxxx/' /etc/redis/redis.conf
+          sed -i 's/^bind 127.0.0.1 -::1$/bind 0.0.0.0 -::1/' /etc/redis/redis.conf
+          sed -i 's/^protected-mode yes$/protected-mode no/' /etc/redis/redis.conf
+
           exec /sbin/init
+          systemctl enable redis
       volumeMounts:
         - mountPath: /Zongsoft
           name: zongsoft-volume
