@@ -5,42 +5,58 @@ metadata:
 spec:
   initContainers:
     - name: setup-systemd
-      image: mcr.microsoft.com/dotnet/sdk:10.0
+      image: dotnet/sdk:10.0
       command: ["/bin/bash"]
       args:
         - "-c"
         - |
           apt-get update > /dev/null 2>&1 && apt-get install -y systemd > /dev/null 2>&1
-          mkdir -p /etc/systemd/system/multi-user.target.wants
 
           ln -sf /Zongsoft/hosting/.deploy/default/systemd/zongsoft.web.service /etc/systemd/system/
           ln -sf /Zongsoft/hosting/.deploy/default/systemd/zongsoft.daemon.service /etc/systemd/system/
 
-          systemctl enable zongsoft.web.service
-          systemctl enable zongsoft.daemon.service
+          chown 101:101 /Zongsoft/hosting/.deploy/default/nginx/zongsoft.web.conf
+          chmod 644 /Zongsoft/hosting/.deploy/default/nginx/zongsoft.web.conf
       volumeMounts:
         - mountPath: /Zongsoft
           name: zongsoft-volume
 
   containers:
     - name: hosting
-      image: mcr.microsoft.com/dotnet/sdk:10.0
+      image: dotnet/sdk:10.0
       command: ["sleep"]
       args: ["infinity"]  # 保持容器运行，以便后续操作
       volumeMounts:
         - mountPath: /Zongsoft
           name: zongsoft-volume
 
-    # Nginx 反向代理容器
     - name: nginx
       image: nginx:latest
       ports:
         - containerPort: 8080
       volumeMounts:
         - mountPath: /etc/nginx/conf.d/zongsoft.web.conf
-          subPath: zongsoft.web.conf
+          subPath: hosting/.deploy/default/nginx/zongsoft.web.conf
           name: zongsoft-volume
           readOnly: true
+
+    - name: redis
+      image: redis:latest
+      ports:
+        - containerPort: 6379
+          protocol: TCP
+          hostPort: 6379
+      env:
+        - name: REDIS_PASSWORD
+          value: "xxxxxx"
+      command: ["redis-server"]
+      args:
+        - "--bind"
+        - "0.0.0.0"
+        - "--requirepass"
+        - "$(REDIS_PASSWORD)"
+        - "--protected-mode"
+        - "no"
 
   volumes:
     - name: zongsoft-volume
