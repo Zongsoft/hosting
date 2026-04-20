@@ -20,6 +20,20 @@ set "DARK_CYAN=%ESC%[36m"
 
 set "RESET=%ESC%[0m"
 
+REM 定义容器共用的网络
+set "NETWORK=zongsoft-net"
+
+if %errorlevel% equ 1 (
+	podman network create %NETWORK%
+
+	if %errorlevel% equ 0 (
+		echo %DARK_GREEN%The podman network "%NETWORK%" created successfully.%RESET%
+	) else (
+		echo %DARK_RED%ERROR: Failed to create network "%NETWORK%"%RESET%.
+		exit /b 1
+	)
+)
+
 :pod_label
 SET pod=
 SET /p pod=Please enter the name of the Pod you want to start(%GREEN%host/redis/mysql/postgre/rustfs%RESET%): 
@@ -32,28 +46,19 @@ if "%pod%"=="" (
 )
 
 if /i "%pod%"=="host" (
-	podman build -t zongsoft.hosting .
-	podman run -d --name host ^
-		--privileged ^
-		--cgroupns=host ^
-		-v /sys/fs/cgroup:/sys/fs/cgroup:rw ^
-		-v D:/Zongsoft:/Zongsoft ^
-		-v D:/Zongsoft/hosting/.deploy/default/nginx/zongsoft.web.conf:/etc/nginx/conf.d/zongsoft.web.conf ^
-		-v D:/Zongsoft/hosting/.deploy/default/systemd/zongsoft.web.service:/etc/systemd/system/zongsoft.web.service ^
-		-v D:/Zongsoft/hosting/.deploy/default/systemd/zongsoft.daemon.service:/etc/systemd/system/zongsoft.daemon.service ^
-		zongsoft.hosting
+	podman kube play --network %NETWORK% --replace .\zongsoft.pod-host.yaml
 ) else if /i "%pod%"=="redis" (
-	podman kube play --replace .\zongsoft.pod-redis.yaml
+	podman kube play --network %NETWORK% --replace .\zongsoft.pod-redis.yaml
 ) else if /i "%pod%"=="rustfs" (
-	podman kube play --replace .\zongsoft.pod-rustfs.yaml
+	podman kube play --network %NETWORK% --replace .\zongsoft.pod-rustfs.yaml
 ) else if /i "%pod%"=="mysql" (
-	podman kube play --replace .\zongsoft.pod-mysql.yaml
+	podman kube play --network %NETWORK% --replace .\zongsoft.pod-mysql.yaml
 ) else if /i "%pod%"=="postgre" (
-	podman kube play --replace .\zongsoft.pod-postgres.yaml
+	podman kube play --network %NETWORK% --replace .\zongsoft.pod-postgres.yaml
 ) else if /i "%pod%"=="postgres" (
-	podman kube play --replace .\zongsoft.pod-postgres.yaml
+	podman kube play --network %NETWORK% --replace .\zongsoft.pod-postgres.yaml
 ) else if /i "%pod%"=="postgresql" (
-	podman kube play --replace .\zongsoft.pod-postgres.yaml
+	podman kube play --network %NETWORK% --replace .\zongsoft.pod-postgres.yaml
 ) else (
 	if /i "%pod%" neq "exit" (
 		echo %DARK_MAGENTA%Invalid pod name, please re-enter it.%RESET%

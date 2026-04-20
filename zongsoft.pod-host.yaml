@@ -6,25 +6,14 @@ spec:
   containers:
     - name: host
       image: dotnet/sdk:10.0
+      workingDir: /Zongsoft/hosting
       securityContext:
         privileged: true
-      ports:
-        - containerPort: 8080
-          hostPort: 8080
-        - containerPort: 7969
-          hostPort: 7969
-        - containerPort: 6379
-          hostPort: 6379
-      env:
-        - name: container
-          value: podman
-        - name: SYSTEMD_IGNORE_CHROOT
-          value: "1"
       command: ["/bin/bash"]
       args:
         - "-c"
         - |
-          apt-get update && apt-get install -y --no-install-recommends wget unzip systemd nginx redis-server
+          apt-get update && apt-get install -y --no-install-recommends net-tools redis-tools systemd nginx
           apt-get clean && rm -rf /var/lib/apt/lists/*
 
           ln -sf /lib/systemd/systemd /sbin/init
@@ -34,12 +23,14 @@ spec:
           ln -sf /Zongsoft/hosting/.deploy/default/systemd/zongsoft.daemon.service /etc/systemd/system/
           ln -sf /Zongsoft/hosting/.deploy/default/nginx/zongsoft.web.conf /etc/nginx/conf.d/
 
-          sed -i 's/# requirepass foobared/requirepass xxxxxx/' /etc/redis/redis.conf
-          sed -i 's/^bind 127.0.0.1 -::1$/bind 0.0.0.0 -::1/' /etc/redis/redis.conf
-          sed -i 's/^protected-mode yes$/protected-mode no/' /etc/redis/redis.conf
-
           exec /sbin/init
-          systemctl enable redis
+      env:
+        - name: http_proxy
+          value: "http://172.24.96.1:1080"
+        - name: https_proxy
+          value: "http://172.24.96.1:1080"
+        - name: no_proxy
+          value: "localhost,127.0.0.1,10.89.1.0/24,zongsoft.io,zongsoft.data,zongsoft.caching"
       volumeMounts:
         - mountPath: /Zongsoft
           name: zongsoft-volume
