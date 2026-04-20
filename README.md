@@ -203,70 +203,98 @@ wsl ss -tlnp | grep ':6379'
 ### 容器文件
 
 我们提供了一些 _**P**od_ 容器文件：
+- [_zongsoft.pod-host.yaml_](./zongsoft.pod-host.yaml) 该文件定义了一个包含 _.NET SDK 10_ 以及 `systemd`、`nginx` 等开发环境的容器。
+	> 💡 该容器定义了网络代理，你应该根据自己的实际情况编辑该文件中的代理设置。
+
 - [_zongsoft.pod-redis.yaml_](./zongsoft.pod-redis.yaml) 该文件定义了 _**R**edis_ 分布式缓存容器。
 - [_zongsoft.pod-rustfs.yaml_](./zongsoft.pod-rustfs.yaml) 该文件定义了 _**R**ust**FS**_ 分布式文件系统容器。
 
-- [_zongsoft.pod-mysql.yaml_](./zongsoft.pod-mysql.yaml) 该文件定义了 _**M**ySQL_ 数据库容器，以及一个为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
+- [_zongsoft.pod-mysql.yaml_](./zongsoft.pod-mysql.yaml) 该文件定义了 _**M**y**SQL**_ 数据库容器，以及一个为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
 - [_zongsoft.pod-postgres.yaml_](./zongsoft.pod-postgres.yaml) 该文件定义了 _**P**ostgre**SQL**_ 数据库容器，以及一个名为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
 
-> 💡 请确保 [_hosting_](https://github.com/Zongsoft/hosting) 的同级位置有如下仓库，因为 `zongsoft` 数据库创建后会加载运行这些仓库中的 _SQL_ 脚本，以完成建表和数据初始化。
+请确保 [_hosting_](https://github.com/Zongsoft/hosting) 的同级位置有如下仓库，因为 `zongsoft` 数据库创建后会加载运行这些仓库中的 _SQL_ 脚本，以完成建表和数据初始化。
+
 > - [adadministratives](https://github.com/Zongsoft/administratives)
 > - [discussions](https://github.com/Zongsoft/discussions)
 > - [framework](https://github.com/Zongsoft/framework)
 
 ### 操作步骤
 
-1. 打开 _**P**ower**S**hell_ 终端，使用如下命令启动 _Pod_ 容器化服务
-```shell
-podman kube play --replace .\zongsoft.pod-redis.yaml
-podman kube play --replace .\zongsoft.pod-mysql.yaml
-podman kube play --replace .\zongsoft.pod-postgres.yaml
-```
+使用 `zongsoft.pod(start).cmd` 和 `zongsoft.pod(stop).cmd` 脚本可以更方便的启用或停止指定的容器，并确保这些容器共享同个网络。
 
-> 💡 使用 `zongsoft.pod(start).cmd` 和 `zongsoft.pod(stop).cmd` 脚本可以更方便的启用或停止指定的容器。
+1. 在 _文件管理器_ 中双击 `zongsoft.pod(start).cmd` 文件，或者在 _命令提示符_ 中运行该脚本文件；
+	> 在提示中根据需要输入要启动的容器：
+	> - `host` 表示启动宿主应用程序的开发容器；
+	> - `redis` 表示启动 _**R**edis_ 分布式缓存容器；
+	> - `rustfs` 表示启动 _**R**ust**FS**_ 分布式文件容器；
+	> - `mysql`  表示启动 _**M**y**SQL**_ 数据库容器；
+	> - `postgres` 表示启动 _**P**ostgre**SQL**_ 数据库容器。
 
 2. 使用下列命令检查 _Pod_ 是否成功运行
-> 💡 启动成功后稍等一会再连接数据库，因为建表和初始化数据的 _SQL_ 脚本可能需要运行一会。
 
 ```shell
 podman pod ps
 podman ps --pod -a
 ```
 
-> 如果启动失败，可通过下列命令查看日志
+> - 💡 当 `host` 容器启动时会下载并初始化 _systemd_、_nginx_ 等基础服务，即使容器启动成功，而 _systemd_、_nginx_ 可能尚未准备就绪，建议稍等一会再进入 `podmapodman exec -it zongsoft-host bash` 容器虚拟机。
+> 	- 通过 `podman logs zongsoft-host` 命令查看其启动日志以确定加载进度。
+
+> - 💡 由于 _**M**y**SQL**_ 和 _**P**ostgre**SQL**_ 数据库容器在启动时会执行建表及初始化数据等 _SQL_ 操作，因此即使容器已显示启动成功，也建议稍等片刻再连接数据库，以确保相关 _SQL_ 脚本执行完成。
+
+3. 在 _文件管理器_ 中双击 `zongsoft.pod(stop).cmd` 文件，或者在 _命令提示符_ 中运行该脚本文件；
+	> 在提示中根据需要输入要关闭的容器：
+	> - `*` 表示关闭所有容器；
+	> - `host` 表示关闭宿主应用程序的开发容器；
+	> - `redis` 表示关闭 _**R**edis_ 分布式缓存容器；
+	> - `rustfs` 表示关闭 _**R**ust**FS**_ 分布式文件容器；
+	> - `mysql`  表示关闭 _**M**y**SQL**_ 数据库容器；
+	> - `postgres` 表示关闭 _**P**ostgre**SQL**_ 数据库容器。
+
+### 常用命令
+
+> - 查看容器日志
 > ```shell
-> podman logs host
+> podman logs zongsoft-host
 > podman logs zongsoft.caching-redis
 > podman logs zongsoft.data-mysql
 > podman logs zongsoft.data-postgres
 > ```
 
-> 可通过下列命令进入指定容器的 _bash_
+> - 进入指定容器的 _bash_
 > ```shell
-> podman exec -it host bash
+> podman exec -it zongsoft-host bash
 > podman exec -it zongsoft.caching-redis bash
 > podman exec -it zongsoft.data-mysql bash
 > podman exec -it zongsoft.data-postgres bash
 > ```
 
-> 可通过下列命令关闭 _Pod_
+> - 启动 _Pod_ 容器
+```shell
+podman kube play --replace .\zongsoft.pod-redis.yaml
+podman kube play --replace .\zongsoft.pod-mysql.yaml
+podman kube play --replace .\zongsoft.pod-postgres.yaml
+```
+
+> - 关闭 _Pod_ 容器
 > ```shell
+> podman kube down .\zongsoft.pod-host.yaml
 > podman kube down .\zongsoft.pod-redis.yaml
 > podman kube down .\zongsoft.pod-mysql.yaml
 > podman kube down .\zongsoft.pod-postgres.yaml
 > ```
 
-> 停止所有容器服务
+> - 停止所有容器
 > ```shell
 > podman stop -a
 > ```
 
-> 停止并移除所有容器及卷
+> - 停止并移除所有容器及卷
 > ```shell
 > podman rm -afv
 > ```
 
-> 删除本地映像
+> - 删除本地映像
 > ```shell
 > podman rmi rustfs/rustfs:latest
 > ```

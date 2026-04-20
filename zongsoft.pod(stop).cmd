@@ -46,11 +46,8 @@ if /i "%pod%"=="host" (
 ) else if /i "%pod%"=="postgresql" (
 	podman kube down .\zongsoft.pod-postgres.yaml
 ) else if /i "%pod%"=="*" (
-	podman kube down .\zongsoft.pod-host.yaml
-	podman kube down .\zongsoft.pod-redis.yaml
-	podman kube down .\zongsoft.pod-rustfs.yaml
-	podman kube down .\zongsoft.pod-mysql.yaml
-	podman kube down .\zongsoft.pod-postgres.yaml
+	podman stop -a
+	podman rm -afv
 ) else (
 	if /i "%pod%" neq "exit" (
 		echo %DARK_MAGENTA%Invalid pod name, please re-enter it.%RESET%

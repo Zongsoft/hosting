@@ -13,7 +13,7 @@ spec:
       args:
         - "-c"
         - |
-          apt-get update && apt-get install -y --no-install-recommends net-tools redis-tools systemd nginx
+          apt-get update && apt-get install -y --no-install-recommends unzip net-tools redis-tools openssh-server systemd nginx
           apt-get clean && rm -rf /var/lib/apt/lists/*
 
           ln -sf /lib/systemd/systemd /sbin/init
