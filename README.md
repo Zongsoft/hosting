@@ -85,7 +85,7 @@ dotnet tool update -g zongsoft.tools.deployer
 
 ### 网络模式
 
-在 `%USERPROFILE%` 目录中可能存在名为 `.wslconfig` 文件，该文件可能指定了 _WSL_ 虚拟机的网络模式，大致如下所示：
+在 `%USERPROFILE%` 目录中可能存在名为 `.wslconfig` 文件，该文件中可能指定了 _WSL_ 的网络模式，譬如：
 
 ```ini
 [wsl2]
@@ -95,7 +95,7 @@ firewall=false
 autoProxy=true
 ```
 
-💡 **注意**：这表明 _WSL_ 虚拟机的网络模式为 _镜像_ 模式，这种模式下的多个容器实例之间网络很可能无法互通，即使在 `.wslconfig` 文件中添加 `hostAddressLoopback=true` 选项，同时在 `.yaml` 容器文件中指定 `hostNetwork: true` 参数也无济于事，更稳妥的方案是采用 `NAT` 网络模式。下面是重置 _WSL_ 虚拟机网络模式为 `NAT` 模式的操作步骤。
+💡 **注意**：这表明 _WSL_ 网络模式为 _镜像_ 模式，这种模式下的多个容器实例之间网络很可能无法互通，即使在 `.wslconfig` 文件中指定了 `hostAddressLoopback=true` 选项，同时在 `.yaml` 容器文件中也指定了 `hostNetwork: true` 参数都不行，更稳妥的方案是采用 `NAT` 网络模式。下面是重置 _WSL_ 网络模式为 `NAT` 模式的操作步骤。
 
 1. 关闭 _WSL_ 虚拟机
 
@@ -115,7 +115,7 @@ wsl --shutdown
 
 3. 重置网络设置
 
-> 在宿主机的 _**P**ower**S**hell_ 中执行以下命令：
+> 在宿主机的 _**P**ower**S**hell_ 中执行以下命令：<br />
 > 注：执行完下面两步后可能需要重启电脑。
 
 ```shell
@@ -141,7 +141,7 @@ wsl ss -tlnp | grep ':6379'
 
 ### 目录映射
 
-为方便开发，建议将宿主机中的开发目录映射到虚拟机的根目录中，操作步骤：
+为方便开发，可以将宿主机中的相关开发目录映射到虚拟机的根目录中，操作步骤：
 
 - 进入虚拟机，编辑 `/etc/fstab` 文件：
 
@@ -209,7 +209,7 @@ wsl ss -tlnp | grep ':6379'
 - [_zongsoft.pod-redis.yaml_](./zongsoft.pod-redis.yaml) 该文件定义了 _**R**edis_ 分布式缓存容器。
 - [_zongsoft.pod-rustfs.yaml_](./zongsoft.pod-rustfs.yaml) 该文件定义了 _**R**ust**FS**_ 分布式文件系统容器。
 
-- [_zongsoft.pod-mysql.yaml_](./zongsoft.pod-mysql.yaml) 该文件定义了 _**M**y**SQL**_ 数据库容器，以及一个为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
+- [_zongsoft.pod-mysql.yaml_](./zongsoft.pod-mysql.yaml) 该文件定义了 _**M**y**SQL**_ 数据库容器，以及一个名为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
 - [_zongsoft.pod-postgres.yaml_](./zongsoft.pod-postgres.yaml) 该文件定义了 _**P**ostgre**SQL**_ 数据库容器，以及一个名为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
 
 请确保 [_hosting_](https://github.com/Zongsoft/hosting) 的同级位置有如下仓库，因为 `zongsoft` 数据库创建后会加载运行这些仓库中的 _SQL_ 脚本，以完成建表和数据初始化。
@@ -220,11 +220,11 @@ wsl ss -tlnp | grep ':6379'
 
 ### 操作步骤
 
-使用 `zongsoft.pod(start).cmd` 和 `zongsoft.pod(stop).cmd` 脚本可以更方便的启用或停止指定的容器，并确保这些容器共享同个网络。
+使用 `zongsoft.pod(start).cmd` 和 `zongsoft.pod(stop).cmd` 脚本可以更方便的启用或停止指定的容器，并确保它创建的容器都共享同个网络。
 
 1. 在 _文件管理器_ 中双击 `zongsoft.pod(start).cmd` 文件，或者在 _命令提示符_ 中运行该脚本文件；
 	> 在提示中根据需要输入要启动的容器：
-	> - `host` 表示启动宿主应用程序的开发容器；
+	> - `host` 表示启动 _宿主应用程序_ 的开发容器；
 	> - `redis` 表示启动 _**R**edis_ 分布式缓存容器；
 	> - `rustfs` 表示启动 _**R**ust**FS**_ 分布式文件容器；
 	> - `mysql`  表示启动 _**M**y**SQL**_ 数据库容器；
@@ -240,12 +240,12 @@ podman ps --pod -a
 > - 💡 当 `host` 容器启动时会下载并初始化 _systemd_、_nginx_ 等基础服务，即使容器启动成功，而 _systemd_、_nginx_ 可能尚未准备就绪，建议稍等一会再进入 `podmapodman exec -it zongsoft-host bash` 容器虚拟机。
 > 	- 通过 `podman logs zongsoft-host` 命令查看其启动日志以确定加载进度。
 
-> - 💡 由于 _**M**y**SQL**_ 和 _**P**ostgre**SQL**_ 数据库容器在启动时会执行建表及初始化数据等 _SQL_ 操作，因此即使容器已显示启动成功，也建议稍等片刻再连接数据库，以确保相关 _SQL_ 脚本执行完成。
+> - 💡 由于 _**M**y**SQL**_ 和 _**P**ostgre**SQL**_ 数据库容器在启动时会执行建表及初始化数据等 _SQL_ 操作，因此即使容器已显示启动成功，也建议稍等片刻再连接数据库，以确保相关 _SQL_ 脚本已执行完成。
 
 3. 在 _文件管理器_ 中双击 `zongsoft.pod(stop).cmd` 文件，或者在 _命令提示符_ 中运行该脚本文件；
 	> 在提示中根据需要输入要关闭的容器：
 	> - `*` 表示关闭所有容器；
-	> - `host` 表示关闭宿主应用程序的开发容器；
+	> - `host` 表示关闭 _宿主应用程序_ 的开发容器；
 	> - `redis` 表示关闭 _**R**edis_ 分布式缓存容器；
 	> - `rustfs` 表示关闭 _**R**ust**FS**_ 分布式文件容器；
 	> - `mysql`  表示关闭 _**M**y**SQL**_ 数据库容器；
