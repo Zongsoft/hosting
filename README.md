@@ -224,17 +224,16 @@ wsl ss -tlnp | grep ':6379'
 
 1. 在 _文件管理器_ 中双击 `zongsoft.pod(start).cmd` 文件，或者在 _命令提示符_ 中运行该脚本文件；
 	> 在提示中根据需要输入要启动的容器：
-	> - `host` 表示启动 _宿主应用程序_ 的开发容器；
-	> - `redis` 表示启动 _**R**edis_ 分布式缓存容器；
-	> - `rustfs` 表示启动 _**R**ust**FS**_ 分布式文件容器；
-	> - `mysql`  表示启动 _**M**y**SQL**_ 数据库容器；
-	> - `postgres` 表示启动 _**P**ostgre**SQL**_ 数据库容器。
+	> - `host` 启动 _宿主应用程序_ 的开发容器；
+	> - `redis` 启动 _**R**edis_ 分布式缓存容器；
+	> - `rustfs` 启动 _**R**ust**FS**_ 分布式文件容器；
+	> - `mysql`  启动 _**M**y**SQL**_ 数据库容器；
+	> - `postgres` 启动 _**P**ostgre**SQL**_ 数据库容器。
 
 2. 使用下列命令检查 _Pod_ 是否成功运行
 
 ```shell
-podman pod ps
-podman ps --pod -a
+podman ps -a --pod
 ```
 
 > - 💡 当 `host` 容器启动时会下载并初始化 _systemd_、_nginx_ 等基础服务，即使容器启动成功，而 _systemd_、_nginx_ 可能尚未准备就绪，建议稍等一会再进入 `podmapodman exec -it zongsoft-host bash` 容器虚拟机。
@@ -244,57 +243,101 @@ podman ps --pod -a
 
 3. 在 _文件管理器_ 中双击 `zongsoft.pod(stop).cmd` 文件，或者在 _命令提示符_ 中运行该脚本文件；
 	> 在提示中根据需要输入要关闭的容器：
-	> - `*` 表示关闭所有容器；
-	> - `host` 表示关闭 _宿主应用程序_ 的开发容器；
-	> - `redis` 表示关闭 _**R**edis_ 分布式缓存容器；
-	> - `rustfs` 表示关闭 _**R**ust**FS**_ 分布式文件容器；
-	> - `mysql`  表示关闭 _**M**y**SQL**_ 数据库容器；
-	> - `postgres` 表示关闭 _**P**ostgre**SQL**_ 数据库容器。
+	> - `*` 关闭所有容器；
+	> - `host` 关闭 _宿主应用程序_ 的开发容器；
+	> - `redis` 关闭 _**R**edis_ 分布式缓存容器；
+	> - `rustfs` 关闭 _**R**ust**FS**_ 分布式文件容器；
+	> - `mysql`  关闭 _**M**y**SQL**_ 数据库容器；
+	> - `postgres` 关闭 _**P**ostgre**SQL**_ 数据库容器。
+
+#### 网络地址
+
+在容器中如果需要连接到其他容器中的服务，需要使用连接服务容器的 _**P**od_ 名作为其连接的网络地址。
+
+ _Pod_ 名 | 容器名
+----------|------
+`zongsoft`         | `zongsoft-host`
+`zongsoft.io`      | `zongsoft.io-rustfs`
+`zongsoft.data`    | `zongsoft.data-mysql`
+`zongsoft.data`    | `zongsoft.data-postgres`
+`zongsoft.caching` | `zongsoft.caching-redis`
+
+1. 进入 `zongsoft-host` 容器：
+
+	```shell
+	podman exec -it zongsoft-host bash
+	```
+
+2. 连接到其他容器服务
+
+	```shell
+	# 访问 RustFS 的管理页面（网址为 RustFS 容器的 Pod 名）
+	curl -L -A "Mozilla/5.0(Linux; x64)" http://zongsoft.io:9001
+
+	# 连接 Redis 服务（连接地址为 Redis 容器的 Pod 名）
+	redis-cli -h zongsoft.caching -p 6379
+	```
+
+3. 使用 _**R**edis_ 服务
+
+	```shell
+	zongsoft.caching:6379> auth xxxxxx
+	OK
+	zongsoft.caching:6379> get key
+	(nil)
+	```
 
 ### 常用命令
 
-> - 查看容器日志
-> ```shell
-> podman logs zongsoft-host
-> podman logs zongsoft.caching-redis
-> podman logs zongsoft.data-mysql
-> podman logs zongsoft.data-postgres
-> ```
+- 查看容器日志
 
-> - 进入指定容器的 _bash_
-> ```shell
-> podman exec -it zongsoft-host bash
-> podman exec -it zongsoft.caching-redis bash
-> podman exec -it zongsoft.data-mysql bash
-> podman exec -it zongsoft.data-postgres bash
-> ```
+	> ```shell
+	> podman logs zongsoft-host
+	> podman logs zongsoft.data-mysql
+	> podman logs zongsoft.data-postgres
+	> podman logs zongsoft.caching-redis
+	> ```
 
-> - 启动 _Pod_ 容器
-```shell
-podman kube play --replace .\zongsoft.pod-redis.yaml
-podman kube play --replace .\zongsoft.pod-mysql.yaml
-podman kube play --replace .\zongsoft.pod-postgres.yaml
-```
+- 进入指定容器的 _bash_
 
-> - 关闭 _Pod_ 容器
-> ```shell
-> podman kube down .\zongsoft.pod-host.yaml
-> podman kube down .\zongsoft.pod-redis.yaml
-> podman kube down .\zongsoft.pod-mysql.yaml
-> podman kube down .\zongsoft.pod-postgres.yaml
-> ```
+	> ```shell
+	> podman exec -it zongsoft-host bash
+	> podman exec -it zongsoft.data-mysql bash
+	> podman exec -it zongsoft.data-postgres bash
+	> podman exec -it zongsoft.caching-redis bash
+	> ```
 
-> - 停止所有容器
-> ```shell
-> podman stop -a
-> ```
+- 启动 _Pod_ 容器
 
-> - 停止并移除所有容器及卷
-> ```shell
-> podman rm -afv
-> ```
+	> ```shell
+	> podman kube play --replace .\zongsoft.pod-redis.yaml
+	> podman kube play --replace .\zongsoft.pod-mysql.yaml
+	> podman kube play --replace .\zongsoft.pod-postgres.yaml
+	> ```
 
-> - 删除本地映像
-> ```shell
-> podman rmi rustfs/rustfs:latest
-> ```
+- 关闭 _Pod_ 容器
+
+	> ```shell
+	> podman kube down .\zongsoft.pod-host.yaml
+	> podman kube down .\zongsoft.pod-redis.yaml
+	> podman kube down .\zongsoft.pod-mysql.yaml
+	> podman kube down .\zongsoft.pod-postgres.yaml
+	> ```
+
+- 停止所有容器
+
+	> ```shell
+	> podman stop -a
+	> ```
+
+- 停止并移除所有容器及卷
+
+	> ```shell
+	> podman rm -afv
+	> ```
+
+- 删除本地映像
+
+	> ```shell
+	> podman rmi rustfs:latest
+	> ```
