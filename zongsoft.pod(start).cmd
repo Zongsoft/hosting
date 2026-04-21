@@ -23,6 +23,8 @@ set "RESET=%ESC%[0m"
 REM 定义容器共用的网络
 set "NETWORK=zongsoft-net"
 
+podman network exists %NETWORK%
+
 if %errorlevel% equ 1 (
 	podman network create %NETWORK%
 
