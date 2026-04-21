@@ -19,9 +19,12 @@ spec:
           ln -sf /lib/systemd/systemd /sbin/init
           ln -sf /lib/systemd/systemd /bin/systemd
 
+          ln -sf /Zongsoft/hosting/.deploy/default/nginx/zongsoft.web.conf /etc/nginx/conf.d/
           ln -sf /Zongsoft/hosting/.deploy/default/systemd/zongsoft.web.service /etc/systemd/system/
           ln -sf /Zongsoft/hosting/.deploy/default/systemd/zongsoft.daemon.service /etc/systemd/system/
-          ln -sf /Zongsoft/hosting/.deploy/default/nginx/zongsoft.web.conf /etc/nginx/conf.d/
+
+          ln -sf /Zongsoft/hosting/.deploy/default/systemd/zongsoft.web.service /Zongsoft/hosting/web/default/
+          ln -sf /Zongsoft/hosting/.deploy/default/systemd/zongsoft.daemon.service /Zongsoft/hosting/daemon/bin/Debug/net10.0/
 
           exec /sbin/init
       env:
