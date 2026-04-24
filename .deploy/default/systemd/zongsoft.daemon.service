@@ -5,15 +5,14 @@ Description=The daemon of the Zongsoft.
 Type=simple
 WorkingDirectory=/Zongsoft/hosting/daemon/bin/Debug/net10.0
 ExecStartPre=/bin/mkdir -p /Zongsoft/hosting/daemon/bin/Debug/net10.0/logs
-ExecStartPre=/bin/chmod 755 /Zongsoft/hosting/daemon/bin/Debug/net10.0/logs
 ExecStart=dotnet /Zongsoft/hosting/daemon/bin/Debug/net10.0/Zongsoft.Hosting.Daemon.dll
 Restart=on-failure
 RestartSec=10
 KillSignal=SIGINT
 SyslogIdentifier=Zongsoft.Daemon
-DynamicUser=yes
-PrivateTmp=yes
-ReadWritePaths=/Zongsoft/hosting/daemon/bin/Debug/net10.0 /Zongsoft/hosting/daemon/bin/Debug/net10.0/logs
+DynamicUser=no
+PrivateTmp=no
+ReadWritePaths=/Zongsoft/hosting/daemon/bin/Debug/net10.0 /Zongsoft/hosting/daemon/bin/Debug/net10.0/logs /tmp
 
 Environment=Environment=development
 Environment=ASPNETCORE_ENVIRONMENT=development

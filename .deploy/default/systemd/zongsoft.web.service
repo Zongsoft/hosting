@@ -5,15 +5,14 @@ Description=The default web site of the Zongsoft.
 Type=simple
 WorkingDirectory=/Zongsoft/hosting/web/default
 ExecStartPre=/bin/mkdir -p /Zongsoft/hosting/web/default/logs
-ExecStartPre=/bin/chmod 755 /Zongsoft/hosting/web/default/logs
 ExecStart=dotnet /Zongsoft/hosting/web/default/Zongsoft.Hosting.Web.dll  --urls http://127.0.0.1:8069
 Restart=on-failure
 RestartSec=10
 KillSignal=SIGINT
 SyslogIdentifier=Zongsoft.Web
-DynamicUser=yes
-PrivateTmp=yes
-ReadWritePaths=/Zongsoft/hosting/web/default /Zongsoft/hosting/web/default/logs
+DynamicUser=no
+PrivateTmp=no
+ReadWritePaths=/Zongsoft/hosting/web/default /Zongsoft/hosting/web/default/logs /tmp
 
 Environment=Environment=development
 Environment=ASPNETCORE_ENVIRONMENT=development
