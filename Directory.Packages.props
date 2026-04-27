@@ -9,6 +9,8 @@
 		<PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="6.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.Systemd" Version="6.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Logging" Version="6.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
@@ -32,6 +34,8 @@
 		<PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="7.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="7.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.Systemd" Version="7.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="7.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
@@ -55,6 +59,8 @@
 		<PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="8.0.11" />
 		<PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="8.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.Systemd" Version="8.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3" />
@@ -78,6 +84,8 @@
 		<PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="9.0.2" />
 		<PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
 		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.2" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.2" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.2" />
 		<PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.2" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.2" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.2" />
@@ -101,6 +109,8 @@
 		<PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="10.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />

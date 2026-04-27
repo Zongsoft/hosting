@@ -21,6 +21,10 @@ SET value=
 SET /p value=Please enter the platform(windows/linux/mac) you want to deploy: 
 if "%value%" neq "" (SET platform=%value%)
 
+dotnet cake             ^
+	--edition=Debug ^
+	--platform=%platform%
+
 dotnet deploy                      ^
 	-verbosity:normal          ^
 	-overwrite:newest          ^

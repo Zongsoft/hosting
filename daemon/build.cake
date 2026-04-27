@@ -1,7 +1,8 @@
 var scheme = Argument("scheme", "default");
 var target = Argument("target", "default");
 var edition = Argument("edition", "Debug");
-var framework = Argument("framework", "net9.0");
+var platform = Argument("platform", "Windows");
+var framework = Argument("framework", "net10.0");
 var architecture = Argument("architecture", "x64");
 var solutionFile  = "Zongsoft.Hosting.Daemon.slnx";
 
@@ -18,7 +19,19 @@ Task("restore")
 	.Description("还原项目依赖")
 	.Does(() =>
 {
-	DotNetRestore(solutionFile);
+	var settings = new DotNetRestoreSettings
+	{
+		MSBuildSettings = new DotNetMSBuildSettings()
+	};
+
+	if(string.Equals(platform, "win", StringComparison.OrdinalIgnoreCase))
+		platform = "Windows";
+
+	if(!string.IsNullOrEmpty(platform))
+		settings.MSBuildSettings.WithProperty("DefineConstants", platform.ToUpperInvariant());
+
+	settings.MSBuildSettings.WithProperty("Platform", "Any CPU");
+	DotNetRestore(solutionFile, settings);
 });
 
 Task("build")
@@ -29,17 +42,19 @@ Task("build")
 {
 	var settings = new DotNetBuildSettings
 	{
-		NoRestore = true
+		NoRestore = true,
+		Configuration = edition,
+		MSBuildSettings = new DotNetMSBuildSettings()
 	};
 
-	DotNetBuild(solutionFile, settings);
-});
+	if(string.Equals(platform, "win", StringComparison.OrdinalIgnoreCase))
+		platform = "Windows";
 
-Task("deploy")
-	.Description("部署插件")
-	.Does(() =>
-{
-	DotNetTool(solutionFile, "deploy", $" -host:daemon -site:daemon -scheme:{scheme} -edition:{edition} -framework:{framework} -architecture:{architecture} -verbosity:quiet");
+	if(!string.IsNullOrEmpty(platform))
+		settings.MSBuildSettings.WithProperty("DefineConstants", platform.ToUpperInvariant());
+
+	settings.MSBuildSettings.WithProperty("Platform", "Any CPU");
+	DotNetBuild(solutionFile, settings);
 });
 
 Task("default")

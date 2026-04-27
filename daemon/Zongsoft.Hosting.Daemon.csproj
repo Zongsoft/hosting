@@ -12,6 +12,14 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(DefineConstants.Contains(&quot;WINDOWS&quot;))' == 'true'">
+		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(DefineConstants.Contains(&quot;LINUX&quot;))' == 'true'">
+		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" />
+	</ItemGroup>
+
 	<Choose>
 		<When Condition="$(ZongsoftFrameworkPathReferenced) And Exists('$(ZongsoftFrameworkPath)')">
 			<ItemGroup>
