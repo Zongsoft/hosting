@@ -12,6 +12,11 @@
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 	</ItemGroup>
 
+	<PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+		<DefineConstants>WINDOWS</DefineConstants>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+	</PropertyGroup>
+
 	<ItemGroup Condition="'$(DefineConstants.Contains(&quot;WINDOWS&quot;))' == 'true'">
 		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
 	</ItemGroup>
