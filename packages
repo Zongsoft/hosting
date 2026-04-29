@@ -79,5 +79,5 @@ nuget:Zongsoft.Messaging.RabbitMQ@1.0.1
 delete:Zongsoft.Messaging.RabbitMQ.option
 
 [plugins zongsoft messaging zeromq]
-nuget:Zongsoft.Messaging.ZeroMQ@1.6.0
+nuget:Zongsoft.Messaging.ZeroMQ@1.6.1
 delete:Zongsoft.Messaging.ZeroMQ.option
