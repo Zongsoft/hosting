@@ -7,13 +7,12 @@ enum Flags
 }
 
 var flags = Argument("flags", Flags.None);
-var scheme = Argument("scheme", "default");
 var target = Argument("target", "default");
 var edition = Argument("edition", "Debug");
 var platform = Argument("platform", "Windows");
 var framework = Argument("framework", "net10.0");
 var architecture = Argument("architecture", "x64");
-var solutionFile  = "Zongsoft.Hosting.Daemon.slnx";
+var solutionFile = "Zongsoft.Hosting.Daemon.slnx";
 
 Task("clean")
 	.Description("清理解决方案")
