@@ -1,5 +1,13 @@
 @echo off
 setlocal enabledelayedexpansion
+cd /d "%~dp0"
+
+net session >nul 2>nul
+if errorlevel 1 (
+	echo Requesting administrator privileges...
+	powershell -Command "Start-Process -Verb RunAs -FilePath '%~f0' -WorkingDirectory '%~dp0'"
+	exit /b
+)
 
 set /p SERVICE_NAME="Enter service name to install(default: zongsoft.daemon): "
 if "%SERVICE_NAME%"=="" set SERVICE_NAME=zongsoft.daemon
@@ -25,15 +33,18 @@ if !FOUND_COUNT! equ 0 (
 
 	if !FOUND_COUNT! equ 0 (
 		echo [ERROR] No .exe file found in bin\!EDITION!\!FRAMEWORK!\
+		pause
 		exit /b 1
 	) else if !FOUND_COUNT! gtr 1 (
 		echo [ERROR] Multiple .exe files found in bin\!EDITION!\!FRAMEWORK!\:
 		for %%f in (bin\!EDITION!\!FRAMEWORK!\*.exe) do echo   %cd%\%%f
+		pause
 		exit /b 1
 	)
 ) else if !FOUND_COUNT! gtr 1 (
 	echo [ERROR] Multiple .exe files found in current directory:
 	for %%f in (*.exe) do echo   %cd%\%%f
+	pause
 	exit /b 1
 )
 
@@ -45,4 +56,5 @@ if !ERRORLEVEL! equ 0 (
 	echo The '%SERVICE_NAME%' service has been successfully created.
 ) else (
 	echo [ERROR] Failed to create service, error code: !ERRORLEVEL!
+	pause
 )
