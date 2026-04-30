@@ -3,25 +3,42 @@ setlocal enabledelayedexpansion
 
 set /p SERVICE_NAME="Enter service name to install(default: zongsoft.daemon): "
 if "%SERVICE_NAME%"=="" set SERVICE_NAME=zongsoft.daemon
-echo.
 
 set FOUND_COUNT=0
-for /f "delims=" %%f in ('dir /s /b *.exe 2^>nul') do (
+for %%f in (*.exe) do (
 	set /a FOUND_COUNT+=1
-	set "SERVICE_PATH=%%f"
+	set "SERVICE_PATH=%cd%\%%f"
 )
 
 if !FOUND_COUNT! equ 0 (
-	echo [ERROR] No .exe file found in current directory or subdirectories
-	exit /b 1
+	set /p EDITION="Enter the compilation edition(default: Debug): "
+	if "!EDITION!"=="" set EDITION=Debug
+
+	set /p FRAMEWORK="Enter the .NET framework(default: net10.0): "
+	if "!FRAMEWORK!"=="" set FRAMEWORK=net10.0
+
+	set FOUND_COUNT=0
+	for %%f in (bin\!EDITION!\!FRAMEWORK!\*.exe) do (
+		set /a FOUND_COUNT+=1
+		set "SERVICE_PATH=%cd%\%%f"
+	)
+
+	if !FOUND_COUNT! equ 0 (
+		echo [ERROR] No .exe file found in bin\!EDITION!\!FRAMEWORK!\
+		exit /b 1
+	) else if !FOUND_COUNT! gtr 1 (
+		echo [ERROR] Multiple .exe files found in bin\!EDITION!\!FRAMEWORK!\:
+		for %%f in (bin\!EDITION!\!FRAMEWORK!\*.exe) do echo   %cd%\%%f
+		exit /b 1
+	)
 ) else if !FOUND_COUNT! gtr 1 (
-	echo [ERROR] Multiple .exe files found:
-	for /f "delims=" %%f in ('dir /s /b *.exe 2^>nul') do echo   %%f
+	echo [ERROR] Multiple .exe files found in current directory:
+	for %%f in (*.exe) do echo   %cd%\%%f
 	exit /b 1
 )
 
 echo.
-echo Creating service "%SERVICE_NAME%" ...
+echo The '%SERVICE_NAME%' service is installing...
 
 sc create "%SERVICE_NAME%" binPath= "!SERVICE_PATH!" DisplayName= "%SERVICE_NAME%"
 if !ERRORLEVEL! equ 0 (
