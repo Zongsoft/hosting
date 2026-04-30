@@ -1,3 +1,12 @@
+[Flags]
+enum Flags
+{
+	None = 0,
+	NoClean = 1,
+	NoRestore = 2,
+}
+
+var flags = Argument("flags", Flags.None);
 var scheme = Argument("scheme", "default");
 var target = Argument("target", "default");
 var edition = Argument("edition", "Debug");
@@ -10,6 +19,9 @@ Task("clean")
 	.Description("清理解决方案")
 	.Does(() =>
 {
+	if((flags & Flags.NoClean) == Flags.NoClean)
+		return;
+
 	DeleteFiles("*.nupkg");
 	CleanDirectories("**/bin");
 	CleanDirectories("**/obj");
@@ -19,6 +31,9 @@ Task("restore")
 	.Description("还原项目依赖")
 	.Does(() =>
 {
+	if((flags & Flags.NoRestore) == Flags.NoRestore)
+		return;
+
 	var settings = new DotNetRestoreSettings
 	{
 		MSBuildSettings = new DotNetMSBuildSettings()
