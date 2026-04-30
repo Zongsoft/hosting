@@ -51,9 +51,26 @@ if !FOUND_COUNT! equ 0 (
 echo.
 echo The '%SERVICE_NAME%' service is installing...
 
-sc create "%SERVICE_NAME%" binPath= "!SERVICE_PATH!" DisplayName= "%SERVICE_NAME%"
+REM 获取服务文件路径中的文件名(不含扩展名)
+for %%i in ("!SERVICE_PATH!") do set "DESCRIPTION=%%~ni"
+
+sc create "%SERVICE_NAME%" binPath="!SERVICE_PATH!" DisplayName="%SERVICE_NAME%" start=auto
 if !ERRORLEVEL! equ 0 (
+	sc description "%SERVICE_NAME%" "!DESCRIPTION!" >nul
 	echo The '%SERVICE_NAME%' service has been successfully created.
+	echo.
+
+	set /p START="Start the service now?[yes/no] "
+	if /i "!START!"=="" set START=yes
+	if /i "!START!"=="yes" (
+		sc start "%SERVICE_NAME%"
+		if !ERRORLEVEL! equ 0 (
+			echo The '%SERVICE_NAME%' service has been started.
+		) else (
+			echo [ERROR] Failed to start service, error code: !ERRORLEVEL!
+			pause
+		)
+	)
 ) else (
 	echo [ERROR] Failed to create service, error code: !ERRORLEVEL!
 	pause
