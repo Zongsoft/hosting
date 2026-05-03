@@ -32,6 +32,8 @@ if "%version%"=="" (
 	goto version_label
 )
 
+if /i "%version%"=="exit" exit /b 0
+
 SET edition=
 SET /p value=Please enter the edition you want to pack: 
 

@@ -47,6 +47,8 @@ if "%pod%"=="" (
 	goto pod_label
 )
 
+if /i "%pod%"=="exit" exit /b 0
+
 if /i "%pod%"=="host" (
 	podman kube play --network %NETWORK% --replace .\zongsoft.pod-host.yaml
 ) else if /i "%pod%"=="redis" (
