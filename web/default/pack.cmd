@@ -35,22 +35,22 @@ if "%version%"=="" (
 if /i "%version%"=="exit" exit /b 0
 
 SET edition=
-SET /p value=Please enter the edition you want to pack: 
+SET /p edition=Please enter the edition you want to pack: 
 
 SET compilation=
-SET /p value=Please enter the compilation configuration(Debug/Release) you want to pack: 
+SET /p compilation=Please enter the compilation configuration(Debug/Release) you want to pack: 
 if "%compilation%"=="" (SET compilation=Debug)
 
 SET framework=
-SET /p value=Please enter the framework(net10.0/net9.0/net8.0) you want to pack: 
+SET /p framework=Please enter the framework(net10.0/net9.0/net8.0) you want to pack: 
 if "%framework%"=="" (SET framework=net10.0)
 
 SET platform=
-SET /p value=Please enter the platform(windows/linux/mac) you want to pack: 
+SET /p platform=Please enter the platform(windows/linux/mac) you want to pack: 
 if "%platform%"=="" (SET platform=windows)
 
 SET architecture=
-SET /p value=Please enter the architecture(x64/arm64) you want to pack: 
+SET /p architecture=Please enter the architecture(x64/arm64) you want to pack: 
 if "%architecture%"=="" (SET architecture=x64)
 
 dotnet-pack                           ^
