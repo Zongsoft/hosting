@@ -9,7 +9,7 @@ internal class Program
 	static void Main(string[] args)
 	{
 		Zongsoft.Plugins.Hosting.Application
-			.Terminal([.. args, "host=terminal", "site=daemon"])
+			.Terminal("zongsoft.terminal", [.. args, "host=terminal", "site=daemon"])
 			.Run();
 	}
 }
