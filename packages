@@ -14,7 +14,7 @@ nuget:Zongsoft.Data@7.21.0
 nuget:Zongsoft.Data.MySql@7.8.1
 
 [plugins zongsoft data sqlite]
-nuget:Zongsoft.Data.SQLite@3.2.1
+nuget:Zongsoft.Data.SQLite@3.2.3
 
 [plugins zongsoft data tdengine]
 nuget:Zongsoft.Data.TDengine@2.7.1
