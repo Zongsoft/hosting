@@ -22,18 +22,18 @@ SET /p value=Please enter the platform(windows/linux/mac) you want to deploy:
 if "%value%" neq "" (SET platform=%value%)
 
 dotnet deploy                      ^
-	-verbosity:normal          ^
-	-overwrite:newest          ^
-	-host:terminal             ^
-	-site:daemon               ^
-	-scheme:%scheme%           ^
-	-environment:%environment% ^
-	-debug:%debug%             ^
-	-edition:Debug             ^
-	-framework:net10.0         ^
-	-platform:%platform%       ^
-	-architecture:x64          ^
-	-destination:bin/^$^(edition^)/^$^(framework^) ^
+	--verbosity:normal          ^
+	--overwrite:newest          ^
+	--host:terminal             ^
+	--site:daemon               ^
+	--scheme:%scheme%           ^
+	--environment:%environment% ^
+	--debug:%debug%             ^
+	--edition:Debug             ^
+	--framework:net10.0         ^
+	--platform:%platform%       ^
+	--architecture:x64          ^
+	--destination:bin/^$^(edition^)/^$^(framework^) ^
 	.deploy                                        ^
 	..\\.deploy\\%scheme%\\^$^(host^).deploy       ^
 	..\\.deploy\\%scheme%\\^$^(site^).deploy

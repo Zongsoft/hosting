@@ -26,17 +26,19 @@ dotnet cake             ^
 	--platform=%platform%
 
 dotnet deploy                      ^
-	-verbosity:quiet           ^
-	-overwrite:latest          ^
-	-host:web                  ^
-	-site:default              ^
-	-scheme:%scheme%           ^
-	-environment:%environment% ^
-	-debug:%debug%             ^
-	-edition:Debug             ^
-	-framework:net10.0         ^
-	-platform:%platform%       ^
-	-architecture:x64          ^
+	--verbosity:quiet           ^
+	--overwrite:latest          ^
+	--host:web                  ^
+	--site:default              ^
+	--scheme:%scheme%           ^
+	--environment:%environment% ^
+	--debug:%debug%             ^
+	--edition:Debug             ^
+	--framework:net10.0         ^
+	--platform:%platform%       ^
+	--architecture:x64          ^
 	.deploy                    ^
 	..\\..\\.deploy\\%scheme%\\^$^(host^).deploy ^
 	..\\..\\.deploy\\%scheme%\\^$^(site^).deploy
+
+pause
