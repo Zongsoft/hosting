@@ -21,24 +21,29 @@ SET value=
 SET /p value=Please enter the platform(windows/linux/mac) you want to deploy: 
 if "%value%" neq "" (SET platform=%value%)
 
+SET architecture=
+SET /p architecture=Please enter the architecture(x64/x32/arm64) you want to deploy:
+if "%architecture%"=="" (SET architecture=x64)
+
 dotnet cake             ^
-	--edition=Debug ^
-	--platform=%platform%
+	--edition=Debug       ^
+	--platform=%platform% ^
+	--architecture=%architecture%
 
 dotnet deploy                      ^
-	--verbosity:quiet           ^
-	--overwrite:latest          ^
-	--host:web                  ^
-	--site:default              ^
-	--scheme:%scheme%           ^
-	--environment:%environment% ^
-	--debug:%debug%             ^
-	--edition:Debug             ^
-	--framework:net10.0         ^
-	--platform:%platform%       ^
-	--architecture:x64          ^
-	.deploy                    ^
-	..\\..\\.deploy\\%scheme%\\^$^(host^).deploy ^
-	..\\..\\.deploy\\%scheme%\\^$^(site^).deploy
+	--verbosity:quiet             ^
+	--overwrite:latest            ^
+	--host:web                    ^
+	--site:default                ^
+	--scheme:%scheme%             ^
+	--environment:%environment%   ^
+	--debug:%debug%               ^
+	--edition:Debug               ^
+	--framework:net10.0           ^
+	--platform:%platform%         ^
+	--architecture:%architecture% ^
+	.deploy                     ^
+	..\\..\\.deploy\\%scheme%\\$(host).deploy ^
+	..\\..\\.deploy\\%scheme%\\$(site).deploy
 
 pause
