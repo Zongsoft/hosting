@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
+		<EnableDefaultRunWorkingDirectory>false</EnableDefaultRunWorkingDirectory>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(DefineConstants.Contains(&quot;WINDOWS&quot;))' == 'true'">
