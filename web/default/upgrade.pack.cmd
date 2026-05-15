@@ -53,16 +53,22 @@ SET architecture=
 SET /p architecture=Please enter the architecture(x64/arm64) you want to pack: 
 if "%architecture%"=="" (SET architecture=x64)
 
-SET /p format=Please enter the packaging format(tar/deb/rpm) you want to pack:
-if "%format%"=="" (SET format=tar)
-
-dotnet-pack %format%              ^
-	--name:Zongsoft.Daemon        ^
+dotnet-upgrade pack               ^
+	--name:Zongsoft.Web           ^
+	--kind:fully                  ^
 	--edition:%edition%           ^
 	--version:%version%           ^
+	--checksum:sha1               ^
 	--compilation:%compilation%   ^
 	--framework:%framework%       ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
-	--source:"D:\\Zongsoft\\hosting\\daemon\\bin\\$(compilation)\\$(framework)" ^
-	--output:../../../
+	--source:"D:/Zongsoft/hosting/web/default" ^
+	--output:.                    ^
+	mime                          ^
+	appsettings.json              ^
+	web*.config                   ^
+	web*.option                   ^
+	wwwroot                       ^
+	plugins                       ^
+	bin/$(compilation)/$(framework):~

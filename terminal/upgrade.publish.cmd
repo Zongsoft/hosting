@@ -61,15 +61,15 @@ if "%architecture%"=="" (SET architecture=x64)
 SET edition=
 SET /p edition=Please enter the edition you want to publish:
 if "%edition%"=="" (
-	SET "file_path=Zongsoft.Daemon@%version%_%platform%-%architecture%"
+	SET "file_path=Zongsoft.Terminal@%version%_%platform%-%architecture%"
 ) else (
-	SET "file_path=Zongsoft.Daemon(%edition%)@%version%_%platform%-%architecture%"
+	SET "file_path=Zongsoft.Terminal(%edition%)@%version%_%platform%-%architecture%"
 )
 
-dotnet-pack publish                         ^
-	--channel:amazon.s3                     ^
-	--server:%server%                       ^
-	--access:%access%                       ^
-	--secret:%secret%                       ^
-	--destination:upgrading/releases/daemon ^
+dotnet-upgrade publish                        ^
+	--channel:amazon.s3                       ^
+	--server:%server%                         ^
+	--access:%access%                         ^
+	--secret:%secret%                         ^
+	--destination:upgrading/releases/terminal ^
 	%file_path%

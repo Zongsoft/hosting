@@ -66,7 +66,7 @@ if "%edition%"=="" (
 	SET "file_path=Zongsoft.Web(%edition%)@%version%_%platform%-%architecture%"
 )
 
-dotnet-pack publish                      ^
+dotnet-upgrade publish                   ^
 	--channel:amazon.s3                  ^
 	--server:%server%                    ^
 	--access:%access%                    ^
