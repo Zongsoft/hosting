@@ -66,8 +66,13 @@ if /i "%format%"=="tar" (
 	SET platform=linux
 ) else (
 	echo %DARK_RED%Error: %RED%Unsupported package format '%format%'.%RESET%
+	pause
 	exit /b 1
 )
+
+SET scheme=
+SET /p scheme=Please enter the scheme name you want to pack: 
+if "%scheme%"=="" (SET scheme=default)
 
 dotnet-pack %format%              ^
 	--name:Zongsoft.Web           ^
@@ -81,6 +86,8 @@ dotnet-pack %format%              ^
 	--ASPNETCORE_ENVIRONMENT:%environment% ^
 	--daemon-bind:8069            ^
 	--daemon-environments:Environment,ASPNETCORE_ENVIRONMENT ^
+	--postinstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh" ^
+	--postuninstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh" ^
 	--source:"D:/Zongsoft/hosting/web/default" ^
 	--output:.                    ^
 	mime                          ^
@@ -89,4 +96,5 @@ dotnet-pack %format%              ^
 	web*.option                   ^
 	wwwroot                       ^
 	plugins                       ^
+	"../../.deploy/%scheme%/nginx/zongsoft.web.conf:/etc/nginx/conf.d/zongsoft.web.conf" ^
 	bin/$(compilation)/$(framework):~

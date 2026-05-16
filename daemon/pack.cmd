@@ -66,6 +66,7 @@ if /i "%format%"=="tar" (
 	SET platform=linux
 ) else (
 	echo %DARK_RED%Error: %RED%Unsupported package format '%format%'.%RESET%
+	pause
 	exit /b 1
 )
 
