@@ -37,6 +37,12 @@ if /i "%version%"=="exit" exit /b 0
 SET edition=
 SET /p edition=Please enter the edition you want to pack: 
 
+SET environment=%Environment%
+SET /p value=Please enter the environment name you want to pack(%Environment%:[development/test/production]): 
+if "%value%"=="" (
+	if "%environment%"=="" (SET environment=development)
+)
+
 SET compilation=
 SET /p compilation=Please enter the compilation configuration(Debug/Release) you want to pack: 
 if "%compilation%"=="" (SET compilation=Debug)
@@ -71,5 +77,7 @@ dotnet-pack %format%              ^
 	--framework:%framework%       ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
+	--Environment:%environment%   ^
+	--daemon-environments:Environment ^
 	--source:"D:\\Zongsoft\\hosting\\daemon\\bin\\$(compilation)\\$(framework)" ^
 	--output:../../../

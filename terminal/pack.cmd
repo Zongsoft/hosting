@@ -65,6 +65,7 @@ if /i "%format%"=="tar" (
 
 dotnet-pack %format%              ^
 	--name:Zongsoft.Terminal      ^
+	--daemon:disabled             ^
 	--edition:%edition%           ^
 	--version:%version%           ^
 	--compilation:%compilation%   ^
