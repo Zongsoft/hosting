@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Zongsoft.Hosting.Daemon": {
-      "commandName": "Project",
-      "workingDirectory": "$(OutDir)"
-    }
-  }
-}
