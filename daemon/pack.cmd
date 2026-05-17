@@ -80,5 +80,6 @@ dotnet-pack %format%              ^
 	--architecture:%architecture% ^
 	--Environment:%environment%   ^
 	--daemon-environments:Environment ^
+	--exclude:logs/;              ^
 	--source:"D:\\Zongsoft\\hosting\\daemon\\bin\\$(compilation)\\$(framework)" ^
 	--output:../../../
