@@ -20,6 +20,21 @@ set "DARK_CYAN=%ESC%[36m"
 
 set "RESET=%ESC%[0m"
 
+SET /p format=Please enter the packaging format(tar/deb/rpm) you want to pack:
+if "%format%"=="" (SET format=tar)
+
+if /i "%format%"=="tar" (
+	SET platform=linux
+) else if /i "%format%"=="deb" (
+	SET platform=linux
+) else if /i "%format%"=="rpm" (
+	SET platform=linux
+) else (
+	echo %DARK_RED%Error: %RED%Unsupported package format '%format%'.%RESET%
+	pause
+	exit /b 1
+)
+
 :version_label
 
 SET version=
@@ -48,21 +63,6 @@ if "%framework%"=="" (SET framework=net10.0)
 SET architecture=
 SET /p architecture=Please enter the architecture(x64/arm64) you want to pack: 
 if "%architecture%"=="" (SET architecture=x64)
-
-SET /p format=Please enter the packaging format(tar/deb/rpm) you want to pack:
-if "%format%"=="" (SET format=tar)
-
-if /i "%format%"=="tar" (
-	SET platform=linux
-) else if /i "%format%"=="deb" (
-	SET platform=linux
-) else if /i "%format%"=="rpm" (
-	SET platform=linux
-) else (
-	echo %DARK_RED%Error: %RED%Unsupported package format '%format%'.%RESET%
-	pause
-	exit /b 1
-)
 
 dotnet-pack %format%              ^
 	--name:Zongsoft.Terminal      ^

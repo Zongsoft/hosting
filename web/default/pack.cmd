@@ -20,6 +20,21 @@ set "DARK_CYAN=%ESC%[36m"
 
 set "RESET=%ESC%[0m"
 
+SET /p format=Please enter the packaging format(tar/deb/rpm) you want to pack:
+if "%format%"=="" (SET format=tar)
+
+if /i "%format%"=="tar" (
+	SET platform=linux
+) else if /i "%format%"=="deb" (
+	SET platform=linux
+) else if /i "%format%"=="rpm" (
+	SET platform=linux
+) else (
+	echo %DARK_RED%Error: %RED%Unsupported package format '%format%'.%RESET%
+	pause
+	exit /b 1
+)
+
 :version_label
 
 SET version=
@@ -55,21 +70,6 @@ SET architecture=
 SET /p architecture=Please enter the architecture(x64/arm64) you want to pack: 
 if "%architecture%"=="" (SET architecture=x64)
 
-SET /p format=Please enter the packaging format(tar/deb/rpm) you want to pack:
-if "%format%"=="" (SET format=tar)
-
-if /i "%format%"=="tar" (
-	SET platform=linux
-) else if /i "%format%"=="deb" (
-	SET platform=linux
-) else if /i "%format%"=="rpm" (
-	SET platform=linux
-) else (
-	echo %DARK_RED%Error: %RED%Unsupported package format '%format%'.%RESET%
-	pause
-	exit /b 1
-)
-
 SET scheme=
 SET /p scheme=Please enter the scheme name you want to pack: 
 if "%scheme%"=="" (SET scheme=default)
@@ -97,5 +97,5 @@ dotnet-pack %format%              ^
 	web*.option                   ^
 	wwwroot                       ^
 	plugins                       ^
-	"../../.deploy/%scheme%/nginx/zongsoft.web.conf:/etc/nginx/conf.d/zongsoft.web.conf" ^
-	bin/$(compilation)/$(framework):~
+	bin/$(compilation)/$(framework):~ ^
+	"../../.deploy/%scheme%/nginx/zongsoft.web.conf:/etc/nginx/conf.d/zongsoft.web.conf"
