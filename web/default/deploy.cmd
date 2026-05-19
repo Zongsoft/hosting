@@ -64,7 +64,8 @@ if "%framework%"=="" (SET framework=net10.0)
 dotnet cake             ^
 	--edition=%compilation% ^
 	--platform=%platform%   ^
-	--architecture=%architecture%
+	--architecture=%architecture% ^
+	--framework=%framework%
 
 dotnet deploy                      ^
 	--verbosity:quiet             ^

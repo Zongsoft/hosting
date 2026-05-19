@@ -44,6 +44,9 @@ Task("restore")
 	if(!string.IsNullOrEmpty(platform))
 		settings.MSBuildSettings.WithProperty("DefineConstants", platform.ToUpperInvariant());
 
+	if(!string.IsNullOrEmpty(framework))
+		settings.MSBuildSettings.WithProperty("TargetFramework", framework);
+
 	settings.MSBuildSettings.WithProperty("Platform", "Any CPU");
 	DotNetRestore(solutionFile, settings);
 });
@@ -66,6 +69,9 @@ Task("build")
 
 	if(!string.IsNullOrEmpty(platform))
 		settings.MSBuildSettings.WithProperty("DefineConstants", platform.ToUpperInvariant());
+
+	if(!string.IsNullOrEmpty(framework))
+		settings.MSBuildSettings.WithProperty("TargetFramework", framework);
 
 	settings.MSBuildSettings.WithProperty("Platform", "Any CPU");
 	DotNetBuild(solutionFile, settings);
