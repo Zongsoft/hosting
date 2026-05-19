@@ -74,5 +74,4 @@ dotnet-pack %format%              ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
 	--exclude:logs/;              ^
-	--source:"D:\\Zongsoft\\hosting\\terminal\\bin\\$(compilation)\\$(framework)" ^
-	--output:../../../
+	bin/$(compilation)/$(framework)
