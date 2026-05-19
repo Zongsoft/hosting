@@ -73,5 +73,5 @@ dotnet-pack %format%              ^
 	--framework:%framework%       ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
-	--exclude:logs/;              ^
-	bin/$(compilation)/$(framework)
+	--exclude:**/logs/;           ^
+	bin/$(compilation)/$(framework):~

@@ -80,5 +80,5 @@ dotnet-pack %format%              ^
 	--architecture:%architecture% ^
 	--Environment:%environment%   ^
 	--daemon-environments:Environment ^
-	--exclude:logs/;              ^
-	bin/$(compilation)/$(framework)
+	--exclude:**/logs/;           ^
+	bin/$(compilation)/$(framework):~

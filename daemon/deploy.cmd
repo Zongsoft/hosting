@@ -61,6 +61,30 @@ SET framework=
 SET /p framework=Please enter the framework%ITALIC%%DARK_YELLOW%(net10.0/net9.0/net8.0)%RESET% you want to deploy: 
 if "%framework%"=="" (SET framework=net10.0)
 
+dotnet cake             ^
+	--edition=%compilation% ^
+	--platform=%platform%   ^
+	--architecture=%architecture%
+
+dotnet deploy                      ^
+	--verbosity:normal            ^
+	--overwrite:newest            ^
+	--host:daemon                 ^
+	--site:daemon                 ^
+	--scheme:%scheme%             ^
+	--environment:%environment%   ^
+	--debug:%debug%               ^
+	--edition:%compilation%       ^
+	--framework:%framework%       ^
+	--platform:%platform%         ^
+	--architecture:%architecture% ^
+	--destination:bin/$(edition)/$(framework) ^
+	.deploy                                   ^
+	../.deploy/%scheme%/$(host).deploy        ^
+	../.deploy/%scheme%/$(site).deploy
+
+echo.
+
 :format_label
 
 echo.
@@ -114,5 +138,5 @@ dotnet-pack %format%              ^
 	--architecture:%architecture% ^
 	--Environment:%environment%   ^
 	--daemon-environments:Environment ^
-	--exclude:logs/;              ^
-	bin/$(compilation)/$(framework)
+	--exclude:**/logs/;           ^
+	bin/$(compilation)/$(framework):~

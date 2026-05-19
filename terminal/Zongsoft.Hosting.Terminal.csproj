@@ -32,13 +32,6 @@
 	</Choose>
 
 	<ItemGroup>
-		<None Remove=".deploy" />
-		<None Remove="build.cake" />
-		<None Remove="deploy.cmd" />
-		<None Remove="deploy.sh" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

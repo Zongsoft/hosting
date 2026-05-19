@@ -88,10 +88,8 @@ dotnet-pack %format%              ^
 	--daemon-environments:Environment,ASPNETCORE_ENVIRONMENT ^
 	--postinstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh" ^
 	--postuninstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh" ^
-	--exclude:logs/;bin/$(compilation)/$(framework)/*.staticwebassets.* ^
-	--source:"D:/Zongsoft/hosting/web/default" ^
-	--output:.                    ^
-	mime                          ^
+	--exclude:**/logs/;bin/$(compilation)/$(framework)/*.staticwebassets.* ^
+	../../mime                    ^
 	appsettings.json              ^
 	web*.config                   ^
 	web*.option                   ^

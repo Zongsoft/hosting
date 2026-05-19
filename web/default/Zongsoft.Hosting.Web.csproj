@@ -48,11 +48,4 @@
 		<Content Remove="plugins\**" />
 		<EmbeddedResource Remove="plugins\**" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<None Remove=".deploy" />
-		<None Remove="build.cake" />
-		<None Remove="deploy.cmd" />
-		<None Remove="deploy.sh" />
-	</ItemGroup>
 </Project>
