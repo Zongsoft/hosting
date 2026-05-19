@@ -26,6 +26,7 @@ REM 定义光标控制代码
 set "CURSOR_SAVE=%ESC%[s"
 set "CURSOR_RESTORE=%ESC%[u"
 set "CURSOR_NEXT_LINE=%ESC%[1E"
+set "CURSOR_PREVIOUS_LINE=%ESC%[1F"
 
 set "RESET=%ESC%[0m"
 
@@ -64,6 +65,7 @@ if "%framework%"=="" (SET framework=net10.0)
 
 echo.
 echo %CYAN%Do you need to create an installer for the deployed application?%RESET%
+<nul SET /p "=%CURSOR_NEXT_LINE%%CURSOR_PREVIOUS_LINE%"
 <nul SET /p "=%GREEN%If you need to package it, please enter the installer format%ITALIC%%DARK_YELLOW%(deb/rpm/tar):%RESET%%CURSOR_SAVE%%CURSOR_NEXT_LINE%"
 SET /p format=%ITALIC%%MAGENTA%TIPS:%RESET%%ITALIC% Enter '%ITALIC%%BLUE%exit%RESET%%ITALIC%' or '%ITALIC%%BLUE%quit%RESET%%ITALIC%' to exit.%RESET%%CURSOR_RESTORE%
 <nul SET /p "=%CURSOR_NEXT_LINE%"
@@ -79,7 +81,7 @@ if /i "%format%"=="tar" (
 ) else if /i "%format%"=="rpm" (
 	SET platform=linux
 ) else (
-	echo %DARK_RED%Error: %RED%Unsupported package format '%format%'.%RESET%
+	echo %DARK_RED%Error: %RED%Unsupported package format '%DARK_YELLOW%%format%%RED%'.%RESET%
 	SET format=
 	goto format_label
 )
