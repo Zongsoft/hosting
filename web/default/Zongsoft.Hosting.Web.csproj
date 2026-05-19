@@ -48,4 +48,8 @@
 		<Content Remove="plugins\**" />
 		<EmbeddedResource Remove="plugins\**" />
 	</ItemGroup>
+
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="Exists('$(MSBuildProjectDirectory)\..\..\mime')">
+		<Exec Command="copy /Y &quot;$(MSBuildProjectDirectory)\..\..\mime&quot; &quot;$(MSBuildProjectDirectory)\mime&quot;" />
+	</Target>
 </Project>
