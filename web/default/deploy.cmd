@@ -14,6 +14,9 @@ SET debug=
 SET /p debug=Do you want to turn on remote debug mode?(On/Off)
 if "%debug%"=="" (SET debug=on)
 
+SET compilation=
+if /i "%debug%"=="on" (SET compilation=Debug) else (SET compilation=Release)
+
 SET platform=
 if /i "%debug%"=="on" (SET platform=windows) else (SET platform=linux)
 
@@ -25,9 +28,13 @@ SET architecture=
 SET /p architecture=Please enter the architecture(x64/x32/arm64) you want to deploy:
 if "%architecture%"=="" (SET architecture=x64)
 
+SET framework=
+SET /p framework=Please enter the framework(net10.0/net9.0/net8.0) you want to deploy: 
+if "%framework%"=="" (SET framework=net10.0)
+
 dotnet cake             ^
-	--edition=Debug       ^
-	--platform=%platform% ^
+	--edition=%compilation% ^
+	--platform=%platform%   ^
 	--architecture=%architecture%
 
 dotnet deploy                      ^
@@ -38,12 +45,12 @@ dotnet deploy                      ^
 	--scheme:%scheme%             ^
 	--environment:%environment%   ^
 	--debug:%debug%               ^
-	--edition:Debug               ^
-	--framework:net10.0           ^
+	--edition:%compilation%       ^
+	--framework:%framework%       ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
-	.deploy                     ^
-	..\\..\\.deploy\\%scheme%\\$(host).deploy ^
-	..\\..\\.deploy\\%scheme%\\$(site).deploy
+	.deploy                       ^
+	../../.deploy/%scheme%/$(host).deploy ^
+	../../.deploy/%scheme%/$(site).deploy
 
 pause
