@@ -408,3 +408,6 @@ FodyWeavers.xsd
 
 # distributed file system
 .attachments/
+
+# garnet data directory
+.garnet/
