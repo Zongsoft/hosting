@@ -30,6 +30,8 @@ spec:
       volumeMounts:
         - name: security-sql
           mountPath: /docker-entrypoint-initdb.d/Zongsoft.Security-mysql.sql
+        - name: upgrading-sql
+          mountPath: /docker-entrypoint-initdb.d/zongsoft.upgrading-mysql.sql
         - name: discussions-sql
           mountPath: /docker-entrypoint-initdb.d/Zongsoft.Discussions-mysql.sql
         - name: administratives-tables-sql
@@ -61,6 +63,10 @@ spec:
     - name: security-sql
       hostPath:
         path: /mnt/d/Zongsoft/framework/Zongsoft.Security/database/Zongsoft.Security-mysql.sql
+        type: File
+    - name: upgrading-sql
+      hostPath:
+        path: /mnt/d/Zongsoft/framework/upgrading/database/zongsoft.upgrading-mysql.sql
         type: File
     - name: discussions-sql
       hostPath:
