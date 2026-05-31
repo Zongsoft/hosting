@@ -6,6 +6,20 @@
 - 宿主项目本身不应包含业务代码，业务能力应由 `plugins/` 目录下的插件提供。
 - 修改宿主项目时，优先关注 `Program.cs`、`appsettings.json`、`*.csproj`、`.deploy`、部署脚本和相关配置文件。
 
+## 操作边界
+
+- 未经明确要求，不运行 `deploy.cmd`、`pack.cmd`、`upgrade.pack.cmd`、`upgrade.publish.cmd`、`zongsoft.pod(start).cmd`、`zongsoft.pod(stop).cmd`。
+- 这些脚本通常会交互式询问参数，并可能复制文件、启动或停止容器、生成安装包、发布升级包。确需执行前，先阅读脚本并说明影响。
+- 如果需要业务行为，应先查找插件、配置或 Zongsoft 框架代码或外部业务代码，不要直接把业务逻辑加入宿主项目。
+
+## 验证
+
+- 只修改文档时，检查差异内容和换行符即可。
+- 通常无需修改宿主代码，因为宿主程序不含具体业务或功能代码 _(你可以将它理解成程序的启动器)_。
+- 修改了特定插件代码后，应先停止宿主程序，然后手动将其部署到对应的插件目录，然后重启宿主程序进行验证。
+- 修改 Web API 相关内容后，可参考 `web/.http` 目录下的请求定义，或将其转换为 `curl` 等方式进行接口验证。
+- 如果验证失败是因为插件、容器或 `/Zongsoft/framework`、`/Zongsoft/tools` 等外部依赖不可用，应在结果中说明，不要用临时业务代码绕过。
+
 ## 原理
 
 这些宿主项目都是基于 [Zongsoft](https://github.com/Zongsoft/framework) [插件框架](https://github.com/Zongsoft/framework/tree/main/Zongsoft.Plugins) 的插件式应用宿主程序。
@@ -52,34 +66,15 @@
 
 提示：如果在本机环境中调试宿主程序时发现无法连接 Redis、数据库等运行时错误，则可能是依赖的基础服务容器尚未加载。
 
-## 安装包
+## 安装与升级
 
 `pack.cmd` 是制作安装包的脚本，其内部通过 `dotnet-pack` 工具制作相应格式的安装包，如 `.deb`, `.rpm`, `tar.gz` 格式。
 
 > 如果是在独立的 Linux 环境中测试宿主程序，最好通过该脚本制作相应格式的安装包进行测试验证。
 
-## 升级包
-
-升级包不同于安装包，它是指程序在运行中发现有可升级的新版本，并执行发现、下载、解压、部署、重启程序等一系列协调动作的机制。详细内容参考 [Zongsoft 自动升级框架](https://github.com/Zongsoft/framework/tree/main/upgrading) 及其相关文档、代码、工具等：
-
-- 升级器：https://github.com/Zongsoft/framework/tree/main/upgrading/upgrader
-	> 升级器提供运行时自动发现可用升级包、下载、解压、激活部署器等功能，它负责整个升级部署的前半截功能。
-
-- 部署器：https://github.com/Zongsoft/framework/tree/main/upgrading/deployer
-	> 部署器提供执行部署、重启宿主程序等功能，它负责整个升级部署的后半截功能。
-
-- 工具集：https://github.com/Zongsoft/framework/tree/main/upgrading/tool
-	> 提供打包、验证、发布等功能。
-
-### 打包
-
-`upgrade-pack.cmd` 是制作升级包的脚本，其内部通过 `dotnet-upgrade` 工具的 `pack` 命令来制作升级包。
-
-### 发布
-
-`upgrade-publish.cmd` 是发布升级包的脚本，其内部通过 `dotnet-upgrade` 工具的 `publish` 命令来发布制作好的升级包。
-
-制作好的升级包通过该命令发布到特定的通道中，发布成功后，升级器才有可能发现发布的新版本升级包，然后通过 Zongsoft 自动升级框架去执行一系列的升级动作。
+升级包用于程序运行中的版本发现、下载、解压、部署和重启等自动升级流程。
+`upgrade.pack.cmd` 用于制作升级包，`upgrade.publish.cmd` 用于发布升级包；
+详细机制参考 [Zongsoft 自动升级框架](https://github.com/Zongsoft/framework/tree/main/upgrading) 及其相关代码和工具。
 
 ## 参考
 

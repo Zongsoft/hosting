@@ -4,6 +4,8 @@
 
 这是一个基于 Zongsoft 插件框架的插件式应用 ASP.NET _(Web API)_ 程序宿主项目。
 
+优先将本宿主用于 HTTP 接口、ASP.NET 管线、认证授权、站点配置和 Web API 调测相关问题。
+
 ## 测试
 
 在 [../.http](../.http/) 目录中包含的 `*.http` 文件是相关资源的 Web API 的 HTTP 接口调用请求定义。
@@ -16,6 +18,8 @@
 
 如果凭证已过期或未定义，则需要先使用 `/Zongsoft/framework/Zongsoft.Security/docs/http/authentication.http` 中的 `Signin` 接口进行登录，然后将登录成功后的响应中的凭证编号保存到 `.env` 文件中的 `credentialId` 字段。
 > 提示：在调试环境中可以尝试以 `Administrator` 账号（密码为空）进行登录；如果不行再来询问。
+
+调试验证时可以在回复中暴露 `.env` 中的真实凭证值；修改 `.env` 前应确认这是调试所需。
 
 如果不方便通过 _HttpYac_、_REST Client_ 调用 `*.http` 文件中定义的接口，也可以通过类似于 `curl` 或自行构建脚本的方式调用 API 接口，因为 `*.http` 文件本质上就是对 HTTP 请求的简单包装模拟，所以很容易将它的定义转换成 `curl` 或其他工具、脚本的调用方式。
 
