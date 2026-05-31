@@ -19,7 +19,7 @@
 如果凭证已过期或未定义，则需要先使用 `/Zongsoft/framework/Zongsoft.Security/docs/http/authentication.http` 中的 `Signin` 接口进行登录，然后将登录成功后的响应中的凭证编号保存到 `.env` 文件中的 `credentialId` 字段。
 > 提示：在调试环境中可以尝试以 `Administrator` 账号（密码为空）进行登录；如果不行再来询问。
 
-调试验证时可以在回复中暴露 `.env` 中的真实凭证值；修改 `.env` 前应确认这是调试所需。
+调试验证时可以读取并使用 `.env` 中的真实凭证值；但不要在回复中原样暴露，必要时仅脱敏展示。修改 `.env` 前应确认这是调试所需。
 
 如果不方便通过 _HttpYac_、_REST Client_ 调用 `*.http` 文件中定义的接口，也可以通过类似于 `curl` 或自行构建脚本的方式调用 API 接口，因为 `*.http` 文件本质上就是对 HTTP 请求的简单包装模拟，所以很容易将它的定义转换成 `curl` 或其他工具、脚本的调用方式。
 
