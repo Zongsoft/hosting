@@ -40,9 +40,6 @@ nuget:Zongsoft.Externals.Aliyun@7.7.0
 [plugins zongsoft externals amazon]
 nuget:Zongsoft.Externals.Amazon@1.1.0
 
-[plugins zongsoft externals garnet]
-nuget:Zongsoft.Externals.Garnet@1.1.0
-
 [plugins zongsoft externals redis]
 nuget:Zongsoft.Externals.Redis@7.10.0
 
