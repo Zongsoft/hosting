@@ -18,15 +18,16 @@
 - 只修改文档且不需要执行构建、部署或安装验证。
 - 需要实现业务功能；此时应优先查找插件、配置或外部业务代码。
 - 需要验证 Web API 行为；此时应优先参考 `web/.http` 或相关插件接口。
-- 目标系统不是 Linux；此时应另建对应平台工作流。
 
 ## 操作原则
 
-- 工作目录根路径：`D:\Zongsoft\hosting`。
-- 宿主项目目录：`D:\Zongsoft\hosting\daemon`。
+- 工作目录根路径：当前仓库根目录，以下用 `<repo-root>` 表示。
+- 宿主项目目录：`<repo-root>\daemon`。
 - 遵守仓库约定：保持已有文件换行符；新文件使用 CRLF；代码文件使用 Tab 缩进。
 - 不要为了通过验证而修改宿主项目添加临时业务逻辑。
 - `deploy.cmd` 是交互式脚本，会执行编译、部署和安装包制作。执行前应先确认参数和影响。
+- 必须调用宿主目录中的 `deploy.cmd` 脚本完成编译、部署和打包，不允许自行编写脚本或拆出 `dotnet cake`、`dotnet deploy`、`dotnet-pack` 等底层命令绕过脚本。
+- 必须让 `dotnet-pack` 按脚本参数统一生成 systemd `.service` 文件；不要手写 `.service` 文件替代打包器行为。如果生成的服务文件有问题，应分析 `/Zongsoft/tools/packager` 并报告原因。
 - 如果验证失败是因为插件、容器、`/Zongsoft/framework`、`/Zongsoft/tools` 或目标 Linux 环境缺失，应如实记录，不要绕过。
 
 ## 需要提前确认的信息
@@ -61,10 +62,17 @@
 
 ## Windows 侧编译、部署和打包
 
+### Codex 自动化执行要求
+
+本工作流的验证对象就是宿主项目脚本，因此自动化执行也必须调用 `deploy.cmd`。不要为了规避交互或控制台捕获问题而自行执行 `dotnet cake`、`dotnet deploy`、`dotnet-pack`，也不要写临时脚本模拟 `deploy.cmd` 的部分逻辑。
+
+如果 Codex 或其他捕获式 shell 无法正常驱动 `deploy.cmd`，应切换到真实 Windows 控制台执行该脚本，或向用户报告当前环境无法完成有效验证；不要拆出底层命令继续执行。
+
 1. 进入 daemon 目录。
 
 	```powershell
-	Set-Location D:\Zongsoft\hosting\daemon
+	$repo = git rev-parse --show-toplevel
+	Set-Location (Join-Path $repo 'daemon')
 	```
 
 2. 执行 `deploy.cmd`。
@@ -98,7 +106,7 @@
 	优先在 `daemon` 目录及其输出目录中查找新生成的安装包：
 
 	```powershell
-	Get-ChildItem -Path D:\Zongsoft\hosting\daemon -Recurse -File |
+	Get-ChildItem -Path . -Recurse -File |
 		Where-Object { $_.Extension -in '.deb', '.rpm', '.tar', '.gz' } |
 		Sort-Object LastWriteTime -Descending |
 		Select-Object -First 20 FullName, Length, LastWriteTime
@@ -116,13 +124,19 @@
 wsl -d Ubuntu
 ```
 
-在 WSL 中创建发布目录，并将 Windows 侧安装包复制到 `/opt`。Windows 盘符路径通常映射为 `/mnt/d/...`：
+在 WSL 中创建发布目录，并将 Windows 侧安装包复制到 `/opt`。`<repo-root-wsl-path>` 表示仓库根目录在 WSL 中的映射路径，可在 WSL 中用 `wslpath -a '<repo-root>'` 按实际仓库路径转换得到：
 
 ```bash
 sudo mkdir -p /opt
-sudo cp /mnt/d/Zongsoft/hosting/daemon/<package-file> /opt/
+sudo cp <repo-root-wsl-path>/daemon/<package-file> /opt/
 cd /opt
 ls -lh <package-file>
+```
+
+如果自动化环境中 `sudo` 需要密码，可改用 WSL 的 root 用户入口执行复制和安装命令：
+
+```powershell
+wsl -d Ubuntu -u root -- bash -lc "mkdir -p /opt && cp '<repo-root-wsl-path>/daemon/<package-file>' /opt/ && ls -lh '/opt/<package-file>'"
 ```
 
 ### 远程 Linux 服务器
@@ -152,6 +166,12 @@ ls -lh <package-file>
 ```bash
 cd /opt
 sudo apt install -y ./<package-file>.deb
+```
+
+如果通过 `wsl -u root` 验证，可去掉 `sudo`：
+
+```powershell
+wsl -d Ubuntu -u root -- bash -lc "cd /opt && apt install -y './<package-file>.deb'"
 ```
 
 如果使用 `dpkg` 安装并出现依赖问题，执行：
@@ -285,6 +305,9 @@ find /opt/zongsoft-daemon -maxdepth 3 -type f | sort | head -100
 | 找不到生成的安装包 | 按最后修改时间搜索 `.deb`、`.rpm`、`.tar`、`.tar.gz`，并核对版本和架构。 |
 | systemd 服务名不确定 | 先用 `systemctl list-unit-files | grep -i zongsoft` 查找，不要猜测覆盖服务。 |
 | 启动失败但日志显示依赖不可用 | 记录缺失的数据库、Redis、对象存储或插件依赖，不要改宿主程序绕过。 |
+| `dotnet-deploy` 或 `dotnet-pack` 抛出 `句柄无效` | 捕获式 shell 或输入重定向没有真实控制台句柄；切换真实 Windows 控制台运行 `deploy.cmd`，或报告环境阻塞，不要拆底层命令绕过脚本。 |
+| WSL 中 `sudo` 等待密码导致命令超时 | 使用 `sudo -n true` 快速检测；本机验证可改用 `wsl -d <distro> -u root -- bash -lc "<command>"`。 |
+| `apt install` 提示 `missing 'Description' field` | 这是 Debian control 元数据警告；只要退出码为 0 且服务验证通过，不视为安装失败。 |
 
 ## 结果回报模板
 

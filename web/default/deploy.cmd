@@ -67,6 +67,9 @@ dotnet cake             ^
 	--architecture=%architecture% ^
 	--framework=%framework%
 
+REM 删除 plugins 目录
+rd /s /q plugins 2>nul
+
 dotnet deploy                      ^
 	--verbosity:quiet             ^
 	--overwrite:latest            ^

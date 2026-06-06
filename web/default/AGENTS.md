@@ -6,6 +6,12 @@
 
 优先将本宿主用于 HTTP 接口、ASP.NET 管线、认证授权、站点配置和 Web API 调测相关问题。
 
+## 发布
+
+Linux 编译、部署、打包和安装验证优先参考 [../../.ai/web.linux.md](../../.ai/web.linux.md)。
+
+打包 Web 宿主时应由 `dotnet-pack` 根据 `pack.cmd` 或 `deploy.cmd` 中的参数统一生成 systemd 服务文件。不要手写 `.service` 文件绕过；如果生成的服务入口有问题，应分析 `/Zongsoft/tools/packager` 的 systemd 生成逻辑并报告原因。
+
 ## 测试
 
 在 [../.http](../.http/) 目录中包含的 `*.http` 文件是相关资源的 Web API 的 HTTP 接口调用请求定义。
