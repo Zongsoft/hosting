@@ -223,6 +223,61 @@ wsl ss -tlnp | grep ':6379'
 	podman machine start
 	```
 
+### 网络代理
+
+1. 进入虚拟机
+
+	```shell
+	podman machine ssh
+	```
+
+2. 在容器虚拟机内运行下面命令：
+
+	> - 创建一个设置网络代理环境变量的脚本文件；
+	> - 创建一个 systemd 后台服务，使其在容器启动时运行上面的脚本；
+
+```bash
+cat > /usr/local/bin/set-podman-proxy-env.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+WIN_HOST="$(ip route | awk '/default/ {print $3; exit}')"
+PROXY="socks5h://${WIN_HOST}:1080"
+NO_PROXY_VALUE="localhost,127.0.0.1,::1"
+
+systemctl set-environment \
+  HTTP_PROXY="${PROXY}" \
+  HTTPS_PROXY="${PROXY}" \
+  ALL_PROXY="${PROXY}" \
+  http_proxy="${PROXY}" \
+  https_proxy="${PROXY}" \
+  all_proxy="${PROXY}" \
+  NO_PROXY="${NO_PROXY_VALUE}" \
+  no_proxy="${NO_PROXY_VALUE}"
+EOF
+
+chmod +x /usr/local/bin/set-podman-proxy-env.sh
+
+cat > /etc/systemd/system/podman-proxy-env.service <<'EOF'
+[Unit]
+Description=Set dynamic Windows proxy environment for Podman machine
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/set-podman-proxy-env.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable --now podman-proxy-env.service
+```
+
+
 ### 容器文件
 
 我们提供了一些 _**P**od_ 容器文件：
