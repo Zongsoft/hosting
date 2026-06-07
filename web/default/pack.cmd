@@ -75,7 +75,8 @@ SET /p scheme=Please enter the scheme name you want to pack:
 if "%scheme%"=="" (SET scheme=default)
 
 dotnet-pack %format%              ^
-	--name:Zongsoft.Web           ^
+	--name:Zongsoft.Hosting.Web   ^
+	--title:Zongsoft.Web          ^
 	--edition:%edition%           ^
 	--version:%version%           ^
 	--compilation:%compilation%   ^
@@ -84,6 +85,7 @@ dotnet-pack %format%              ^
 	--architecture:%architecture% ^
 	--Environment:%environment%   ^
 	--ASPNETCORE_ENVIRONMENT:%environment% ^
+	--daemon:zongsoft.web         ^
 	--daemon-bind:8069            ^
 	--daemon-environments:Environment,ASPNETCORE_ENVIRONMENT ^
 	--postinstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh" ^

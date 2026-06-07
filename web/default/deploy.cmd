@@ -132,7 +132,8 @@ SET edition=
 SET /p edition=Please enter the edition you want to pack: 
 
 dotnet-pack %format%              ^
-	--name:Zongsoft.Web           ^
+	--name:Zongsoft.Hosting.Web   ^
+	--title:Zongsoft.Web          ^
 	--edition:%edition%           ^
 	--version:%version%           ^
 	--compilation:%compilation%   ^
@@ -141,6 +142,7 @@ dotnet-pack %format%              ^
 	--architecture:%architecture% ^
 	--Environment:%environment%   ^
 	--ASPNETCORE_ENVIRONMENT:%environment% ^
+	--daemon:zongsoft.web         ^
 	--daemon-bind:8069            ^
 	--daemon-environments:Environment,ASPNETCORE_ENVIRONMENT ^
 	--postinstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh" ^
