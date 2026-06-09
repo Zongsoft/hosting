@@ -15,23 +15,23 @@ GET /Application/Modules HTTP/1.1
 Host: {{host}}:{{port}}
 
 ### 应用模块(指定模块)
-# @prompt module 模块标识(星号表示所有)
+@module = {{$input 模块标识(星号表示所有) $value: }}
 GET /Application/Modules/{{module}} HTTP/1.1
 Host: {{host}}:{{port}}
 
 ### 应用目标
-# @prompt module 模块标识
+@module = {{$input 模块标识 $value: }}
 GET /Application/Modules/{{module}}/Targets HTTP/1.1
 Host: {{host}}:{{port}}
 
 ### 应用目标
-# @prompt module  模块标识
-# @prompt targets 目标标识(以逗号分隔,星号表示所有)
+@module = {{$input 模块标识 $value: }}
+@targets = {{$input 目标标识(以逗号分隔,星号表示所有) $value: }}
 GET /Application/Modules/{{module}}/Targets/{{targets}} HTTP/1.1
 Host: {{host}}:{{port}}
 
 ### 插件列表
-# @prompt credential 凭证编号
+@credential = {{$input 凭证编号 $value: }}
 GET /Plugins
 Host: {{host}}:{{port}}
 Authorization: Credential {{credential}}
