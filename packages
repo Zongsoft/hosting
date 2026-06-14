@@ -1,6 +1,9 @@
 [plugins zongsoft diagnostics]
 nuget:Zongsoft.Diagnostics@1.8.0
 
+[plugins zongsoft hardwares]
+nuget:Zongsoft.Hardwares@0.1.0
+
 [plugins zongsoft ai]
 nuget:Zongsoft.Intelligences@0.4.0
 
@@ -38,7 +41,7 @@ nuget:Zongsoft.Security@7.7.1
 nuget:Zongsoft.Externals.Aliyun@7.7.0
 
 [plugins zongsoft externals amazon]
-nuget:Zongsoft.Externals.Amazon@1.1.1
+nuget:Zongsoft.Externals.Amazon@1.2.0
 
 [plugins zongsoft externals redis]
 nuget:Zongsoft.Externals.Redis@7.10.0
