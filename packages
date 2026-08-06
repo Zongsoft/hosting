@@ -56,13 +56,13 @@ nuget:Zongsoft.Externals.Wechat@7.5.0
 nuget:Zongsoft.Externals.Lua@2.2.0
 
 [plugins zongsoft externals python]
-nuget:Zongsoft.Externals.Python@2.1.0
+nuget:Zongsoft.Externals.Python@2.2.0
 
 [plugins zongsoft externals scriban]
 nuget:Zongsoft.Externals.Scriban@2.0.0
 
 [plugins zongsoft externals closedxml]
-nuget:Zongsoft.Externals.ClosedXml@4.3.0
+nuget:Zongsoft.Externals.ClosedXml@4.4.0
 
 [plugins zongsoft externals hangfire]
 nuget:Zongsoft.Externals.Hangfire@2.8.0
