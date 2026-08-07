@@ -80,45 +80,45 @@ spec:
         type: File
     - name: administratives-data-sql
       hostPath:
-        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Province-City-District).sql
+        path: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Province-City-District).sql
         type: File
     - name: administratives-data-street0-sql
       hostPath:
-        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-0.sql
+        path: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-0.sql
         type: File
     - name: administratives-data-street1-sql
       hostPath:
-        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-1.sql
+        path: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-1.sql
         type: File
     - name: administratives-data-street2-sql
       hostPath:
-        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-2.sql
+        path: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-2.sql
         type: File
     - name: administratives-data-street3-sql
       hostPath:
-        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-3.sql
+        path: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-3.sql
         type: File
     - name: administratives-data-street4-sql
       hostPath:
-        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-4.sql
+        path: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-4.sql
         type: File
     - name: administratives-data-street5-sql
       hostPath:
-        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-5.sql
+        path: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-5.sql
         type: File
     - name: administratives-data-street6-sql
       hostPath:
-        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-6.sql
+        path: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-6.sql
         type: File
     - name: administratives-data-street7-sql
       hostPath:
-        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-7.sql
+        path: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-7.sql
         type: File
     - name: administratives-data-street8-sql
       hostPath:
-        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-8.sql
+        path: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-8.sql
         type: File
     - name: administratives-data-street9-sql
       hostPath:
-        path: /mnt/d/Zongsoft/administratives/database/data/Administratives-China(Street)-9.sql
+        path: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-9.sql
         type: File
