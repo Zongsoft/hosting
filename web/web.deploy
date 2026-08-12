@@ -20,7 +20,7 @@ nuget:Zongsoft.Security.Captcha@2.1.0
 nuget:Zongsoft.Externals.Wechat.Web@7.3.0
 
 [plugins zongsoft externals hangfire]
-nuget:Zongsoft.Externals.Hangfire.Web@2.1.0
+nuget:Zongsoft.Externals.Hangfire.Web@2.1.1
 
 [plugins zongsoft administratives]
 nuget:Zongsoft.Administratives@1.1.0

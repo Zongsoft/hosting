@@ -11,25 +11,25 @@ nuget:Zongsoft.Intelligences@0.4.0
 nuget:Zongsoft.Net@7.2.0
 
 [plugins zongsoft data]
-nuget:Zongsoft.Data@7.25.0
+nuget:Zongsoft.Data@7.27.0
 
 [plugins zongsoft data mysql]
-nuget:Zongsoft.Data.MySql@7.9.0
+nuget:Zongsoft.Data.MySql@7.10.0
 
 [plugins zongsoft data sqlite]
-nuget:Zongsoft.Data.SQLite@3.5.0
+nuget:Zongsoft.Data.SQLite@3.6.0
 
 [plugins zongsoft data tdengine]
 nuget:Zongsoft.Data.TDengine@2.8.0
 
 [plugins zongsoft data postgres]
-nuget:Zongsoft.Data.PostgreSql@1.4.0
+nuget:Zongsoft.Data.PostgreSql@1.5.0
 
 [plugins zongsoft data clickhouse]
-nuget:Zongsoft.Data.ClickHouse@2.8.0
+nuget:Zongsoft.Data.ClickHouse@2.9.0
 
 [plugins zongsoft commands]
-nuget:Zongsoft.Commands@7.12.1
+nuget:Zongsoft.Commands@7.13.0
 
 [plugins zongsoft reporting]
 nuget:Zongsoft.Reporting@7.0.0
@@ -65,9 +65,9 @@ nuget:Zongsoft.Externals.Scriban@2.0.0
 nuget:Zongsoft.Externals.ClosedXml@4.5.0
 
 [plugins zongsoft externals hangfire]
-nuget:Zongsoft.Externals.Hangfire@2.8.0
+nuget:Zongsoft.Externals.Hangfire@2.9.1
 [plugins zongsoft externals hangfire redis]
-nuget:Zongsoft.Externals.Hangfire.Storages.Redis@3.1.0
+nuget:Zongsoft.Externals.Hangfire.Storages.Redis@3.1.1
 
 [plugins zongsoft messaging mqtt]
 nuget:Zongsoft.Messaging.Mqtt@7.2.0
