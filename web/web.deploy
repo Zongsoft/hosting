@@ -7,7 +7,7 @@ nuget:Zongsoft.Web.Grpc@1.2.0
 nuget:Zongsoft.Intelligences.Web@0.4.0
 
 [plugins zongsoft openapi]
-nuget:Zongsoft.Web.OpenApi@0.3.0
+nuget:Zongsoft.Web.OpenApi@0.5.0
 
 [plugins zongsoft diagnostics server]
 nuget:Zongsoft.Diagnostics.Protocols.Server@1.2.0
