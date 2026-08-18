@@ -23,3 +23,5 @@ spec:
         - "$(REDIS_PASSWORD)"
         - "--protected-mode"
         - "no"
+        - "--notify-keyspace-events"
+        - "KA"
