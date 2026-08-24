@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: zongsoft.distributed
+  labels:
+    app: zongsoft
+spec:
+  containers:
+    - name: etcd
+      image: quay.io/coreos/etcd:v3.7.1
+      ports:
+        - containerPort: 2379
+          protocol: TCP
+          hostPort: 2379
+      command: ["/usr/local/bin/etcd"]
+      args:
+        - "--name=etcd"
+        - "--data-dir=/etcd-data"
+        - "--listen-client-urls=http://0.0.0.0:2379"
+        - "--advertise-client-urls=http://127.0.0.1:2379"
+        - "--listen-peer-urls=http://0.0.0.0:2380"
+        - "--initial-advertise-peer-urls=http://127.0.0.1:2380"
+        - "--initial-cluster=etcd=http://127.0.0.1:2380"
+        - "--initial-cluster-token=zongsoft-etcd"
+        - "--initial-cluster-state=new"
+        - "--logger=zap"
+        - "--log-outputs=stderr"

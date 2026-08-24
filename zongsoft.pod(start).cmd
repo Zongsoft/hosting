@@ -38,7 +38,7 @@ if %errorlevel% equ 1 (
 
 :pod_label
 SET pod=
-SET /p pod=Please enter the name of the Pod you want to start(%GREEN%host/redis/mysql/postgre/rustfs%RESET%): 
+SET /p pod=Please enter the name of the Pod you want to start(%GREEN%host/etcd/redis/mysql/postgre/rustfs%RESET%):
 
 if "%pod%"=="" (
 	echo %DARK_RED%Error: %RED%The pod name cannot be empty.%RESET%
@@ -51,6 +51,8 @@ if /i "%pod%"=="exit" exit /b 0
 
 if /i "%pod%"=="host" (
 	podman kube play --network %NETWORK% --replace .\zongsoft.pod-host.yaml
+) else if /i "%pod%"=="etcd" (
+	podman kube play --network %NETWORK% --replace .\zongsoft.pod-etcd.yaml
 ) else if /i "%pod%"=="redis" (
 	podman kube play --network %NETWORK% --replace .\zongsoft.pod-redis.yaml
 ) else if /i "%pod%"=="rustfs" (
