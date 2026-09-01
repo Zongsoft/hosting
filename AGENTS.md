@@ -7,18 +7,21 @@
 本文件适用于 `hosting` 目录下的各宿主项目。更具体的子目录说明以就近的 `AGENTS.md` 为准。
 
 - 保持已有文件的换行符，新文件使用 CRLF 换行格式；代码文件采用 Tab 缩进。
+- `README.md` 为英文文档，`README.zh-Hans.md` 为简体中文文档；修改用户文档时应同步维护两种语言的结构和技术内容。
 - 宿主项目本身不应包含业务代码，业务能力应由 `plugins/` 目录下的插件提供。
 - 修改宿主项目时，优先关注 `Program.cs`、`appsettings.json`、`*.csproj`、`.deploy`、部署脚本和相关配置文件。
 
 ## 操作边界
 
-- 未经明确要求，不运行 `deploy.cmd`、`pack.cmd`、`install.cmd`、`uninstall.cmd`、`upgrade.pack.cmd`、`upgrade.publish.cmd`、`zongsoft.pod(start).cmd`、`zongsoft.pod(stop).cmd`。
+- 未经明确要求，不运行 `deploy.cmd`、`pack.cmd`、`install.cmd`、`uninstall.cmd`、`upgrade.pack.cmd`、`upgrade.publish.cmd`、`zongsoft.pod(start).cmd`、`zongsoft.pod(stop).cmd`、`zongsoft.compose(start).cmd`、`zongsoft.compose(stop).cmd`。
 - 这些脚本通常会交互式询问参数，并可能复制文件、启动或停止容器、生成安装包、发布升级包。确需执行前，先阅读脚本并说明影响。
 - 如果需要业务行为，应先查找插件、配置、外部业务代码或 Zongsoft 框架代码，不要直接把业务逻辑加入宿主项目。
 
 ## 验证
 
 - 只修改文档时，检查差异内容和换行符即可。
+- 检查 Compose 配置时，可以运行不创建容器的 `podman compose --file zongsoft.compose.yaml --project-name zongsoft config`；未经明确要求，不运行 Compose 启停脚本或实际创建服务。
+- 检查 K8s Pod YAML 时以静态审查为主；`podman kube play` 会创建或替换 Pod，未经明确要求不得作为验证命令执行。
 - 除非任务明确涉及启动、配置、部署或承载行为，通常无需修改宿主代码，因为宿主程序不含具体业务或功能代码 _(可以将它理解成程序的启动器)_。
 - 需要通过宿主程序验证特定插件改动时，通常应先停止宿主程序，然后手动将插件部署到对应的插件目录，再重启宿主程序进行验证。
 - 修改 Web API 相关内容后，可参考 `web/.http` 目录下的请求定义，或将其转换为 `curl` 等方式进行接口验证。
@@ -56,19 +59,38 @@
 
 ## 容器化
 
-由于应用程序的业务代码很可能依赖于数据库、分布式缓存、分布式文件系统等基础服务，因此在 `hosting` 根目录准备好了相关基础服务的 Podman 容器文件：
+宿主程序及其插件可能依赖数据库、分布式缓存、分布式配置和分布式文件系统。`hosting` 根目录提供两套并列的 Podman 容器化方案，维护时必须保留两种模式，不能以其中一种替换或删除另一种。
 
-- Redis 缓存库：`zongsoft.pod-redis.yaml`
-- MySQL 数据库：`zongsoft.pod-mysql.yaml`
-- RustFS 分布式文件系统：`zongsoft.pod-rustfs.yaml`
+### K8s Pod 模式
 
-为了方便加载和卸载这些基础服务，还提供了相关脚本：
-> 这些脚本运行后需要人工输入启停的服务名，在自动化调用过程中需要注意这点。
-
+- 定义文件：`zongsoft.pod-*.yaml`
 - 启动脚本：`zongsoft.pod(start).cmd`
-- 卸载脚本：`zongsoft.pod(stop).cmd`
+- 停止脚本：`zongsoft.pod(stop).cmd`
+- 管理命令：`podman kube play`、`podman kube down`
+- 生命周期：`kube down` 删除 Pod 和容器，容器可写层数据不保留。
+- 特殊限制：MySQL 与 PostgreSQL 使用相同的 `zongsoft.data` Pod 名，该模式下不应同时运行。
 
-提示：如果在本机环境中调试宿主程序时发现无法连接 Redis、数据库等运行时错误，则可能是依赖的基础服务容器尚未加载。
+### Podman + Docker Compose 模式
+
+- 定义文件：`zongsoft.compose.yaml`
+- 启动脚本：`zongsoft.compose(start).cmd`
+- 停止脚本：`zongsoft.compose(stop).cmd`
+- 管理命令：`podman compose`
+- 生命周期：停止脚本默认保留容器数据；`--clean` 删除容器及匿名卷。
+- 服务寻址：容器间优先使用 `host`、`etcd`、`redis`、`mysql`、`postgres`、`rustfs` 等 Compose 服务名。
+
+### 共同约定
+
+- 两种模式均包含开发宿主、Etcd、Redis、MySQL、PostgreSQL 和 RustFS。
+- 两种模式共享 `zongsoft-net` 网络、Windows 宿主端口和部分网络别名，不要同时用两种模式启动同一个服务。
+- Windows 访问容器使用 `localhost` 及映射端口；容器访问 Windows 使用 `host.containers.internal`。
+- 不要依赖或记录容器 IP；Pod、Compose 服务名及网络别名才是稳定连接地址。
+- `host` 容器的 `/Zongsoft`、数据库初始化 SQL 和 RustFS 数据均来自宿主机绑定路径，修改路径时要同步评估两种模式。
+- 修改某个服务的镜像、端口、环境变量、挂载或初始化脚本时，应判断另一种模式是否也需要同步；如果刻意只修改一种模式，应在结果中说明差异。
+- 两种模式地位相同；不得以维护或重构其中一种模式为由删除、覆盖或降级另一种模式的文件、脚本及文档。
+- README 的容器化章节必须分别保留两种模式的前置条件、启停方式、网络地址、数据生命周期和常用命令。
+
+如果本机调试时无法连接 Redis、数据库等服务，应先确认选择的模式、目标服务状态、`zongsoft-net` 网络、宿主端口和 Podman machine 状态，不要通过向宿主项目添加临时业务代码绕过基础设施问题。
 
 ## 安装与升级
 

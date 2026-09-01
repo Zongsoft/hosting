@@ -1,114 +1,140 @@
-## 宿主
+[简体中文](./README.zh-Hans.md)
 
-目前应用程序按宿主类型分为以下三种：
+## Hosts
 
-- 终端应用 _(**T**erminal)_
-	> 通过控制台运行，适用调试。
+Applications are currently divided into three host types:
 
-- 后台应用 _(**D**aemon)_
-	> 编译和部署需要指定操作系统平台，由特定的容器进行托管运行。
-	> - _**L**inux/**U**nix_ 系统中由 _systemd_ 进行托管，需要部署对应的 `*.service` 文件；
-	> - _**W**indows_ 系统中由服务控制器进行托管，需要以 _管理员_ 模式运行；
-	> 	- 使用 [_install.cmd_](./daemon/install.cmd) 脚本安装服务；
-	> 	- 使用 [_uninstall.cmd_](./daemon/uninstall.cmd) 脚本卸载服务；
+- Terminal applications
+	> Run in a console and are suitable for debugging.
 
-- 网站应用 _(**W**eb)_
-	> 表示 _**W**eb_ 后台应用程序，通常按站点进行划分，常用站点：
-	> - 管理端 _(administration)_
-	> - 商家端 _(business)_
-	> - 客户端 _(customer)_
-	> - 伙伴端 _(partner)_
-	> - 网关端 _(gateway)_
-	> - 设备端 _(iot)_
+- Daemon applications
+	> Compilation and deployment must target a specific operating-system platform, and the application runs under a platform-specific service manager.
+	> - On Linux/Unix, the application is managed by systemd and requires the corresponding `*.service` file;
+	> - On Windows, the application is managed by the Service Control Manager and installation must run with administrator privileges;
+	> 	- Use [install.cmd](./daemon/install.cmd) to install the service;
+	> 	- Use [uninstall.cmd](./daemon/uninstall.cmd) to uninstall the service.
 
-## 部署
+- Web applications
+	> Web backend applications are usually organized by site. Common sites include:
+	> - administration
+	> - business
+	> - customer
+	> - partner
+	> - gateway
+	> - IoT
 
-宿主程序只负责初始化运行时环境，作为插件的承载容器其自身并不含有具体的功能实现，我们通过将需要的插件及其相关附属(配置、证书)文件放置在 `plugins` 目录下的相应子目录中，这个行为即为部署。
+## Deployment
 
-运行 `deploy.cmd` _(**W**indows)_ 或 `deploy.sh` _(**L**inux/**U**nix)_ 脚本以执行由部署文件 _(`*.deploy`)_ 所定义的部署内容。
+A host application is responsible only for initializing the runtime environment. It serves as a plugin container and contains no concrete business implementation itself. Deployment means placing the required plugins and their related files, such as configuration and certificates, in the appropriate subdirectories under `plugins`.
 
-> 提示：部署脚本依赖 **Z**ongsoft.**T**ools.**D**eployer 工具进行部署操作，有关该工具的使用说明，请参考其开源项目的相关文档：
-> - 英文：[https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
-> - 中文：[https://github.com/Zongsoft/tools/blob/main/deployer/README-zh_CN.md](https://github.com/Zongsoft/tools/blob/main/deployer/README-zh_CN.md)
+Run `deploy.cmd` on Windows or `deploy.sh` on Linux/Unix to perform the operations defined by the deployment files (`*.deploy`).
 
-### 部署文件
+> The deployment scripts use **Z**ongsoft.**T**ools.**D**eployer. For usage instructions, see the documentation in its open-source repository:
+> - English: [https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
+> - Chinese: [https://github.com/Zongsoft/tools/blob/main/deployer/README-zh_CN.md](https://github.com/Zongsoft/tools/blob/main/deployer/README-zh_CN.md)
 
-通常配置文件与特定的 **产品**、**项目**、**部署平台** _（如：单机、内网、私有云、公有云）_ 及 **环境** _（如：开发、测试、生产）_ 等相关，所以应该将这些特定相关性的文件单独存放在 `/hosting/.deploy` 目录下，以便于统一管理与维护。
+### Deployment Files
 
-> 提示：更多部署项的用法请参考宿主程序目录中的 `.deploy` 部署文件。
+Configuration files are usually specific to a product, project, deployment platform (such as standalone, intranet, private cloud, or public cloud), and environment (such as development, testing, or production). Store these context-specific files separately under `/hosting/.deploy` for centralized management and maintenance.
 
-#### 配置文件
+> For more deployment-item examples, see the `.deploy` files in the host application directories.
 
-应该根据配置内容的环境相关性来定义配置文件，相应的环境名作为配置文件名的尾部。下面以 **Zongsoft.Security** 插件的配置文件为例进行说明：
+#### Configuration Files
+
+Configuration files should be named according to the environment to which their contents apply, with the environment name appended to the base file name. The following examples use configuration files from the **Zongsoft.Security** plugin:
 
 - `Zongsoft.Security.option`
-	> 表示环境无关的配置文件，其配置作为其他环境有关性配置的缺省值；
+	> Environment-independent configuration whose values act as defaults for environment-specific files.
 -----
 - `Zongsoft.Security.test.option`
-	> 表示**测试环境**有关的配置文件，譬如该配置文件内的数据库连接字符串指向的是**测试数据库**并且使用的是**内网地址**等。
+	> Configuration for the **test environment**. For example, its database connection string may point to a **test database** through an **intranet address**.
 - `Zongsoft.Security.production.option`
-	> 表示**生产环境**有关的配置文件，譬如该配置文件内的数据库连接字符串指向的是**生产数据库**并且使用的是**内网地址**等。
+	> Configuration for the **production environment**. For example, its database connection string may point to a **production database** through an **intranet address**.
 - `Zongsoft.Security.development.option`
-	> 表示**开发环境**有关的配置文件，譬如该配置文件内的数据库连接字符串指向的是**开发数据库**并且使用的是**内网地址**等。
+	> Configuration for the **development environment**. For example, its database connection string may point to a **development database** through an **intranet address**.
 -----
 - `Zongsoft.Security.test-debug.option`
-	> 表示**测试环境**有关的配置文件，譬如该配置文件内的数据库连接字符串指向的是**测试数据库**并且使用的是**外网地址**等。
+	> Debug configuration for the **test environment**. For example, its database connection string may point to a **test database** through a **public address**.
 - `Zongsoft.Security.production-debug.option`
-	> 表示**生产环境**有关的配置文件，譬如该配置文件内的数据库连接字符串指向的是**生产数据库**并且使用的是**外网地址**等。
+	> Debug configuration for the **production environment**. For example, its database connection string may point to a **production database** through a **public address**.
 - `Zongsoft.Security.development-debug.option`
-	> 表示**开发环境**有关的配置文件，譬如该配置文件内的数据库连接字符串指向的是**开发数据库**并且使用的是**外网地址**等。
+	> Debug configuration for the **development environment**. For example, its database connection string may point to a **development database** through a **public address**.
 
-### 目录结构
+### Directory Structure
 
-位于 `hosting` 目录下的 `.deploy` 目录即为存放部署相关的各种资源的‘根’目录，其下级结构如下：
+The `.deploy` directory under `hosting` is the root directory for deployment-related resources. Its structure is as follows:
 
-- `certificates` 证书文件目录
-	> 注：部署平台无关的证书文件。
+- `certificates`: certificate files
+	> Certificates that are independent of a deployment platform.
 
-- `{scheme}` 部署方案
-	- `certificates` 证书文件目录
-		> 注：与部署方案有关联的证书文件。
-	- `options` 配置文件目录
+- `{scheme}`: deployment scheme
+	- `certificates`: certificate files
+		> Certificates associated with the deployment scheme.
+	- `options`: configuration files
 
-### 部署工具
+### Deployment Tool
 
-在运行 `deploy.cmd` 脚本之前必须确保 `deploy` 工具已经安装，可通过下面命令查看已安装的全局工具：
+Before running `deploy.cmd`, make sure the deployer tool is installed. Use the following command to list installed global tools:
+
 ```bash
 dotnet tool list -g
 ```
 
-如果尚未安装 `deploy` 工具，可通过下面命令进行全局安装：
+If the deployer is not installed, install it globally:
+
 ```bash
 dotnet tool install -g zongsoft.tools.deployer
 ```
 
-如果已经安装了 `deploy` 工具，可通过下面命令进行升级更新：
+If it is already installed, update it with:
+
 ```bash
 dotnet tool update -g zongsoft.tools.deployer
 ```
 
-> 💡 有关 **Z**ongsoft.**T**ools.**D**eployer 部署工具的更多内部原理与实现，请访问该项目的开源网址：[https://github.com/Zongsoft/tools/deployer](https://github.com/Zongsoft/tools/tree/main/deployer)
+> 💡 For more information about the design and implementation of **Z**ongsoft.**T**ools.**D**eployer, visit its open-source repository: [https://github.com/Zongsoft/tools/deployer](https://github.com/Zongsoft/tools/tree/main/deployer)
 
 -----
 
-> 💡 如果需要本地编译调试 _**Z**ongsoft_ 框架[源码](https://github.com/Zongsoft/framework)，建议安装 [_**C**ake.**T**ool_](https://cakebuild.net/docs/getting-started/setting-up-a-new-scripting-project) 工具：
+> 💡 To build and debug the [**Z**ongsoft framework source](https://github.com/Zongsoft/framework) locally, install [**C**ake.**T**ool](https://cakebuild.net/docs/getting-started/setting-up-a-new-scripting-project):
 > ```bash
 > dotnet tool install -g cake.tool
 > ```
 
-## 容器化
+## Containerization
 
-由于一些插件需要使用到 _**R**edis_、_**R**ust**FS**_、_**M**y**SQL**_ 或 _**P**ostgre**SQL**_ 等，因此可以容器化这些依赖的服务。
+Some plugins depend on Redis, RustFS, MySQL, PostgreSQL, or Etcd. This project therefore supports two equivalent _**P**odman_-based/_**D**ocker_-based local containerization modes. Both modes cover the same development host and infrastructure services, and users may choose either one based on their preferred tools and data-lifecycle requirements.
 
-> 建议安装 _**P**odman_ _**CLI**_ 进行容器化处理，下面是它的下载地址：
-> - https://podman.io
-> - https://github.com/containers/podman/releases
+### Runtime Modes
 
-> 💡 如果是 _**W**indows_ 环境，请确保安装了 [_WSL-2_](https://learn.microsoft.com/zh-cn/windows/wsl/install)。
+Mode | Definition files | Management commands | Data lifecycle | Typical use
+-----|------------------|---------------------|----------------|------------
+K8s Pod | `zongsoft.pod-*.yaml` | `podman kube play/down` | Removing a Pod discards container data | Describe services with Kubernetes manifests and manage them as Pods
+Podman + Docker Compose | `zongsoft.compose.yaml` | `podman compose` | Container data can be preserved or cleared | Describe services with the Compose model and manage individual services or the project
 
-### 网络模式
+Both modes can be installed on the same machine, but do not use both modes to start the same service at the same time. They share Windows host ports, the `zongsoft-net` network, and some network aliases.
 
-在 `%USERPROFILE%` 目录中可能存在名为 `.wslconfig` 文件，该文件中可能指定了 _WSL_ 的网络模式，譬如：
+### Common Environment Setup
+
+Install the Podman CLI from one of the following locations:
+
+- https://podman.io
+- https://github.com/containers/podman/releases
+
+> 💡 On Windows, make sure [WSL 2](https://learn.microsoft.com/windows/wsl/install) is installed.
+
+#### Docker Compose Provider (Compose Mode Only)
+
+Skip this section when using K8s Pod mode. For Compose mode, install a Docker Compose Provider as follows:
+
+1. Download [Docker Compose for Windows x64](https://github.com/docker/compose/releases/download/v5.5.0/docker-compose-windows-x86_64.exe) from the [Docker Compose releases](https://github.com/docker/compose/releases/download) page;
+2. Rename the downloaded file to `docker-compose.exe` and copy it to the Podman installation directory, for example `C:\Program Files\RedHat\Podman`;
+3. Create an environment variable named `PODMAN_COMPOSE_PROVIDER` whose value is the full path to `docker-compose.exe`, for example `C:\Program Files\RedHat\Podman\docker-compose.exe`;
+4. Verify the installation by running `podman compose version` in a terminal.
+
+#### Network Mode
+
+The `%USERPROFILE%` directory may contain a `.wslconfig` file that specifies the WSL network mode, for example:
 
 ```ini
 [wsl2]
@@ -118,91 +144,89 @@ firewall=false
 autoProxy=true
 ```
 
-💡 **注意**：这表明 _WSL_ 网络模式为 _镜像_ 模式，这种模式下的多个容器实例之间网络很可能无法互通，即使在 `.wslconfig` 文件中指定了 `hostAddressLoopback=true` 选项，同时在 `.yaml` 容器文件中也指定了 `hostNetwork: true` 参数都不行，更稳妥的方案是采用 `NAT` 网络模式。下面是重置 _WSL_ 网络模式为 `NAT` 模式的操作步骤。
+💡 **Note:** This configuration enables mirrored networking. In this mode, multiple container instances may be unable to communicate with one another, even when `.wslconfig` contains `hostAddressLoopback=true` and the container YAML specifies `hostNetwork: true`. NAT mode is a more reliable option for this setup. Use the following steps to reset WSL networking to NAT mode.
 
-1. 关闭 _WSL_ 虚拟机
+1. Shut down WSL:
 
 ```shell
 wsl --shutdown
 ```
 
-2. 删除 `.wslconfig` 文件
+2. Delete `.wslconfig`:
 
-	- 方式一：在文件资源管理器地址栏输入：`%USERPROFILE%`，找到并删除 `.wslconfig` 文件。
-		> 需要在资源管理器的选项设置中开启显示隐藏文件。
+	- Option 1: Enter `%USERPROFILE%` in the File Explorer address bar, enable display of hidden files if necessary, and delete `.wslconfig`.
 
-	- 方式二：在宿主机的 _**P**ower**S**hell_ 中执行下列命令进行删除：
+	- Option 2: Run the following command in PowerShell on the Windows host:
 		> ```shell
 		> rm $env:USERPROFILE\.wslconfig -Force
 		> ```
 
-3. 重置网络设置
+3. Reset the network settings.
 
-> 在宿主机的 _**P**ower**S**hell_ 中执行以下命令：<br />
-> 注：执行完下面两步后可能需要重启电脑。
+> Run the following commands in PowerShell on the Windows host.<br />
+> You may need to restart Windows afterward.
 
 ```shell
 netsh winsock reset
 netsh int ip reset
 ```
 
-4. 检查网络情况
-
-> 重启后，在宿主机的 _**P**ower**S**hell_ 中执行以下命令：
+4. Check the network after restarting:
 
 ```shell
-# 检查 WSL 网络接口状态
+# Check the WSL network interface state
 wsl ip addr show eth0
 
-# 检查某个端口是否可访问(以6379为例)
+# Check whether a port is listening (Redis 6379 in this example)
 wsl ss -tlnp | grep ':6379'
 ```
 
-> 预期结果：
-> - 返回的 `eth0` 网络接口状态应该变为 `UP`
-> - 应该能看到 `inet` 地址 _(通常为 `172.x.x.x` 范围)_
+Expected results:
 
-### 目录映射
+- The `eth0` interface should be `UP`;
+- An `inet` address, usually in a `172.x.x.x` range, should be present.
 
-为方便开发，可以将宿主机中的相关开发目录映射到虚拟机的根目录中，操作步骤：
+#### Directory Mapping
 
-- 进入虚拟机，编辑 `/etc/fstab` 文件：
+For convenient development, host directories can be bind-mounted into the root of the Podman machine:
+
+1. Enter the Podman machine and edit `/etc/fstab`:
 
 	```shell
 	sudo vi /etc/fstab
 	```
 
-- 在文件末尾追加 _(示例)_：
+2. Append entries such as:
 
 	```plaintext
 	/mnt/d/Automao  /Automao  none bind 0 0
 	/mnt/d/Zongsoft /Zongsoft none bind 0 0
 	```
 
-- 重启虚拟机
+3. Restart the Podman machine:
 
 	```shell
 	podman machine stop
 	podman machine start
 	```
 
-### 镜像配置
+#### Registry Mirrors
 
-基于某些众所周知的国情，务必先配置 _**D**ocker_ 镜像，步骤如下：
+Depending on local network conditions, configure container registry mirrors before pulling images:
 
-1. 进入虚拟机
+1. Enter the Podman machine:
 
 	```shell
 	podman machine ssh
 	```
 
-2. 编辑容器注册表文件
+2. Edit the container registry configuration:
 
 	```bash
 	sudo vi /etc/containers/registries.conf
 	```
 
-	> 编辑该文件内容大致如下：
+	A representative configuration is shown below:
 
 	```toml
 	[[registry]]
@@ -217,24 +241,22 @@ wsl ss -tlnp | grep ':6379'
 	  location = "docker.m.daocloud.io"
 	```
 
-3. 退出并重启虚拟机
+3. Exit and restart the Podman machine:
+
 	```shell
 	podman machine stop
 	podman machine start
 	```
 
-### 网络代理
+#### Network Proxy
 
-1. 进入虚拟机
+1. Enter the Podman machine:
 
 	```shell
 	podman machine ssh
 	```
 
-2. 在容器虚拟机内运行下面命令：
-
-	> - 创建一个设置网络代理环境变量的脚本文件；
-	> - 创建一个 systemd 后台服务，使其在容器启动时运行上面的脚本；
+2. Run the following commands inside the Podman machine to create a script that sets proxy environment variables and a systemd service that runs it when the machine starts:
 
 ```bash
 cat > /usr/local/bin/set-podman-proxy-env.sh <<'EOF'
@@ -277,145 +299,276 @@ systemctl daemon-reload
 systemctl enable --now podman-proxy-env.service
 ```
 
+### Database Initialization Prerequisites
 
-### 容器文件
+Both modes run initialization SQL when a MySQL or PostgreSQL container is first created. Make sure the following repositories are located beside [hosting](https://github.com/Zongsoft/hosting):
 
-我们提供了一些 _**P**od_ 容器文件：
-- [_zongsoft.pod-host.yaml_](./zongsoft.pod-host.yaml) 该文件定义了一个包含 _.NET SDK 10_ 以及 `systemd`、`nginx` 等开发环境的容器。
-	> 💡 该容器定义了网络代理，你应该根据自己的实际情况编辑该文件中的代理设置。
+- [administratives](https://github.com/Zongsoft/administratives)
+- [discussions](https://github.com/Zongsoft/discussions)
+- [framework](https://github.com/Zongsoft/framework)
 
-- [_zongsoft.pod-redis.yaml_](./zongsoft.pod-redis.yaml) 该文件定义了 _**R**edis_ 分布式缓存容器。
-- [_zongsoft.pod-rustfs.yaml_](./zongsoft.pod-rustfs.yaml) 该文件定义了 _**R**ust**FS**_ 分布式文件系统容器。
+If these repositories or their SQL files are missing, the database containers cannot complete initialization as expected.
 
-- [_zongsoft.pod-mysql.yaml_](./zongsoft.pod-mysql.yaml) 该文件定义了 _**M**y**SQL**_ 数据库容器，以及一个名为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
-- [_zongsoft.pod-postgres.yaml_](./zongsoft.pod-postgres.yaml) 该文件定义了 _**P**ostgre**SQL**_ 数据库容器，以及一个名为 `zongsoft` 的数据库 _（该库已初始化）_，确保开箱即用。
+### K8s Pod Mode
 
-请确保 [_hosting_](https://github.com/Zongsoft/hosting) 的同级位置有如下仓库，因为 `zongsoft` 数据库创建后会加载运行这些仓库中的 _SQL_ 脚本，以完成建表和数据初始化。
+This mode describes services with Kubernetes Pod YAML and manages the Pods through Podman's `kube play` and `kube down` commands. It requires only the Podman CLI.
 
-> - [adadministratives](https://github.com/Zongsoft/administratives)
-> - [discussions](https://github.com/Zongsoft/discussions)
-> - [framework](https://github.com/Zongsoft/framework)
+#### Pod Files
 
-### 操作步骤
+- [zongsoft.pod-host.yaml](./zongsoft.pod-host.yaml): Development host container with .NET SDK 10, `systemd`, `nginx`, and related tools.
+	> This file contains network-proxy settings that should be adjusted for the local environment.
+- [zongsoft.pod-etcd.yaml](./zongsoft.pod-etcd.yaml): Etcd distributed-configuration container.
+- [zongsoft.pod-redis.yaml](./zongsoft.pod-redis.yaml): Redis distributed-cache container.
+- [zongsoft.pod-rustfs.yaml](./zongsoft.pod-rustfs.yaml): RustFS distributed-file-system container.
+- [zongsoft.pod-mysql.yaml](./zongsoft.pod-mysql.yaml): MySQL container and initialization scripts.
+- [zongsoft.pod-postgres.yaml](./zongsoft.pod-postgres.yaml): PostgreSQL container and initialization scripts.
 
-使用 `zongsoft.pod(start).cmd` 和 `zongsoft.pod(stop).cmd` 脚本可以更方便的启用或停止指定的容器，并确保它创建的容器都共享同个网络。
+#### Start a Pod
 
-1. 在 _文件管理器_ 中双击 `zongsoft.pod(start).cmd` 文件，或者在 _命令提示符_ 中运行该脚本文件；
-	> 在提示中根据需要输入要启动的容器：
-	> - `host` 启动 _宿主应用程序_ 的开发容器；
-	> - `redis` 启动 _**R**edis_ 分布式缓存容器；
-	> - `rustfs` 启动 _**R**ust**FS**_ 分布式文件容器；
-	> - `mysql`  启动 _**M**y**SQL**_ 数据库容器；
-	> - `postgres` 启动 _**P**ostgre**SQL**_ 数据库容器。
+Double-click `zongsoft.pod(start).cmd` in File Explorer, or run it in Command Prompt:
 
-2. 使用下列命令检查 _Pod_ 是否成功运行
-
-```shell
-podman ps -a --pod
+```cmd
+zongsoft.pod(start).cmd
 ```
 
-> - 💡 当 `host` 容器启动时会下载并初始化 _systemd_、_nginx_ 等基础服务，即使容器启动成功，而 _systemd_、_nginx_ 可能尚未准备就绪，建议稍等一会再进入 `podmapodman exec -it zongsoft-host bash` 容器虚拟机。
-> 	- 通过 `podman logs zongsoft-host` 命令查看其启动日志以确定加载进度。
+Enter the Pod to start when prompted:
 
-> - 💡 由于 _**M**y**SQL**_ 和 _**P**ostgre**SQL**_ 数据库容器在启动时会执行建表及初始化数据等 _SQL_ 操作，因此即使容器已显示启动成功，也建议稍等片刻再连接数据库，以确保相关 _SQL_ 脚本已执行完成。
+- `host`: development host container;
+- `etcd`: Etcd;
+- `redis`: Redis;
+- `rustfs`: RustFS;
+- `mysql`: MySQL;
+- `postgres`, `postgre`, or `postgresql`: PostgreSQL;
+- `exit`: exit the script.
 
-3. 在 _文件管理器_ 中双击 `zongsoft.pod(stop).cmd` 文件，或者在 _命令提示符_ 中运行该脚本文件；
-	> 在提示中根据需要输入要关闭的容器：
-	> - `*` 关闭所有容器；
-	> - `host` 关闭 _宿主应用程序_ 的开发容器；
-	> - `redis` 关闭 _**R**edis_ 分布式缓存容器；
-	> - `rustfs` 关闭 _**R**ust**FS**_ 分布式文件容器；
-	> - `mysql`  关闭 _**M**y**SQL**_ 数据库容器；
-	> - `postgres` 关闭 _**P**ostgre**SQL**_ 数据库容器。
+The script ensures that `zongsoft-net` exists, then creates or replaces the selected Pod with `podman kube play --network zongsoft-net --replace`.
 
-#### 网络地址
+Use the following command to inspect Pod and container status:
 
-在容器中如果需要连接到其他容器中的服务，需要使用连接服务容器的 _**P**od_ 名作为其连接的网络地址。
+```shell
+podman ps --all --pod
+```
 
- _Pod_ 名 | 容器名
-----------|------
-`zongsoft`         | `zongsoft-host`
-`zongsoft.io`      | `zongsoft.io-rustfs`
-`zongsoft.data`    | `zongsoft.data-mysql`
-`zongsoft.data`    | `zongsoft.data-postgres`
-`zongsoft.caching` | `zongsoft.caching-redis`
+#### Stop a Pod
 
-1. 进入 `zongsoft-host` 容器：
+Double-click `zongsoft.pod(stop).cmd` in File Explorer, or run it in Command Prompt:
 
-	```shell
-	podman exec -it zongsoft-host bash
-	```
+```cmd
+zongsoft.pod(stop).cmd
+```
 
-2. 连接到其他容器服务
+Enter the Pod to stop when prompted. For an individual Pod, the script uses `podman kube down` to stop and remove it.
 
-	```shell
-	# 访问 RustFS 的管理页面（网址为 RustFS 容器的 Pod 名）
-	curl -L -A "Mozilla/5.0(Linux; x64)" http://zongsoft.io:9001
+> ⚠️ Entering `*` runs `podman stop -a` followed by `podman rm -afv`. This affects every container in the current Podman environment, not only this project. Make sure no other containers need to be preserved before using it.
 
-	# 连接 Redis 服务（连接地址为 Redis 容器的 Pod 名）
-	redis-cli -h zongsoft.caching -p 6379
-	```
+`kube down` removes the Pod and its containers, so data in the containers' writable layers is not preserved. It does not delete the host-mounted RustFS `.attachments` directory or the database initialization SQL source files.
 
-3. 使用 _**R**edis_ 服务
+#### Pod Network Addresses
 
-	```shell
-	zongsoft.caching:6379> auth xxxxxx
-	OK
-	zongsoft.caching:6379> get key
-	(nil)
-	```
+All Pods join `zongsoft-net`. Use the Pod name and container port when one container connects to another Pod:
 
-### 常用命令
+Pod name | Container name | Address inside the network | Windows address
+---------|----------------|----------------------------|----------------
+`zongsoft` | `zongsoft-host` | `zongsoft` | _No published port_
+`zongsoft.distributed` | `zongsoft.distributed-etcd` | `zongsoft.distributed:2379` | `localhost:2379`
+`zongsoft.caching` | `zongsoft.caching-redis` | `zongsoft.caching:6379` | `localhost:6379`
+`zongsoft.data` | `zongsoft.data-mysql` | `zongsoft.data:3306` | `localhost:3306`
+`zongsoft.data` | `zongsoft.data-postgres` | `zongsoft.data:5432` | `localhost:5432`
+`zongsoft.io` | `zongsoft.io-rustfs` | `zongsoft.io:9000` | `localhost:9000`, `localhost:9001`
 
-- 查看容器日志
+MySQL and PostgreSQL use the same Pod name, `zongsoft.data`, so choose one database in this mode rather than starting both at the same time.
 
-	> ```shell
-	> podman logs zongsoft-host
-	> podman logs zongsoft.data-mysql
-	> podman logs zongsoft.data-postgres
-	> podman logs zongsoft.caching-redis
-	> ```
+For example, connect to RustFS and Redis from the development host container:
 
-- 进入指定容器的 _bash_
+```shell
+podman exec --interactive --tty zongsoft-host bash
+curl -L -A "Mozilla/5.0(Linux; x64)" http://zongsoft.io:9001
+redis-cli -h zongsoft.caching -p 6379
+zongsoft.caching:6379> auth xxxxxx
+OK
+```
 
-	> ```shell
-	> podman exec -it zongsoft-host bash
-	> podman exec -it zongsoft.data-mysql bash
-	> podman exec -it zongsoft.data-postgres bash
-	> podman exec -it zongsoft.caching-redis bash
-	> ```
+#### Common Pod Commands
 
-- 启动 _Pod_ 容器
+```shell
+# View logs
+podman logs zongsoft-host
+podman logs zongsoft.data-mysql
+podman logs zongsoft.data-postgres
+podman logs zongsoft.caching-redis
 
-	> ```shell
-	> podman kube play --replace .\zongsoft.pod-redis.yaml
-	> podman kube play --replace .\zongsoft.pod-mysql.yaml
-	> podman kube play --replace .\zongsoft.pod-postgres.yaml
-	> ```
+# Enter containers
+podman exec --interactive --tty zongsoft-host bash
+podman exec --interactive --tty zongsoft.data-mysql bash
+podman exec --interactive --tty zongsoft.data-postgres bash
+podman exec --interactive --tty zongsoft.caching-redis bash
 
-- 关闭 _Pod_ 容器
+# Start Pods directly without the script
+podman network exists zongsoft-net || podman network create zongsoft-net
+podman kube play --network zongsoft-net --replace .\zongsoft.pod-redis.yaml
+podman kube play --network zongsoft-net --replace .\zongsoft.pod-mysql.yaml
+podman kube play --network zongsoft-net --replace .\zongsoft.pod-postgres.yaml
 
-	> ```shell
-	> podman kube down .\zongsoft.pod-host.yaml
-	> podman kube down .\zongsoft.pod-redis.yaml
-	> podman kube down .\zongsoft.pod-mysql.yaml
-	> podman kube down .\zongsoft.pod-postgres.yaml
-	> ```
+# Stop and remove Pods directly without the script
+podman kube down .\zongsoft.pod-host.yaml
+podman kube down .\zongsoft.pod-redis.yaml
+podman kube down .\zongsoft.pod-mysql.yaml
+podman kube down .\zongsoft.pod-postgres.yaml
 
-- 停止所有容器
+# The following commands affect every container in the current Podman environment
+podman stop -a
+podman rm -afv
 
-	> ```shell
-	> podman stop -a
-	> ```
+# Remove the local RustFS image
+podman rmi rustfs:latest
+```
 
-- 停止并移除所有容器及卷
+### Podman + Docker Compose Mode
 
-	> ```shell
-	> podman rm -afv
-	> ```
+This mode describes all services in [zongsoft.compose.yaml](./zongsoft.compose.yaml) and invokes a Docker Compose Provider through `podman compose`. It supports per-service startup, selectable data-retention behavior, and project-level management.
 
-- 删除本地映像
+#### Compose Services
 
-	> ```shell
-	> podman rmi rustfs:latest
-	> ```
+Service | Purpose
+--------|--------
+`host` | Development host container with .NET SDK 10, `systemd`, `nginx`, and related tools
+`etcd` | Etcd distributed-configuration service
+`redis` | Redis distributed-cache service
+`mysql` | MySQL database and initialization scripts
+`postgres` | PostgreSQL database and initialization scripts
+`rustfs` | RustFS distributed-file-system service
+
+Compose generates container names. Use stable service names for routine operations instead of depending on specific container names.
+
+#### Start Compose Services
+
+Double-click `zongsoft.compose(start).cmd` in File Explorer, or pass a service name directly:
+
+```cmd
+zongsoft.compose(start).cmd redis
+zongsoft.compose(start).cmd mysql
+zongsoft.compose(start).cmd "*"
+```
+
+The script accepts `host`, `etcd`, `redis`, `mysql`, `postgres`, `rustfs`, and `*`. An asterisk starts every service defined in `zongsoft.compose.yaml`.
+
+The startup script checks Podman, the Docker Compose Provider, and the Podman machine, then idempotently creates the external shared network `zongsoft-net`.
+
+Use the following command to inspect services in this project:
+
+```shell
+podman compose --file zongsoft.compose.yaml --project-name zongsoft ps --all
+```
+
+#### Stop Compose Services
+
+The stop script supports both data-preserving and data-clearing modes:
+
+```cmd
+# Default: stop containers and preserve writable layers and anonymous volumes
+zongsoft.compose(stop).cmd mysql
+zongsoft.compose(stop).cmd mysql --keep
+
+# Stop and remove the container and anonymous volumes, clearing container data
+zongsoft.compose(stop).cmd mysql --clean
+
+# Clear all Compose containers and anonymous volumes in this project
+zongsoft.compose(stop).cmd "*" --clean
+```
+
+When launched interactively, the script asks whether to remove the container and clear its data.
+
+- `--keep` uses `podman compose stop`, allowing a subsequent start to reuse the same container data;
+- `--clean` uses `podman compose rm --stop --force --volumes` for an individual service;
+- `* --clean` uses `podman compose down --remove-orphans --volumes`;
+- Neither behavior deletes the external shared network `zongsoft-net`;
+- `--clean` does not delete the host-mounted RustFS `.attachments` directory or the database initialization SQL source files.
+
+#### Compose Network Addresses
+
+All Compose services join `zongsoft-net` and can reach one another by service name or network alias:
+
+Service | Address inside the network | Windows address
+--------|----------------------------|----------------
+`host` | `host` or `zongsoft` | _No published port_
+`etcd` | `etcd:2379` or `zongsoft.distributed:2379` | `localhost:2379`
+`redis` | `redis:6379` or `zongsoft.caching:6379` | `localhost:6379`
+`mysql` | `mysql:3306` or `zongsoft.data.mysql:3306` | `localhost:3306`
+`postgres` | `postgres:5432` or `zongsoft.data.postgres:5432` | `localhost:5432`
+`rustfs` | `rustfs:9000` or `zongsoft.io:9000` | `localhost:9000`, `localhost:9001`
+
+MySQL and PostgreSQL use different service names and network aliases in this mode and can run at the same time.
+
+Containers access the Windows host through `host.containers.internal`. For example, if a Windows service listens on port `8080`, use the following address inside a container:
+
+```text
+http://host.containers.internal:8080
+```
+
+The `host` service uses `http://host.containers.internal:1080` as its default network proxy. Override it with the `ZONGSOFT_HTTP_PROXY` and `ZONGSOFT_HTTPS_PROXY` environment variables.
+
+#### Common Compose Commands
+
+```shell
+# View logs
+podman compose --file zongsoft.compose.yaml --project-name zongsoft logs host
+podman compose --file zongsoft.compose.yaml --project-name zongsoft logs mysql
+podman compose --file zongsoft.compose.yaml --project-name zongsoft logs postgres
+podman compose --file zongsoft.compose.yaml --project-name zongsoft logs redis
+
+# Enter containers
+podman compose --file zongsoft.compose.yaml --project-name zongsoft exec host bash
+podman compose --file zongsoft.compose.yaml --project-name zongsoft exec mysql bash
+podman compose --file zongsoft.compose.yaml --project-name zongsoft exec postgres bash
+podman compose --file zongsoft.compose.yaml --project-name zongsoft exec redis bash
+
+# Start individual services directly
+podman network exists zongsoft-net || podman network create zongsoft-net
+podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach redis
+podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach mysql
+podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach postgres
+
+# Stop services and preserve data
+podman compose --file zongsoft.compose.yaml --project-name zongsoft stop redis mysql postgres
+
+# Remove project containers while preserving anonymous volumes and the shared network
+podman compose --file zongsoft.compose.yaml --project-name zongsoft down
+
+# Remove project containers and anonymous volumes while preserving the shared network
+podman compose --file zongsoft.compose.yaml --project-name zongsoft down --volumes
+```
+
+### Notes Common to Both Modes
+
+#### Switching Between Modes
+
+Both modes share `zongsoft-net`, Windows host ports, and some network aliases. Do not start the same service in both modes at the same time, or port and network-name conflicts will occur.
+
+Before switching modes, stop the relevant services with the script for the currently active mode:
+
+- K8s Pod to Compose: run `zongsoft.pod(stop).cmd` and stop the relevant Pod;
+- Compose to K8s Pod: run `zongsoft.compose(stop).cmd <service> --clean` and remove the relevant Compose container.
+
+#### Communication Between Windows and Containers
+
+- Windows accesses infrastructure services through `localhost` and the corresponding published port;
+- Containers access Windows through `host.containers.internal`;
+- Containers access one another through the Pod names, service names, or network aliases documented for the selected mode;
+- Do not hard-code container IP addresses because they can change when containers are recreated.
+
+#### Startup Readiness
+
+- On its first start, the `host` container installs and initializes tools such as `systemd` and `nginx`, so it may need additional time after the container reports that it is running;
+- On their first start, MySQL and PostgreSQL execute schema and data initialization SQL. Wait for initialization to complete before connecting;
+- Use the log commands for the selected mode to monitor initialization progress.
+
+#### Default Development Credentials
+
+Service | User name or access key | Password or secret key
+--------|-------------------------|-----------------------
+Redis | _No user name_ | `xxxxxx`
+MySQL | `program` | `xxxxxx`
+PostgreSQL | `program` | `xxxxxx`
+RustFS | `rustfsadmin` | `rustfsadmin`
+
+These credentials are intended only for local development. In Compose mode, override the defaults with the `ZONGSOFT_REDIS_PASSWORD`, `ZONGSOFT_MYSQL_PASSWORD`, `ZONGSOFT_POSTGRES_PASSWORD`, `ZONGSOFT_RUSTFS_ACCESS_KEY`, and `ZONGSOFT_RUSTFS_SECRET_KEY` environment variables.

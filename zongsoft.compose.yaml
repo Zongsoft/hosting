@@ -1,0 +1,324 @@
+name: zongsoft
+
+services:
+  host:
+    image: dotnet/sdk:10.0
+    hostname: zongsoft-host
+    privileged: true
+    working_dir: /Zongsoft/hosting
+    stop_signal: SIGRTMIN+3
+    command:
+      - /bin/bash
+      - -c
+      - |
+        apt-get update && apt-get install -y --no-install-recommends unzip net-tools redis-tools openssh-server systemd nginx
+        apt-get clean && rm -rf /var/lib/apt/lists/*
+
+        ln -sf /lib/systemd/systemd /sbin/init
+        ln -sf /lib/systemd/systemd /bin/systemd
+
+        ln -sf /Zongsoft/hosting/.deploy/default/nginx/zongsoft.web.conf /etc/nginx/conf.d/
+        ln -sf /Zongsoft/hosting/.deploy/default/systemd/zongsoft.web.service /etc/systemd/system/
+        ln -sf /Zongsoft/hosting/.deploy/default/systemd/zongsoft.daemon.service /etc/systemd/system/
+
+        ln -sf /Zongsoft/hosting/.deploy/default/systemd/zongsoft.web.service /Zongsoft/hosting/web/default/
+        ln -sf /Zongsoft/hosting/.deploy/default/systemd/zongsoft.daemon.service /Zongsoft/hosting/daemon/bin/Debug/net10.0/
+
+        exec /sbin/init
+    environment:
+      http_proxy: ${ZONGSOFT_HTTP_PROXY:-http://host.containers.internal:1080}
+      https_proxy: ${ZONGSOFT_HTTPS_PROXY:-http://host.containers.internal:1080}
+      no_proxy: localhost,127.0.0.1,::1,host,etcd,redis,mysql,postgres,rustfs,zongsoft.distributed,zongsoft.caching,zongsoft.io,zongsoft.data.mysql,zongsoft.data.postgres,host.containers.internal
+    volumes:
+      - type: bind
+        source: /mnt/d/Zongsoft
+        target: /Zongsoft
+        bind:
+          create_host_path: false
+    networks:
+      default:
+        aliases:
+          - zongsoft
+
+  etcd:
+    image: quay.io/coreos/etcd:v3.7.1
+    hostname: etcd
+    entrypoint: /usr/local/bin/etcd
+    command:
+      - --name=etcd
+      - --data-dir=/etcd-data
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --advertise-client-urls=http://etcd:2379
+      - --listen-peer-urls=http://0.0.0.0:2380
+      - --initial-advertise-peer-urls=http://etcd:2380
+      - --initial-cluster=etcd=http://etcd:2380
+      - --initial-cluster-token=zongsoft-etcd
+      - --initial-cluster-state=new
+      - --logger=zap
+      - --log-outputs=stderr
+    ports:
+      - 127.0.0.1:2379:2379
+    networks:
+      default:
+        aliases:
+          - zongsoft.distributed
+
+  redis:
+    image: redis:latest
+    hostname: redis
+    environment:
+      REDIS_PASSWORD: ${ZONGSOFT_REDIS_PASSWORD:-xxxxxx}
+    command:
+      - redis-server
+      - --bind
+      - 0.0.0.0
+      - --requirepass
+      - ${ZONGSOFT_REDIS_PASSWORD:-xxxxxx}
+      - --protected-mode
+      - "no"
+      - --notify-keyspace-events
+      - KA
+    ports:
+      - 127.0.0.1:6379:6379
+    networks:
+      default:
+        aliases:
+          - zongsoft.caching
+
+  mysql:
+    image: mysql:8.4.8
+    hostname: mysql
+    command:
+      - --local-infile=ON
+    environment:
+      LANG: C.UTF-8
+      MYSQL_USER: program
+      MYSQL_PASSWORD: ${ZONGSOFT_MYSQL_PASSWORD:-xxxxxx}
+      MYSQL_DATABASE: zongsoft
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_0900_ai_ci
+    ports:
+      - 127.0.0.1:3306:3306
+    volumes:
+      - type: bind
+        source: /mnt/d/Zongsoft/framework/Zongsoft.Security/database/Zongsoft.Security-mysql.sql
+        target: /docker-entrypoint-initdb.d/Zongsoft.Security-mysql.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/framework/upgrading/database/zongsoft.upgrading-mysql.sql
+        target: /docker-entrypoint-initdb.d/zongsoft.upgrading-mysql.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/discussions/database/Zongsoft.Discussions-mysql.sql
+        target: /docker-entrypoint-initdb.d/Zongsoft.Discussions-mysql.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/Administratives-China-Tables(mysql).sql
+        target: /docker-entrypoint-initdb.d/Administratives-China-Tables.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Province-City-District).sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Province-City-District).sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-0.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-0.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-1.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-1.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-2.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-2.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-3.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-3.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-4.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-4.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-5.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-5.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-6.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-6.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-7.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-7.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-8.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-8.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/Administratives-China(Street)-9.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-9.sql
+        read_only: true
+        bind:
+          create_host_path: false
+    networks:
+      default:
+        aliases:
+          - zongsoft.data.mysql
+
+  postgres:
+    image: postgres:18.3
+    hostname: postgres
+    environment:
+      TZ: Asia/Shanghai
+      POSTGRES_USER: program
+      POSTGRES_PASSWORD: ${ZONGSOFT_POSTGRES_PASSWORD:-xxxxxx}
+      POSTGRES_DB: zongsoft
+    ports:
+      - 127.0.0.1:5432:5432
+    volumes:
+      - type: bind
+        source: /mnt/d/Zongsoft/framework/Zongsoft.Security/database/Zongsoft.Security-postgres.sql
+        target: /docker-entrypoint-initdb.d/Zongsoft.Security-postgres.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/discussions/database/Zongsoft.Discussions-postgres.sql
+        target: /docker-entrypoint-initdb.d/Zongsoft.Discussions-postgres.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/Administratives-China-Tables(postgres).sql
+        target: /docker-entrypoint-initdb.d/Administratives-China-Tables.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/postgres/Administratives-China(Province-City-District).sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Province-City-District).sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/postgres/Administratives-China(Street)-0.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-0.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/postgres/Administratives-China(Street)-1.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-1.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/postgres/Administratives-China(Street)-2.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-2.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/postgres/Administratives-China(Street)-3.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-3.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/postgres/Administratives-China(Street)-4.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-4.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/postgres/Administratives-China(Street)-5.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-5.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/postgres/Administratives-China(Street)-6.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-6.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/postgres/Administratives-China(Street)-7.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-7.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/postgres/Administratives-China(Street)-8.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-8.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /mnt/d/Zongsoft/administratives/database/2015/postgres/Administratives-China(Street)-9.sql
+        target: /docker-entrypoint-initdb.d/Administratives-China(Street)-9.sql
+        read_only: true
+        bind:
+          create_host_path: false
+    networks:
+      default:
+        aliases:
+          - zongsoft.data.postgres
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    hostname: rustfs
+    environment:
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_ACCESS_KEY: ${ZONGSOFT_RUSTFS_ACCESS_KEY:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${ZONGSOFT_RUSTFS_SECRET_KEY:-rustfsadmin}
+    ports:
+      - 127.0.0.1:9000:9000
+      - 127.0.0.1:9001:9001
+    volumes:
+      - type: bind
+        source: /mnt/d/Zongsoft/hosting/.attachments
+        target: /data
+        bind:
+          create_host_path: false
+    networks:
+      default:
+        aliases:
+          - zongsoft.io
+
+networks:
+  default:
+    name: zongsoft-net
+    external: true
+
