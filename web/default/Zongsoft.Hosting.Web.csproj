@@ -50,6 +50,6 @@
 	</ItemGroup>
 
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="Exists('$(MSBuildProjectDirectory)\..\..\mime')">
-		<Exec Command="copy /Y &quot;$(MSBuildProjectDirectory)\..\..\mime&quot; &quot;$(MSBuildProjectDirectory)\mime&quot;" />
+		<Copy SourceFiles="$(MSBuildProjectDirectory)/../../mime" DestinationFiles="$(MSBuildProjectDirectory)/mime" SkipUnchangedFiles="true" />
 	</Target>
 </Project>
