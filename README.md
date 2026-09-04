@@ -33,7 +33,7 @@ Run `deploy.cmd` on Windows or `deploy.sh` on Linux/Unix to perform the operatio
 
 > The deployment scripts use **Z**ongsoft.**T**ools.**D**eployer. For usage instructions, see the documentation in its open-source repository:
 > - English: [https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
-> - Chinese: [https://github.com/Zongsoft/tools/blob/main/deployer/README-zh_CN.md](https://github.com/Zongsoft/tools/blob/main/deployer/README-zh_CN.md)
+> - Chinese: [https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md)
 
 ### Deployment Files
 
