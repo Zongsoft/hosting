@@ -22,20 +22,20 @@ Linux 编译、部署、打包和安装验证优先参考 [../../.ai/web.linux.m
 
 ## 测试
 
-在 [../.http](../.http/) 目录中包含的 `*.http` 文件是相关资源的 Web API 的 HTTP 接口调用请求定义。
+在 [../.http](../.http/) 或 _(http)_ 目录中包含的 `*.http` 文件是相关资源的 Web API 的 HTTP 接口调用请求定义。
 
-> 提示：`*.http` 文件是供 [HttpYac](https://httpyac.github.io)、[REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) 等工具对 Web API 接口进行调测的文件。
+> 提示：
+> - `*.http` 文件是供 [HttpYac](https://httpyac.github.io) 工具对 Web API 接口进行调测的文件。
+> - 如果本机未安装 [HttpYac CLI](https://httpyac.github.io) 工具或 [HttpYac for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=anweber.vscode-httpyac) 插件，则自行安装它或提示开发人员在本机安装这个工具或插件。
 
 ### 使用方法
 
-需要身份验证的 API 接口，通常通过 `Authorization` 头来传递身份凭证，身份凭证来自于就近的 `.env` 文件中的 `credentialId` 字段(变量)值。
+需要身份验证的 API 接口，通常通过 `Authorization` 头来传递身份凭证。
 
-如果凭证已过期或未定义，则需要先使用 `/Zongsoft/framework/Zongsoft.Security/docs/http/authentication.http` 中的 `Signin` 接口进行登录，然后将登录成功后的响应中的凭证编号保存到 `.env` 文件中的 `credentialId` 字段。
-> 提示：在调试环境中可以尝试以 `Administrator` 账号（密码为空）进行登录；如果不行再来询问。
+如果凭证已过期或未定义，则需要先使用 `/Zongsoft/framework/Zongsoft.Security/docs/http/authentication.http` 中的 `Signin` 接口进行登录。
+> 提示：在调试环境中可以尝试以 `Administrator` 账号（密码默认为空）进行登录；如果不行再来询问。
 
-调试验证时可以读取并使用 `.env` 中的真实凭证值；但不要在回复中原样暴露，必要时仅脱敏展示。修改 `.env` 前应确认这是调试所需。
-
-如果不方便通过 _HttpYac_、_REST Client_ 调用 `*.http` 文件中定义的接口，也可以通过类似于 `curl` 或自行构建脚本的方式调用 API 接口，因为 `*.http` 文件本质上就是对 HTTP 请求的简单包装模拟，所以很容易将它的定义转换成 `curl` 或其他工具、脚本的调用方式。
+如果不方便通过 _HttpYac_ 调用 `*.http` 文件中定义的接口，也可以通过类似于 `curl` 或自行构建脚本的方式调用 API 接口，因为 `*.http` 文件本质上就是对 HTTP 请求的简单包装模拟，所以很容易将它的定义转换成 `curl` 或其他工具、脚本的调用方式。
 
 > - 如果缺少相应的 `.http` 文件，可根据需要添加相应的文件；
 > - 如果 `.http` 文件内缺少相应的接口定义，可根据需要添加或完善相应的接口定义。
@@ -54,10 +54,6 @@ Linux 编译、部署、打包和安装验证优先参考 [../../.ai/web.linux.m
 	> 提供 `.http` 文件的 CLI 执行环境。
 	> - 网址：https://httpyac.github.io
 	> - 源码：https://github.com/anweber/httpyac
-
-- REST Client for VSCode 插件
-	> 提供 `.http` 文件的 VSCode 执行环境。
-	> - 网址：https://marketplace.visualstudio.com/items?itemName=humao.rest-client
 
 ## 说明
 
