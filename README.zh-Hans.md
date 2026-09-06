@@ -35,6 +35,23 @@
 > - 英文：[https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
 > - 中文：[https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md)
 
+### 本地插件验证与常见启动问题
+
+业务功能通过插件及配置接入，宿主 Program 不需要引用每个实现类。业务代码优先依赖 Core/模块公共接口，通过 `ApplicationContext.Current.Services`、应用自定义的 `Module.Current.Services` 或配置选定的提供者取得实现。完整示例见 [Core 服务定位](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Core/README.zh-Hans.md)与[插件部署指南](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Plugins/README.zh-Hans.md)。
+
+1. 准备独立部署目录，确认清单与启动工作器，仅放入所需插件和测试配置。
+2. 构建或发布相容的启动器；复制调试输出时保留 `*.deps.json`、`*.runtimeconfig.json`、依赖 DLL、`runtimes/` 及资源目录，不能只复制主 DLL。
+3. 从部署目录运行。默认内容根取决于工作目录；在其它目录执行 DLL 的绝对路径，不会自动把内容根切换到 DLL 所在目录，可能报告 `plugins` 不存在。
+4. Windows 终端宿主需要有效控制台句柄。交互式终端或 PTY/ConPTY 可用；无控制台的管道启动可能报“句柄无效”。后台无人值守场景使用 daemon/Web 启动器。
+5. 先验证插件列表、配置读取与服务定位，再连接授权的本地基础设施。记录预期与实际结果，不打印凭据或业务数据。
+6. 用 `exit -yes` 退出终端宿主；仅清理本次验证的数据和自行启动的资源。
+
+🚨 插件加载成功不等于运行依赖齐全。宿主 Core 过旧可能在服务扫描时报程序集找不到；缺少 `runtimes` 会导致平台依赖加载失败；共享 SDK 被传递依赖覆盖则可能在第一次调用时报缺少方法。保留第一条错误，核对**最终部署文件**而不是只看项目引用或构建成功。
+
+终端启动代码附加 `host=terminal`、`site=daemon`。这些值参与运行时选项选择；部署器的 `--site` 与宿主启动参数属于不同阶段。
+
+最小 HTTP 验证见[解耦 Web 插件示例](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Plugins.Web/README.zh-Hans.md)。控制器发现不会补出缺失的路由模板：默认宿主使用 `MapControllers()`，应检查实际响应而不仅是插件列表。手工部署原生插件时，保留 `runtimes/` 可能是必要条件，却不一定足够；还要核对原生搜索布局。Windows x64 SQLite 探针需要让匹配架构的 `e_sqlite3.dll` 位于 SQLite 托管组件旁。
+
 ### 部署文件
 
 通常配置文件与特定的 **产品**、**项目**、**部署平台** _（如：单机、内网、私有云、公有云）_ 及 **环境** _（如：开发、测试、生产）_ 等相关，所以应该将这些特定相关性的文件单独存放在 `/hosting/.deploy` 目录下，以便于统一管理与维护。
@@ -270,14 +287,14 @@ PROXY="socks5h://${WIN_HOST}:1080"
 NO_PROXY_VALUE="localhost,127.0.0.1,::1"
 
 systemctl set-environment \
-  HTTP_PROXY="${PROXY}" \
-  HTTPS_PROXY="${PROXY}" \
-  ALL_PROXY="${PROXY}" \
-  http_proxy="${PROXY}" \
-  https_proxy="${PROXY}" \
-  all_proxy="${PROXY}" \
-  NO_PROXY="${NO_PROXY_VALUE}" \
-  no_proxy="${NO_PROXY_VALUE}"
+	HTTP_PROXY="${PROXY}" \
+	HTTPS_PROXY="${PROXY}" \
+	ALL_PROXY="${PROXY}" \
+	http_proxy="${PROXY}" \
+	https_proxy="${PROXY}" \
+	all_proxy="${PROXY}" \
+	NO_PROXY="${NO_PROXY_VALUE}" \
+	no_proxy="${NO_PROXY_VALUE}"
 EOF
 
 chmod +x /usr/local/bin/set-podman-proxy-env.sh

@@ -35,6 +35,23 @@ Run `deploy.cmd` on Windows or `deploy.sh` on Linux/Unix to perform the operatio
 > - English: [https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
 > - Chinese: [https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md)
 
+### Local Plugin Verification and Startup Troubleshooting
+
+Features come from plugins and configuration; the host Program need not reference every implementation. Business code should depend on Core/shared module interfaces and obtain implementations through `ApplicationContext.Current.Services`, the application's own `Module.Current.Services`, or a configured provider. See [Core service lookup](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Core/README.md) and the [plugin deployment guide](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Plugins/README.md).
+
+1. Prepare an isolated deployment. Review its manifests and startup workers, including only required plugins and test configuration.
+2. Build or publish a compatible launcher. When copying debug output, retain `*.deps.json`, `*.runtimeconfig.json`, dependency DLLs, `runtimes/`, and resource directories, not just the main DLL.
+3. Run from the deployment directory. The default content root depends on the working directory; invoking an absolute DLL path from elsewhere does not change it and may report a missing `plugins` directory.
+4. A Windows terminal host needs valid console handles. Use an interactive terminal or PTY/ConPTY; a console-less pipe can fail with an invalid-handle error. Use a daemon/Web launcher for unattended hosting.
+5. Verify the plugin list, configuration, and service lookup before connecting to authorized local infrastructure. Record expected and actual results without logging credentials or business data.
+6. Exit with `exit -yes`. Clean up only this verification's data and resources you started.
+
+🚨 Successful plugin loading does not prove runtime dependencies are complete. An older host Core can cause assembly-loading errors during service scanning; missing `runtimes` assets can break platform dependencies; transitive dependencies can overwrite a shared SDK and cause missing-method errors on first use. Preserve the first error and inspect **final deployed files**, not just project references or build success.
+
+The terminal entry point appends `host=terminal` and `site=daemon`. These affect runtime option selection; the deployer's `--site` operates at a different stage.
+
+For a minimal HTTP check, follow the [decoupled Web plugin example](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Plugins.Web/README.md). Controller discovery does not create a missing route template: the default host uses `MapControllers()`, so verify a real response instead of just the plugin list. In manual native-plugin deployments, retaining `runtimes/` can be necessary but not sufficient; verify the actual native search layout. A Windows x64 SQLite probe required its matching `e_sqlite3.dll` beside the managed SQLite components.
+
 ### Deployment Files
 
 Configuration files are usually specific to a product, project, deployment platform (such as standalone, intranet, private cloud, or public cloud), and environment (such as development, testing, or production). Store these context-specific files separately under `/hosting/.deploy` for centralized management and maintenance.
@@ -270,14 +287,14 @@ PROXY="socks5h://${WIN_HOST}:1080"
 NO_PROXY_VALUE="localhost,127.0.0.1,::1"
 
 systemctl set-environment \
-  HTTP_PROXY="${PROXY}" \
-  HTTPS_PROXY="${PROXY}" \
-  ALL_PROXY="${PROXY}" \
-  http_proxy="${PROXY}" \
-  https_proxy="${PROXY}" \
-  all_proxy="${PROXY}" \
-  NO_PROXY="${NO_PROXY_VALUE}" \
-  no_proxy="${NO_PROXY_VALUE}"
+	HTTP_PROXY="${PROXY}" \
+	HTTPS_PROXY="${PROXY}" \
+	ALL_PROXY="${PROXY}" \
+	http_proxy="${PROXY}" \
+	https_proxy="${PROXY}" \
+	all_proxy="${PROXY}" \
+	NO_PROXY="${NO_PROXY_VALUE}" \
+	no_proxy="${NO_PROXY_VALUE}"
 EOF
 
 chmod +x /usr/local/bin/set-podman-proxy-env.sh
