@@ -130,7 +130,7 @@ SET edition=
 SET /p edition=Please enter the edition you want to pack: 
 
 dotnet-pack %format%              ^
-	--name:Zongsoft.Daemon        ^
+	--name:zongsoft.daemon        ^
 	--edition:%edition%           ^
 	--version:%version%           ^
 	--compilation:%compilation%   ^
