@@ -145,7 +145,8 @@ dotnet-pack %format%              ^
 	--daemon:zongsoft.web         ^
 	--daemon-bind:8069            ^
 	--daemon-environments:Environment,ASPNETCORE_ENVIRONMENT ^
-	--postinstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh" ^
+	--migration:"../../.deploy/%scheme%/migration/$(version)/*.ini;" ^
+	--postinstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh"   ^
 	--postuninstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh" ^
 	--exclude:**/logs/;bin/$(compilation)/$(framework)/*.staticwebassets.* ^
 	../../mime                    ^
