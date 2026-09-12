@@ -113,23 +113,11 @@ if /i "%format%"=="tar" (
 	goto format_label
 )
 
-:version_label
+SET edition=
+SET /p edition=Please enter the edition you want to pack: 
 
 SET version=
 SET /p version=Please enter the version you want to pack%ITALIC%%DARK_YELLOW%(major.minor.patch%DARK_GRAY%.revision%DARK_YELLOW%)%RESET%: 
-
-if "%version%"=="" (
-	echo %DARK_RED%Error: %RED%The version cannot be empty.%RESET%
-	echo %ITALIC%%MAGENTA%TIPS:%RESET%%ITALIC% Enter '%ITALIC%%BLUE%exit%RESET%%ITALIC%' or '%ITALIC%%BLUE%quit%RESET%%ITALIC%' to exit.%RESET%
-
-	goto version_label
-)
-
-if /i "%version%"=="exit" exit /b 0
-if /i "%version%"=="quit" exit /b 0
-
-SET edition=
-SET /p edition=Please enter the edition you want to pack: 
 
 dotnet-pack %format%              ^
 	--name:Zongsoft.Hosting.Web   ^
@@ -157,3 +145,8 @@ dotnet-pack %format%              ^
 	plugins                       ^
 	bin/$(compilation)/$(framework):~ ^
 	"../../.deploy/%scheme%/nginx/zongsoft.web.conf:/etc/nginx/conf.d/zongsoft.web.conf"
+
+if not "%errorlevel%"=="0" (
+	pause
+	exit /b %errorlevel%
+)

@@ -35,22 +35,11 @@ if /i "%format%"=="tar" (
 	exit /b 1
 )
 
-:version_label
+SET edition=
+SET /p edition=Please enter the edition you want to pack: 
 
 SET version=
 SET /p version=Please enter the version you want to pack: 
-
-if "%version%"=="" (
-	echo %DARK_RED%Error: %RED%The version cannot be empty.%RESET%
-	echo %DARK_YELLOW%Note: %CYAN%To exit, please enter exit.%RESET%
-
-	goto version_label
-)
-
-if /i "%version%"=="exit" exit /b 0
-
-SET edition=
-SET /p edition=Please enter the edition you want to pack: 
 
 SET environment=%Environment%
 SET /p value=Please enter the environment name you want to pack(%Environment%:[development/test/production]): 
@@ -82,3 +71,8 @@ dotnet-pack %format%              ^
 	--daemon-environments:Environment ^
 	--exclude:**/logs/;           ^
 	bin/$(compilation)/$(framework):~
+
+if not "%errorlevel%"=="0" (
+	pause
+	exit /b %errorlevel%
+)
