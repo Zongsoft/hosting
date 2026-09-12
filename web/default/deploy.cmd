@@ -130,8 +130,8 @@ dotnet-pack %format%              ^
 	--architecture:%architecture% ^
 	--Environment:%environment%   ^
 	--ASPNETCORE_ENVIRONMENT:%environment% ^
+	--listen:8069                 ^
 	--daemon:zongsoft.web         ^
-	--daemon-bind:8069            ^
 	--daemon-environments:Environment,ASPNETCORE_ENVIRONMENT ^
 	--migration:"../../.deploy/%scheme%/migration/$(version)/*.ini;" ^
 	--postinstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh"   ^
