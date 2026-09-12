@@ -54,7 +54,7 @@ SET /p architecture=Please enter the architecture(x64/arm64) you want to pack:
 if "%architecture%"=="" (SET architecture=x64)
 
 dotnet-pack %format%              ^
-	--name:Zongsoft.Terminal      ^
+	--name:zongsoft.terminal      ^
 	--daemon:disabled             ^
 	--edition:%edition%           ^
 	--version:%version%           ^

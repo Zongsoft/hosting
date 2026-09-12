@@ -118,7 +118,7 @@ SET version=
 SET /p version=Please enter the version you want to pack%ITALIC%%DARK_YELLOW%(major.minor.patch%DARK_GRAY%.revision%DARK_YELLOW%)%RESET%: 
 
 dotnet-pack %format%              ^
-	--name:Zongsoft.Terminal      ^
+	--name:zongsoft.terminal      ^
 	--daemon:disabled             ^
 	--edition:%edition%           ^
 	--version:%version%           ^
