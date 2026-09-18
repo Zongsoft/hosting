@@ -1,32 +1,32 @@
 [plugins zongsoft diagnostics]
-nuget:Zongsoft.Diagnostics@1.8.0
+nuget:Zongsoft.Diagnostics@1.9.0
 
 [plugins zongsoft hardwares]
 nuget:Zongsoft.Hardwares@0.1.0
 
 [plugins zongsoft ai]
-nuget:Zongsoft.Intelligences@0.4.0
+nuget:Zongsoft.Intelligences@0.4.1
 
 [plugins zongsoft net]
 nuget:Zongsoft.Net@7.2.0
 
 [plugins zongsoft data]
-nuget:Zongsoft.Data@7.28.0
+nuget:Zongsoft.Data@7.29.0
 
 [plugins zongsoft data mysql]
-nuget:Zongsoft.Data.MySql@7.10.0
+nuget:Zongsoft.Data.MySql@7.11.0
 
 [plugins zongsoft data sqlite]
-nuget:Zongsoft.Data.SQLite@3.6.0
+nuget:Zongsoft.Data.SQLite@3.7.0
 
 [plugins zongsoft data tdengine]
-nuget:Zongsoft.Data.TDengine@2.8.0
+nuget:Zongsoft.Data.TDengine@2.9.0
 
 [plugins zongsoft data postgres]
-nuget:Zongsoft.Data.PostgreSql@1.5.0
+nuget:Zongsoft.Data.PostgreSql@1.6.0
 
 [plugins zongsoft data clickhouse]
-nuget:Zongsoft.Data.ClickHouse@2.9.0
+nuget:Zongsoft.Data.ClickHouse@2.10.0
 
 [plugins zongsoft commands]
 nuget:Zongsoft.Commands@7.13.0
@@ -38,13 +38,13 @@ nuget:Zongsoft.Reporting@7.0.0
 nuget:Zongsoft.Security@7.7.1
 
 [plugins zongsoft externals aliyun]
-nuget:Zongsoft.Externals.Aliyun@7.7.0
+nuget:Zongsoft.Externals.Aliyun@7.8.0
 
 [plugins zongsoft externals amazon]
 nuget:Zongsoft.Externals.Amazon@1.2.0
 
 [plugins zongsoft externals redis]
-nuget:Zongsoft.Externals.Redis@7.13.0
+nuget:Zongsoft.Externals.Redis@7.14.0
 
 [plugins zongsoft externals polly]
 nuget:Zongsoft.Externals.Polly@1.0.0
@@ -59,28 +59,28 @@ nuget:Zongsoft.Externals.Lua@2.2.0
 nuget:Zongsoft.Externals.Python@2.2.0
 
 [plugins zongsoft externals scriban]
-nuget:Zongsoft.Externals.Scriban@2.0.0
+nuget:Zongsoft.Externals.Scriban@2.0.1
 
 [plugins zongsoft externals closedxml]
 nuget:Zongsoft.Externals.ClosedXml@4.5.0
 
 [plugins zongsoft externals hangfire]
-nuget:Zongsoft.Externals.Hangfire@2.9.1
+nuget:Zongsoft.Externals.Hangfire@2.9.2
 [plugins zongsoft externals hangfire redis]
 nuget:Zongsoft.Externals.Hangfire.Storages.Redis@3.1.1
 
 [plugins zongsoft messaging mqtt]
-nuget:Zongsoft.Messaging.Mqtt@7.2.0
+nuget:Zongsoft.Messaging.Mqtt@7.3.0
 delete:Zongsoft.Messaging.Mqtt.option
 
 [plugins zongsoft messaging kafka]
-nuget:Zongsoft.Messaging.Kafka@7.1.0
+nuget:Zongsoft.Messaging.Kafka@7.3.0
 delete:Zongsoft.Messaging.Kafka.option
 
 [plugins zongsoft messaging rabbitmq]
-nuget:Zongsoft.Messaging.RabbitMQ@1.0.1
+nuget:Zongsoft.Messaging.RabbitMQ@1.2.0
 delete:Zongsoft.Messaging.RabbitMQ.option
 
 [plugins zongsoft messaging zeromq]
-nuget:Zongsoft.Messaging.ZeroMQ@1.8.1
+nuget:Zongsoft.Messaging.ZeroMQ@2.0.0
 delete:Zongsoft.Messaging.ZeroMQ.option

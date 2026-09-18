@@ -4,7 +4,7 @@
 nuget:Zongsoft.Web.Grpc@1.2.0
 
 [plugins zongsoft ai]
-nuget:Zongsoft.Intelligences.Web@0.4.0
+nuget:Zongsoft.Intelligences.Web@0.4.2
 
 [plugins zongsoft openapi]
 nuget:Zongsoft.Web.OpenApi@0.5.0
@@ -20,7 +20,7 @@ nuget:Zongsoft.Security.Captcha@2.1.0
 nuget:Zongsoft.Externals.Wechat.Web@7.3.0
 
 [plugins zongsoft externals hangfire]
-nuget:Zongsoft.Externals.Hangfire.Web@2.1.1
+nuget:Zongsoft.Externals.Hangfire.Web@2.1.2
 
 [plugins zongsoft administratives]
 nuget:Zongsoft.Administratives@1.1.0
