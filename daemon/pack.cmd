@@ -59,6 +59,11 @@ SET architecture=
 SET /p architecture=Please enter the architecture(x64/arm64) you want to pack: 
 if "%architecture%"=="" (SET architecture=x64)
 
+setlocal DisableDelayedExpansion
+SET "migrator="
+SET /p "migrator=Please enter the migrator name or path(e.g. zongsoft; Enter to skip): "
+if defined migrator SET "migrator=%migrator:"=%"
+
 dotnet-pack %format%              ^
 	--name:zongsoft.daemon        ^
 	--edition:%edition%           ^
@@ -67,6 +72,7 @@ dotnet-pack %format%              ^
 	--framework:%framework%       ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
+	--migrator:"%migrator%"       ^
 	--Environment:%environment%   ^
 	--daemon-environments:Environment ^
 	--exclude:**/logs/;           ^
@@ -76,3 +82,5 @@ if not "%errorlevel%"=="0" (
 	pause
 	exit /b %errorlevel%
 )
+
+endlocal

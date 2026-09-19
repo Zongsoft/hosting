@@ -83,5 +83,6 @@
 		<PackageVersion Include="Zongsoft.Web" Version="7.17.0" />
 		<PackageVersion Include="Zongsoft.Plugins" Version="7.16.0" />
 		<PackageVersion Include="Zongsoft.Plugins.Web" Version="7.7.0" />
+		<PackageVersion Include="Zongsoft.CodeAnalysis" Version="1.2.1" />
 	</ItemGroup>
 </Project>

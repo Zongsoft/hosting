@@ -63,6 +63,11 @@ SET scheme=
 SET /p scheme=Please enter the scheme name you want to pack: 
 if "%scheme%"=="" (SET scheme=default)
 
+setlocal DisableDelayedExpansion
+SET "migrator="
+SET /p "migrator=Please enter the migrator name or path(e.g. zongsoft; Enter to skip): "
+if defined migrator SET "migrator=%migrator:"=%"
+
 dotnet-pack %format%              ^
 	--name:Zongsoft.Hosting.Web   ^
 	--title:Zongsoft.Web          ^
@@ -72,12 +77,12 @@ dotnet-pack %format%              ^
 	--framework:%framework%       ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
+	--migrator:"%migrator%"       ^
 	--Environment:%environment%   ^
 	--ASPNETCORE_ENVIRONMENT:%environment% ^
 	--listen:8069                 ^
 	--daemon:zongsoft.web         ^
 	--daemon-environments:Environment,ASPNETCORE_ENVIRONMENT ^
-	--migration:"../../.deploy/%scheme%/migration/$(version)/*.ini;" ^
 	--postinstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh"   ^
 	--postuninstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh" ^
 	--exclude:**/logs/;bin/$(compilation)/$(framework)/*.staticwebassets.* ^
@@ -94,3 +99,5 @@ if not "%errorlevel%"=="0" (
 	pause
 	exit /b %errorlevel%
 )
+
+endlocal

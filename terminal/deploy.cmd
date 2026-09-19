@@ -117,6 +117,11 @@ SET /p edition=Please enter the edition you want to pack:
 SET version=
 SET /p version=Please enter the version you want to pack%ITALIC%%DARK_YELLOW%(major.minor.patch%DARK_GRAY%.revision%DARK_YELLOW%)%RESET%: 
 
+setlocal DisableDelayedExpansion
+SET "migrator="
+SET /p "migrator=Please enter the migrator name or path(e.g. zongsoft; Enter to skip): "
+if defined migrator SET "migrator=%migrator:"=%"
+
 dotnet-pack %format%              ^
 	--name:zongsoft.terminal      ^
 	--daemon:disabled             ^
@@ -126,6 +131,7 @@ dotnet-pack %format%              ^
 	--framework:%framework%       ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
+	--migrator:"%migrator%"       ^
 	--exclude:**/logs/;           ^
 	bin/$(compilation)/$(framework):~
 
@@ -133,3 +139,5 @@ if not "%errorlevel%"=="0" (
 	pause
 	exit /b %errorlevel%
 )
+
+endlocal
