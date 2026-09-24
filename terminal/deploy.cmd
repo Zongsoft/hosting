@@ -133,6 +133,7 @@ dotnet-pack %format%              ^
 	--architecture:%architecture% ^
 	--migrator:"%migrator%"       ^
 	--exclude:**/logs/;           ^
+	--output:.packages            ^
 	bin/$(compilation)/$(framework):~
 
 if not "%errorlevel%"=="0" (

@@ -86,6 +86,7 @@ dotnet-pack %format%              ^
 	--postinstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh"   ^
 	--postuninstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh" ^
 	--exclude:**/logs/;bin/$(compilation)/$(framework)/*.staticwebassets.* ^
+	--output:.packages            ^
 	../../mime                    ^
 	appsettings.json              ^
 	web*.config                   ^

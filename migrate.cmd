@@ -83,7 +83,7 @@ dotnet-migrate                   ^
 	--version:!versionArgument!  ^
 	--platform:"!platform!"      ^
 	--architecture:"!architecture!" ^
-	--output:"."                 ^
+	--output:".migration"           ^
 	!migrationArguments!
 
 set "migrateExitCode=!errorlevel!"

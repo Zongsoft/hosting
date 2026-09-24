@@ -134,6 +134,7 @@ dotnet-pack %format%              ^
 	--Environment:%environment%   ^
 	--daemon-environments:Environment ^
 	--exclude:**/logs/;           ^
+	--output:.packages            ^
 	bin/$(compilation)/$(framework):~
 
 if not "%errorlevel%"=="0" (
