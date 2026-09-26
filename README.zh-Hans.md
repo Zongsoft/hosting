@@ -592,7 +592,9 @@ podman compose --file zongsoft.compose.yaml --project-name zongsoft down --volum
 -----|----------------|-----------
 Redis | _无用户名_ | `xxxxxx`
 MySQL | `program` | `xxxxxx`
+MySQL | `root` | `xxxxxx`
 PostgreSQL | `program` | `xxxxxx`
 RustFS | `rustfsadmin` | `rustfsadmin`
 
-这些凭据仅用于本地开发。Compose 模式可以通过 `ZONGSOFT_REDIS_PASSWORD`、`ZONGSOFT_MYSQL_PASSWORD`、`ZONGSOFT_POSTGRES_PASSWORD`、`ZONGSOFT_RUSTFS_ACCESS_KEY` 和 `ZONGSOFT_RUSTFS_SECRET_KEY` 环境变量覆盖默认值。
+这些凭据仅用于本地开发。Compose 模式可以通过 `ZONGSOFT_REDIS_PASSWORD`、`ZONGSOFT_MYSQL_PASSWORD`、`ZONGSOFT_MYSQL_ROOT_PASSWORD`、`ZONGSOFT_POSTGRES_PASSWORD`、`ZONGSOFT_RUSTFS_ACCESS_KEY` 和 `ZONGSOFT_RUSTFS_SECRET_KEY` 环境变量覆盖默认值。
+安装升迁包时，应确保 MySQL root 密码与 `.env` 中的 `[mysql] root_password` 一致。

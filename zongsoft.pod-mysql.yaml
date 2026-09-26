@@ -23,8 +23,8 @@ spec:
           value: "xxxxxx"
         - name: MYSQL_DATABASE
           value: zongsoft
-        - name: MYSQL_RANDOM_ROOT_PASSWORD
-          value: "yes"
+        - name: MYSQL_ROOT_PASSWORD
+          value: "xxxxxx"
         - name: MYSQL_CHARSET
           value: utf8mb4
         - name: MYSQL_COLLATION
