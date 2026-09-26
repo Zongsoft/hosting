@@ -62,7 +62,7 @@ nuget:Zongsoft.Externals.Python@2.2.0
 nuget:Zongsoft.Externals.Scriban@2.0.1
 
 [plugins zongsoft externals closedxml]
-nuget:Zongsoft.Externals.ClosedXml@4.5.0
+nuget:Zongsoft.Externals.ClosedXml@4.6.0
 
 [plugins zongsoft externals hangfire]
 nuget:Zongsoft.Externals.Hangfire@2.9.2
