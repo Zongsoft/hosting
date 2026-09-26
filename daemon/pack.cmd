@@ -48,8 +48,8 @@ if "%value%"=="" (
 )
 
 SET compilation=
-SET /p compilation=Please enter the compilation configuration(Debug/Release) you want to pack: 
-if "%compilation%"=="" (SET compilation=Debug)
+SET /p "compilation=Please enter the compilation configuration(Debug/Release, default:Release) you want to pack: "
+if "%compilation%"=="" (SET compilation=Release)
 
 SET framework=
 SET /p framework=Please enter the framework(net10.0/net9.0/net8.0) you want to pack: 
