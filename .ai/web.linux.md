@@ -53,6 +53,7 @@
 - `web/default/deploy.cmd` 当前用 `--name:Zongsoft.Hosting.Web`、`--title:Zongsoft.Web`、`--daemon:zongsoft.web` 打包：Debian 包名为 `zongsoft.web`，systemd 服务仍为 `zongsoft.web.service`。
 - `dotnet-pack` 生成 service 时按 `--name` 定位宿主 DLL；如果改回 `--name:Zongsoft.Web`，会生成 `ExecStart=dotnet /opt/zongsoft/web/Zongsoft.Web.dll ...`，这是类库入口，会启动失败。
 - 对 `.deb` 验证优先先用 `dpkg-deb -I <package>.deb` 确认实际 `Package` 名称。当前 `web/default/deploy.cmd` 生成的 Debian 包名是 `zongsoft.web`；干净安装时先 `apt remove -y zongsoft.hosting.web zongsoft.web`，必要时 `dpkg --purge zongsoft.hosting.web zongsoft.web` 清理旧包残留，再 `apt install -y /opt/<package>.deb`。不要用同版本重装或直接升级路径判断包是否可用，因为旧包脚本可能在升级过程中删除 `/opt/zongsoft/web`。
+- 脚本通过 `--web:nginx` 转换 `web.profile`；真实配置安装到 `/opt/zongsoft/web/.web/nginx/zongsoft.web.conf`，默认激活创建系统加载链接并校验/按需重载。容器镜像构建可设置 `HOSTER_WEB_ACTIVATION=0` 跳过 Web 激活。
 - 默认 Nginx 配置中 `8080` 的 `server_name` 是 `_`，`80` 的域名入口是 `api.zongsoft.com`；验证 `80` 时使用 `curl -H "Host: api.zongsoft.com" http://127.0.0.1/`。
 
 ## 验证清单
@@ -72,7 +73,7 @@
 
 - 编译失败：记录 `deploy.cmd` 中构建阶段的首个有效错误，优先检查 SDK、目标框架、框架源码和 NuGet 包。
 - 部署失败：检查 `.deploy`、`../../.deploy/<scheme>/`、插件来源和目标路径。
-- 打包失败：检查格式、版本、平台架构、Nginx 文件和 `dotnet-pack` 输出。
+- 打包失败：检查格式、版本、平台架构、`web.profile` 和 `dotnet-pack` 输出。
 - 安装失败：检查包格式是否匹配发行版，以及 `apt`、`dpkg`、`dnf`、`yum`、`rpm` 输出。
 - 服务启动失败：先看 `systemctl status` 和 `journalctl`，再判断是配置、插件、端口占用、基础服务还是打包器生成的 service 问题。
 - 如果 `.service` 入口明显错误，例如启动了依赖库 `Zongsoft.Web.dll` 而不是宿主入口，应分析 `/Zongsoft/tools/packager` 的 systemd 生成逻辑。当前已知修正方式是保持 `--daemon:zongsoft.web`，并用实际宿主程序集名 `--name:Zongsoft.Hosting.Web` 让打包器生成正确入口；不要手写 `.service` 绕过。

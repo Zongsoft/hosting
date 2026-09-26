@@ -67,9 +67,12 @@ dotnet cake             ^
 	--architecture=%architecture% ^
 	--framework=%framework%
 
+if errorlevel 1 exit /b %errorlevel%
+
 dotnet deploy                      ^
-	--verbosity:normal            ^
+	--verbosity:quiet             ^
 	--overwrite:newest            ^
+	--prerelease:true             ^
 	--host:daemon                 ^
 	--site:daemon                 ^
 	--scheme:%scheme%             ^
@@ -83,6 +86,8 @@ dotnet deploy                      ^
 	.deploy                                   ^
 	../.deploy/%scheme%/$(host).deploy        ^
 	../.deploy/%scheme%/$(site).deploy
+
+if errorlevel 1 exit /b %errorlevel%
 
 echo.
 
@@ -124,6 +129,7 @@ if defined migrator SET "migrator=%migrator:"=%"
 
 dotnet-pack %format%              ^
 	--name:zongsoft.daemon        ^
+	--title:Zongsoft.Daemon        ^
 	--edition:%edition%           ^
 	--version:%version%           ^
 	--compilation:%compilation%   ^
@@ -132,6 +138,7 @@ dotnet-pack %format%              ^
 	--architecture:%architecture% ^
 	--migrator:"%migrator%"       ^
 	--Environment:%environment%   ^
+	--daemon:zongsoft.daemon      ^
 	--daemon-environments:Environment ^
 	--exclude:**/logs/;           ^
 	--output:.packages            ^

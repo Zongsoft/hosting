@@ -63,7 +63,7 @@
 - 服务未注册：先检查包内容和安装脚本，再确认 `dotnet-pack` 是否生成 systemd 文件；不要猜测服务名覆盖现有单元。
 - 服务启动失败：先看 `systemctl status` 和 `journalctl`，再判断是配置、插件、端口占用、基础服务还是打包器生成的 service 问题。
 - 如果 `.service` 入口或参数明显错误，应分析 `/Zongsoft/tools/packager` 的 systemd 生成逻辑并向用户报告，不要修改宿主脚本或手写 `.service` 绕过。
-- 如果日志显示插件类型加载失败，通常是 `plugins/` 中残留旧插件；删除 `daemon/plugins` 后重新执行 `deploy.cmd`。
+- 如果日志显示插件类型加载失败，先检查实际部署目录 `daemon/bin/<编译配置>/<目标框架>/plugins` 中的插件版本；`deploy.cmd` 的 Cake 构建会清理输出目录，修正插件来源后重新部署。
 - 如果日志显示数据库、Redis、对象存储等外部依赖不可用，如实记录依赖缺失，不要用宿主临时代码绕过。
 
 ## 验收标准

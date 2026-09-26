@@ -66,6 +66,7 @@ if defined migrator SET "migrator=%migrator:"=%"
 
 dotnet-pack %format%              ^
 	--name:zongsoft.daemon        ^
+	--title:Zongsoft.Daemon        ^
 	--edition:%edition%           ^
 	--version:%version%           ^
 	--compilation:%compilation%   ^
@@ -74,6 +75,7 @@ dotnet-pack %format%              ^
 	--architecture:%architecture% ^
 	--migrator:"%migrator%"       ^
 	--Environment:%environment%   ^
+	--daemon:zongsoft.daemon      ^
 	--daemon-environments:Environment ^
 	--exclude:**/logs/;           ^
 	--output:.packages            ^

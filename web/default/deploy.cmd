@@ -67,12 +67,15 @@ dotnet cake             ^
 	--architecture=%architecture% ^
 	--framework=%framework%
 
+if errorlevel 1 exit /b %errorlevel%
+
 REM 删除 plugins 目录
 rd /s /q plugins 2>nul
 
 dotnet deploy                      ^
 	--verbosity:quiet             ^
-	--overwrite:latest            ^
+	--overwrite:newest            ^
+	--prerelease:true             ^
 	--host:web                    ^
 	--site:default                ^
 	--scheme:%scheme%             ^
@@ -85,6 +88,8 @@ dotnet deploy                      ^
 	.deploy                       ^
 	../../.deploy/%scheme%/$(host).deploy ^
 	../../.deploy/%scheme%/$(site).deploy
+
+if errorlevel 1 exit /b %errorlevel%
 
 echo.
 
@@ -138,9 +143,8 @@ dotnet-pack %format%              ^
 	--ASPNETCORE_ENVIRONMENT:%environment% ^
 	--listen:8069                 ^
 	--daemon:zongsoft.web         ^
+	--web:nginx                   ^
 	--daemon-environments:Environment,ASPNETCORE_ENVIRONMENT ^
-	--postinstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh"   ^
-	--postuninstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh" ^
 	--exclude:**/logs/;bin/$(compilation)/$(framework)/*.staticwebassets.* ^
 	--output:.packages            ^
 	../../mime                    ^
@@ -149,8 +153,7 @@ dotnet-pack %format%              ^
 	web*.option                   ^
 	wwwroot                       ^
 	plugins                       ^
-	bin/$(compilation)/$(framework):~ ^
-	"../../.deploy/%scheme%/nginx/zongsoft.web.conf:/etc/nginx/conf.d/zongsoft.web.conf"
+	bin/$(compilation)/$(framework):~
 
 if not "%errorlevel%"=="0" (
 	pause

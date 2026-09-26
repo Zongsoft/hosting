@@ -35,6 +35,10 @@ Run `deploy.cmd` on Windows or `deploy.sh` on Linux/Unix to perform the operatio
 > - English: [https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
 > - Chinese: [https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md)
 
+The `deploy.cmd` scripts in `web/default`, `daemon`, and `terminal` use `--overwrite:newest`, `--prerelease:true`, and `--verbosity:quiet`, allowing plugin dependencies that are available only as prerelease packages. Missing optional files are skipped with warnings. A failed build or deployment stops the script before packaging. Daemon and terminal plugins are deployed to `bin/<configuration>/<target-framework>/plugins`.
+
+Each host uses the same packaging arguments in `deploy.cmd` and `pack.cmd`. Daemon explicitly sets `--daemon:zongsoft.daemon` to generate its service through the packager; terminal keeps `--daemon:disabled`. Their application names remain `zongsoft.daemon` and `zongsoft.terminal`, matching their respective `.version` files and runtime application names. Their `--title` values are `Zongsoft.Daemon` and `Zongsoft.Terminal`. Web generates its Nginx configuration with `--web:nginx`.
+
 ### Local Plugin Verification and Startup Troubleshooting
 
 Features come from plugins and configuration; the host Program need not reference every implementation. Business code should depend on Core/shared module interfaces and obtain implementations through `ApplicationContext.Current.Services`, the application's own `Module.Current.Services`, or a configured provider. See [Core service lookup](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Core/README.md) and the [plugin deployment guide](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Plugins/README.md).

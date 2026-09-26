@@ -82,9 +82,8 @@ dotnet-pack %format%              ^
 	--ASPNETCORE_ENVIRONMENT:%environment% ^
 	--listen:8069                 ^
 	--daemon:zongsoft.web         ^
+	--web:nginx                   ^
 	--daemon-environments:Environment,ASPNETCORE_ENVIRONMENT ^
-	--postinstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh"   ^
-	--postuninstalled:"../../.deploy/%scheme%/nginx/reload-nginx.sh" ^
 	--exclude:**/logs/;bin/$(compilation)/$(framework)/*.staticwebassets.* ^
 	--output:.packages            ^
 	../../mime                    ^
@@ -93,8 +92,7 @@ dotnet-pack %format%              ^
 	web*.option                   ^
 	wwwroot                       ^
 	plugins                       ^
-	bin/$(compilation)/$(framework):~ ^
-	"../../.deploy/%scheme%/nginx/zongsoft.web.conf:/etc/nginx/conf.d/zongsoft.web.conf"
+	bin/$(compilation)/$(framework):~
 
 if not "%errorlevel%"=="0" (
 	pause

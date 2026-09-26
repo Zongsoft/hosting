@@ -35,6 +35,10 @@
 > - 英文：[https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
 > - 中文：[https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md)
 
+`web/default`、`daemon` 和 `terminal` 的 `deploy.cmd` 统一使用 `--overwrite:newest`、`--prerelease:true` 和 `--verbosity:quiet`，允许选择仅提供预发布版本的插件依赖；可选文件缺失时跳过并输出警告。编译或部署返回失败时立即退出，不进入后续打包阶段。daemon 和 terminal 的插件部署到 `bin/<编译配置>/<目标框架>/plugins`。
+
+每个宿主的 `deploy.cmd` 与 `pack.cmd` 使用相同的打包参数。daemon 显式使用 `--daemon:zongsoft.daemon` 由打包器生成服务，terminal 保持 `--daemon:disabled`；两者的应用名称分别保持 `zongsoft.daemon`、`zongsoft.terminal`，与各自 `.version` 和运行时应用名一致。`--title` 分别为 `Zongsoft.Daemon`、`Zongsoft.Terminal`。Web 的 Nginx 配置由 `--web:nginx` 生成。
+
 ### 本地插件验证与常见启动问题
 
 业务功能通过插件及配置接入，宿主 Program 不需要引用每个实现类。业务代码优先依赖 Core/模块公共接口，通过 `ApplicationContext.Current.Services`、应用自定义的 `Module.Current.Services` 或配置选定的提供者取得实现。完整示例见 [Core 服务定位](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Core/README.zh-Hans.md)与[插件部署指南](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Plugins/README.zh-Hans.md)。

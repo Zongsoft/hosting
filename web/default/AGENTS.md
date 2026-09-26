@@ -10,7 +10,7 @@
 
 Linux 编译、部署、打包和安装验证优先参考 [../../.ai/web.linux.md](../../.ai/web.linux.md)。
 
-打包 Web 宿主时应由 `dotnet-pack` 根据 `pack.cmd` 或 `deploy.cmd` 中的参数统一生成 systemd 服务文件。不要手写 `.service` 文件绕过；如果生成的服务入口有问题，应分析 `/Zongsoft/tools/packager` 的 systemd 生成逻辑并报告原因。
+打包 Web 宿主时应由 `dotnet-pack` 根据 `pack.cmd` 或 `deploy.cmd` 中的参数统一生成 systemd 服务文件。Web 配置使用同目录 `web.profile` 与 `--web:nginx`，安装到 `.web/nginx/`；不再依赖 `.deploy/default/systemd` 或 `.deploy/default/nginx`。不要手写 `.service` 文件绕过；如果生成的服务入口有问题，应分析 `/Zongsoft/tools/packager` 的 systemd 生成逻辑并报告原因。
 
 `dotnet-pack` 会用 `--name` 推断宿主 DLL。当前 Web 宿主入口是 `Zongsoft.Hosting.Web.dll`，因此 `deploy.cmd` 打包时应保持 `--name:Zongsoft.Hosting.Web`、`--title:Zongsoft.Web`、`--daemon:zongsoft.web` 的组合，并确认包内安装目录仍为 `/opt/zongsoft/web`；这样生成的 service 会启动 `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`，systemd 服务名仍是 `zongsoft.web.service`。Debian 包名以 `dpkg-deb -I <package>.deb` 的 `Package` 字段为准，当前脚本生成的是 `zongsoft.web`。不要将 `--name` 改回 `Zongsoft.Web`，否则生成的 service 会启动类库 `Zongsoft.Web.dll` 而不是宿主入口。
 

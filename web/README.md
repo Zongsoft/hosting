@@ -12,6 +12,16 @@ Web hosts are normally divided by application site. A SaaS application commonly 
 
 This repository currently provides the `default` site. Additional site directories can follow the same structure, but their build and deployment scripts must use the correct `site` parameter.
 
+## Packaging the default site
+
+`default/web.profile` defines IPv4/IPv6 HTTP listeners on ports 80 and 8080. `server = ~` uses the application address supplied by `--listen:8069`. Both `deploy.cmd` and `pack.cmd` use `--daemon:zongsoft.web --web:nginx` to generate the systemd service and Nginx configuration, replacing `.deploy/default/systemd` and `.deploy/default/nginx`.
+
+The installed configuration is `/opt/zongsoft/web/.web/nginx/zongsoft.web.conf`. Default activation creates the `/etc/nginx/conf.d/zongsoft.web.conf` symlink, validates Nginx configuration, and reloads Nginx if it is running; a stopped Nginx remains stopped. Image builds can set `HOSTER_WEB_ACTIVATION=0` (or case-insensitive `false`) to deliver the configuration without activating it. The image builder reads `.web/nginx/` below the installation root. This switch controls only the Web hoster; the application service follows its daemon lifecycle.
+
+`--web` does not change payload selection. These scripts explicitly select their inputs without selecting `web.profile`, so only the generated Nginx configuration is included. Add a positional argument to include a source Profile, or use `--exclude:*.profile` to exclude Profiles.
+
+Development containers only prepare the systemd/Nginx environment. Application packages install their services and hoster configuration; neither container mode links prebuilt service or Nginx files from the source tree.
+
 ## Services
 
 ### HttpYac
@@ -153,6 +163,8 @@ See the [HttpYac documentation](https://httpyac.github.io) for syntax and config
 ## Deployment
 
 See the parent [hosting deployment guide](../README.md).
+
+`default/deploy.cmd` passes `--prerelease:true` to `dotnet deploy` because the SemanticKernel connectors referenced by the AI plugin include preview packages. This allows prerelease candidates for package requests without a fixed version; explicitly pinned versions remain unchanged.
 
 ## IIS Express Notes
 

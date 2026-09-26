@@ -16,6 +16,16 @@
 
 > 本例只定义了 `default` 站点，可根据需要构建相应的站点目录，其内容与 `default` 站点基本一致，但需要调整 *编译脚本* 和 *部署脚本* 文件内 `site` 参数的值。
 
+## 默认站点打包
+
+`default/web.profile` 定义 HTTP 80 与 8080 的 IPv4/IPv6 入口，`server = ~` 使用打包时 `--listen:8069` 对应的应用地址。`deploy.cmd` 和 `pack.cmd` 使用 `--daemon:zongsoft.web --web:nginx` 生成 systemd 服务与 Nginx 配置，不再引用 `.deploy/default/systemd` 或 `.deploy/default/nginx`。
+
+安装后的真实配置位于 `/opt/zongsoft/web/.web/nginx/zongsoft.web.conf`。默认激活会创建 `/etc/nginx/conf.d/zongsoft.web.conf` 符号链接、校验 Nginx 配置，并在 Nginx 已运行时重载；不会启动原先停止的 Nginx。制作容器镜像时设置 `HOSTER_WEB_ACTIVATION=0`（也接受 `false`，不区分大小写）可仅交付真实配置，镜像构建工具从安装根的 `.web/nginx/` 获取它。此开关只控制 Web 托管器；应用服务仍遵循 daemon 生命周期。
+
+`--web` 不改变输入文件的收录规则；当前脚本显式选择载荷，没有选择 `web.profile`，因此包内只包含生成后的 Nginx 配置。需要交付原始 Profile 时可添加位置参数；排除时使用 `--exclude:*.profile`。
+
+开发容器仅准备 systemd/Nginx 等运行环境；应用服务和托管器配置在安装应用包时交付。两种容器模式均不再链接源码中的预制服务或 Nginx 文件。
+
 ## 服务
 
 ### HttpYac
@@ -166,6 +176,8 @@
 ## 部署
 
 有关部署相关信息请参考上级目录中的 [README](../README.zh-Hans.md) 文件。
+
+`default/deploy.cmd` 向 `dotnet deploy` 传入 `--prerelease:true`，因为 AI 插件引用的 SemanticKernel 连接器包含预发布包。该选项允许未固定版本的包请求选择预发布版本，显式固定的版本不受影响。
 
 ## 其他
 
