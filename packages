@@ -26,7 +26,7 @@ nuget:Zongsoft.Data.TDengine@2.9.0
 nuget:Zongsoft.Data.PostgreSql@1.6.0
 
 [plugins zongsoft data clickhouse]
-nuget:Zongsoft.Data.ClickHouse@2.10.0
+nuget:Zongsoft.Data.ClickHouse@2.11.0
 
 [plugins zongsoft commands]
 nuget:Zongsoft.Commands@7.13.0
