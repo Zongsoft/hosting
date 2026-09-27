@@ -28,7 +28,7 @@ if errorlevel 1 (
 )
 
 :service_prompt
-if not defined SERVICE set /p "SERVICE=Please enter the service to stop (host/etcd/redis/mysql/postgres/rustfs/*/exit): "
+if not defined SERVICE set /p "SERVICE=Please enter the service to stop (host/etcd/redis/mysql/postgres/clickhouse/tdengine/rustfs/*/exit): "
 
 if not defined SERVICE (
 	echo ERROR: The service name cannot be empty.
@@ -40,7 +40,7 @@ if /i "%SERVICE%"=="postgre" set "SERVICE=postgres"
 if /i "%SERVICE%"=="postgresql" set "SERVICE=postgres"
 if "%SERVICE%"=="*" goto validate_mode
 
-for %%S in (host etcd redis mysql postgres rustfs) do if /i "%SERVICE%"=="%%S" goto validate_mode
+for %%S in (host etcd redis mysql postgres clickhouse tdengine rustfs) do if /i "%SERVICE%"=="%%S" goto validate_mode
 
 echo ERROR: Invalid service name "%SERVICE%".
 set "SERVICE="

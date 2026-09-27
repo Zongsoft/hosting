@@ -2,7 +2,7 @@ name: zongsoft
 
 services:
   host:
-    image: dotnet/sdk:10.0
+    image: mcr.microsoft.com/dotnet/sdk:10.0
     hostname: zongsoft-host
     privileged: true
     working_dir: /Zongsoft/hosting
@@ -19,9 +19,9 @@ services:
 
         exec /sbin/init
     environment:
-      http_proxy: ${ZONGSOFT_HTTP_PROXY:-http://host.containers.internal:1080}
-      https_proxy: ${ZONGSOFT_HTTPS_PROXY:-http://host.containers.internal:1080}
-      no_proxy: localhost,127.0.0.1,::1,host,etcd,redis,mysql,postgres,rustfs,zongsoft.distributed,zongsoft.caching,zongsoft.io,zongsoft.data.mysql,zongsoft.data.postgres,host.containers.internal
+      http_proxy: ${ZONGSOFT_HTTP_PROXY-}
+      https_proxy: ${ZONGSOFT_HTTPS_PROXY-}
+      no_proxy: localhost,127.0.0.1,::1,host,etcd,redis,mysql,postgres,clickhouse,tdengine,rustfs,zongsoft.distributed,zongsoft.caching,zongsoft.io,zongsoft.data.mysql,zongsoft.data.postgres,zongsoft.data.clickhouse,zongsoft.data.tdengine,host.containers.internal
     volumes:
       - type: bind
         source: /mnt/d/Zongsoft
@@ -114,7 +114,7 @@ services:
           create_host_path: false
       - type: bind
         source: /mnt/d/Zongsoft/administratives/database/Administratives-China-Tables(mysql).sql
-        target: /docker-entrypoint-initdb.d/Administratives-China-Tables.sql
+        target: /docker-entrypoint-initdb.d/00-Administratives-China-Tables.sql
         read_only: true
         bind:
           create_host_path: false
@@ -214,7 +214,7 @@ services:
           create_host_path: false
       - type: bind
         source: /mnt/d/Zongsoft/administratives/database/Administratives-China-Tables(postgres).sql
-        target: /docker-entrypoint-initdb.d/Administratives-China-Tables.sql
+        target: /docker-entrypoint-initdb.d/00-Administratives-China-Tables.sql
         read_only: true
         bind:
           create_host_path: false
@@ -288,6 +288,39 @@ services:
       default:
         aliases:
           - zongsoft.data.postgres
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    hostname: clickhouse
+    environment:
+      CLICKHOUSE_DB: zongsoft
+      CLICKHOUSE_USER: program
+      CLICKHOUSE_PASSWORD: ${ZONGSOFT_CLICKHOUSE_PASSWORD:-xxxxxx}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+    ports:
+      - 127.0.0.1:8123:8123
+    volumes:
+      - /var/lib/clickhouse
+    networks:
+      default:
+        aliases:
+          - zongsoft.data.clickhouse
+
+  tdengine:
+    image: tdengine/tsdb:3.4.2.2
+    hostname: tdengine
+    environment:
+      TAOS_FQDN: tdengine
+      TAOS_ROOT_PASSWORD: ${ZONGSOFT_TDENGINE_ROOT_PASSWORD:-taosdata}
+    ports:
+      - 127.0.0.1:6030:6030
+      - 127.0.0.1:6041:6041
+    volumes:
+      - /var/lib/taos
+    networks:
+      default:
+        aliases:
+          - zongsoft.data.tdengine
 
   rustfs:
     image: rustfs/rustfs:latest

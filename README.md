@@ -126,7 +126,7 @@ dotnet tool update -g zongsoft.tools.deployer
 
 ## Containerization
 
-Some plugins depend on Redis, RustFS, MySQL, PostgreSQL, or Etcd. This project therefore supports two equivalent _**P**odman_-based/_**D**ocker_-based local containerization modes. Both modes cover the same development host and infrastructure services, and users may choose either one based on their preferred tools and data-lifecycle requirements.
+Some plugins depend on Redis, RustFS, MySQL, PostgreSQL, Etcd, ClickHouse, or TDengine. This project therefore supports two equivalent _**P**odman_-based/_**D**ocker_-based local containerization modes. Both modes include the development host and core infrastructure services; Compose additionally defines ClickHouse and TDengine. Users may choose either mode based on their preferred tools and data-lifecycle requirements.
 
 ### Runtime Modes
 
@@ -459,6 +459,8 @@ Service | Purpose
 `redis` | Redis distributed-cache service
 `mysql` | MySQL database and initialization scripts
 `postgres` | PostgreSQL database and initialization scripts
+`clickhouse` | ClickHouse analytical database with a `zongsoft` database and `program` user
+`tdengine` | TDengine time-series database
 `rustfs` | RustFS distributed-file-system service
 
 Compose generates container names. Use stable service names for routine operations instead of depending on specific container names.
@@ -470,10 +472,12 @@ Double-click `zongsoft.compose(start).cmd` in File Explorer, or pass a service n
 ```cmd
 zongsoft.compose(start).cmd redis
 zongsoft.compose(start).cmd mysql
+zongsoft.compose(start).cmd clickhouse
+zongsoft.compose(start).cmd tdengine
 zongsoft.compose(start).cmd "*"
 ```
 
-The script accepts `host`, `etcd`, `redis`, `mysql`, `postgres`, `rustfs`, and `*`. An asterisk starts every service defined in `zongsoft.compose.yaml`.
+The script accepts `host`, `etcd`, `redis`, `mysql`, `postgres`, `clickhouse`, `tdengine`, `rustfs`, and `*`. An asterisk starts every service defined in `zongsoft.compose.yaml`.
 
 The startup script checks Podman, the Docker Compose Provider, and the Podman machine, then idempotently creates the external shared network `zongsoft-net`.
 
@@ -518,9 +522,13 @@ Service | Address inside the network | Windows address
 `redis` | `redis:6379` or `zongsoft.caching:6379` | `localhost:6379`
 `mysql` | `mysql:3306` or `zongsoft.data.mysql:3306` | `localhost:3306`
 `postgres` | `postgres:5432` or `zongsoft.data.postgres:5432` | `localhost:5432`
+`clickhouse` | `clickhouse:8123` or `zongsoft.data.clickhouse:8123` | `localhost:8123`
+`tdengine` | `tdengine:6030`/`tdengine:6041` or `zongsoft.data.tdengine` | `localhost:6030`, `localhost:6041`
 `rustfs` | `rustfs:9000` or `zongsoft.io:9000` | `localhost:9000`, `localhost:9001`
 
 MySQL and PostgreSQL use different service names and network aliases in this mode and can run at the same time.
+
+ClickHouse creates the `zongsoft` database and `program` user on first initialization; create application tables separately. TDengine starts with its default `root` account and does not create the `zongsoft` database or `program` account configured in `web/default/web.option`; provision both before using that connection. For a Windows native TDengine client on port 6030, `tdengine` must resolve to the container endpoint; the HTTP/WebSocket interface on port 6041 avoids that native-client endpoint requirement.
 
 Containers access the Windows host through `host.containers.internal`. For example, if a Windows service listens on port `8080`, use the following address inside a container:
 
@@ -528,7 +536,7 @@ Containers access the Windows host through `host.containers.internal`. For examp
 http://host.containers.internal:8080
 ```
 
-The `host` service uses `http://host.containers.internal:1080` as its default network proxy. Override it with the `ZONGSOFT_HTTP_PROXY` and `ZONGSOFT_HTTPS_PROXY` environment variables.
+The `host` service connects directly by default. Set `ZONGSOFT_HTTP_PROXY` and `ZONGSOFT_HTTPS_PROXY` when a network proxy is required.
 
 #### Common Compose Commands
 
@@ -537,6 +545,8 @@ The `host` service uses `http://host.containers.internal:1080` as its default ne
 podman compose --file zongsoft.compose.yaml --project-name zongsoft logs host
 podman compose --file zongsoft.compose.yaml --project-name zongsoft logs mysql
 podman compose --file zongsoft.compose.yaml --project-name zongsoft logs postgres
+podman compose --file zongsoft.compose.yaml --project-name zongsoft logs clickhouse
+podman compose --file zongsoft.compose.yaml --project-name zongsoft logs tdengine
 podman compose --file zongsoft.compose.yaml --project-name zongsoft logs redis
 
 # Enter containers
@@ -550,6 +560,8 @@ podman network exists zongsoft-net || podman network create zongsoft-net
 podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach redis
 podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach mysql
 podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach postgres
+podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach clickhouse
+podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach tdengine
 
 # Stop services and preserve data
 podman compose --file zongsoft.compose.yaml --project-name zongsoft stop redis mysql postgres
@@ -593,7 +605,9 @@ Redis | _No user name_ | `xxxxxx`
 MySQL | `program` | `xxxxxx`
 MySQL | `root` | `xxxxxx`
 PostgreSQL | `program` | `xxxxxx`
+ClickHouse | `program` | `xxxxxx`
+TDengine | `root` | `taosdata`
 RustFS | `rustfsadmin` | `rustfsadmin`
 
-These credentials are intended only for local development. In Compose mode, override the defaults with the `ZONGSOFT_REDIS_PASSWORD`, `ZONGSOFT_MYSQL_PASSWORD`, `ZONGSOFT_MYSQL_ROOT_PASSWORD`, `ZONGSOFT_POSTGRES_PASSWORD`, `ZONGSOFT_RUSTFS_ACCESS_KEY`, and `ZONGSOFT_RUSTFS_SECRET_KEY` environment variables.
+These credentials are intended only for local development. In Compose mode, override the defaults with the `ZONGSOFT_REDIS_PASSWORD`, `ZONGSOFT_MYSQL_PASSWORD`, `ZONGSOFT_MYSQL_ROOT_PASSWORD`, `ZONGSOFT_POSTGRES_PASSWORD`, `ZONGSOFT_CLICKHOUSE_PASSWORD`, `ZONGSOFT_TDENGINE_ROOT_PASSWORD`, `ZONGSOFT_RUSTFS_ACCESS_KEY`, and `ZONGSOFT_RUSTFS_SECRET_KEY` environment variables.
 When installing a migration package, keep the MySQL root password aligned with `[mysql] root_password` in `.env`.

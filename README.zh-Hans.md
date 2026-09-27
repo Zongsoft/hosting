@@ -123,7 +123,7 @@ dotnet tool update -g zongsoft.tools.deployer
 
 ## 容器化
 
-由于一些插件依赖 Redis、RustFS、MySQL、PostgreSQL 或 Etcd，因此本项目同时支持两种基于 _**P**odman/**D**ocker_ 的本地容器化模式。两种模式地位相同，覆盖相同的开发宿主和基础服务，用户可以根据工具习惯与数据生命周期需求自由选择。
+由于一些插件依赖 Redis、RustFS、MySQL、PostgreSQL、Etcd、ClickHouse 或 TDengine，因此本项目同时支持两种基于 _**P**odman/**D**ocker_ 的本地容器化模式。两种模式地位相同，均包含开发宿主和基础服务；Compose 还定义了 ClickHouse 与 TDengine。用户可以根据工具习惯与数据生命周期需求选择。
 
 ### 运行模式
 
@@ -460,6 +460,8 @@ podman rmi rustfs:latest
 `redis` | Redis 分布式缓存服务
 `mysql` | MySQL 数据库及初始化脚本
 `postgres` | PostgreSQL 数据库及初始化脚本
+`clickhouse` | ClickHouse 分析数据库，初始化 `zongsoft` 数据库及 `program` 账号
+`tdengine` | TDengine 时序数据库
 `rustfs` | RustFS 分布式文件系统
 
 Compose 容器名称由 Compose 生成，日常操作应使用稳定的服务名，不要依赖具体容器名。
@@ -471,10 +473,12 @@ Compose 容器名称由 Compose 生成，日常操作应使用稳定的服务名
 ```cmd
 zongsoft.compose(start).cmd redis
 zongsoft.compose(start).cmd mysql
+zongsoft.compose(start).cmd clickhouse
+zongsoft.compose(start).cmd tdengine
 zongsoft.compose(start).cmd "*"
 ```
 
-支持 `host`、`etcd`、`redis`、`mysql`、`postgres`、`rustfs` 和 `*`；其中 `*` 表示启动 `zongsoft.compose.yaml` 中的全部服务。
+支持 `host`、`etcd`、`redis`、`mysql`、`postgres`、`clickhouse`、`tdengine`、`rustfs` 和 `*`；其中 `*` 表示启动 `zongsoft.compose.yaml` 中的全部服务。
 
 启动脚本会依次检查 Podman、Docker Compose Provider 和 Podman machine，并幂等创建外部共享网络 `zongsoft-net`。
 
@@ -519,9 +523,13 @@ zongsoft.compose(stop).cmd "*" --clean
 `redis` | `redis:6379` 或 `zongsoft.caching:6379` | `localhost:6379`
 `mysql` | `mysql:3306` 或 `zongsoft.data.mysql:3306` | `localhost:3306`
 `postgres` | `postgres:5432` 或 `zongsoft.data.postgres:5432` | `localhost:5432`
+`clickhouse` | `clickhouse:8123` 或 `zongsoft.data.clickhouse:8123` | `localhost:8123`
+`tdengine` | `tdengine:6030`/`tdengine:6041` 或 `zongsoft.data.tdengine` | `localhost:6030`、`localhost:6041`
 `rustfs` | `rustfs:9000` 或 `zongsoft.io:9000` | `localhost:9000`、`localhost:9001`
 
 MySQL 与 PostgreSQL 在该模式下使用不同的服务名和网络别名，可以同时启动。
+
+ClickHouse 首次初始化会创建 `zongsoft` 数据库和 `program` 账号；应用数据表需另行创建。TDengine 默认使用 `root` 账号，不会自动创建 `web/default/web.option` 配置的 `zongsoft` 数据库及 `program` 账号；使用该连接前应先建库、建账号。Windows 上使用 6030 端口的 TDengine 原生客户端时，`tdengine` 必须能解析到容器端点；6041 端口的 HTTP/WebSocket 接口不需要原生客户端的端点解析。
 
 容器访问 Windows 宿主机时使用 `host.containers.internal`。例如 Windows 服务监听 `8080` 端口，容器内使用：
 
@@ -529,7 +537,7 @@ MySQL 与 PostgreSQL 在该模式下使用不同的服务名和网络别名，�
 http://host.containers.internal:8080
 ```
 
-`host` 服务默认使用 `http://host.containers.internal:1080` 作为网络代理，可以通过 `ZONGSOFT_HTTP_PROXY` 和 `ZONGSOFT_HTTPS_PROXY` 环境变量覆盖。
+`host` 服务默认直连网络；需要网络代理时可设置 `ZONGSOFT_HTTP_PROXY` 和 `ZONGSOFT_HTTPS_PROXY` 环境变量。
 
 #### Compose 常用命令
 
@@ -538,6 +546,8 @@ http://host.containers.internal:8080
 podman compose --file zongsoft.compose.yaml --project-name zongsoft logs host
 podman compose --file zongsoft.compose.yaml --project-name zongsoft logs mysql
 podman compose --file zongsoft.compose.yaml --project-name zongsoft logs postgres
+podman compose --file zongsoft.compose.yaml --project-name zongsoft logs clickhouse
+podman compose --file zongsoft.compose.yaml --project-name zongsoft logs tdengine
 podman compose --file zongsoft.compose.yaml --project-name zongsoft logs redis
 
 # 进入容器
@@ -551,6 +561,8 @@ podman network exists zongsoft-net || podman network create zongsoft-net
 podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach redis
 podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach mysql
 podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach postgres
+podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach clickhouse
+podman compose --file zongsoft.compose.yaml --project-name zongsoft up --detach tdengine
 
 # 停止服务但保留数据
 podman compose --file zongsoft.compose.yaml --project-name zongsoft stop redis mysql postgres
@@ -594,7 +606,9 @@ Redis | _无用户名_ | `xxxxxx`
 MySQL | `program` | `xxxxxx`
 MySQL | `root` | `xxxxxx`
 PostgreSQL | `program` | `xxxxxx`
+ClickHouse | `program` | `xxxxxx`
+TDengine | `root` | `taosdata`
 RustFS | `rustfsadmin` | `rustfsadmin`
 
-这些凭据仅用于本地开发。Compose 模式可以通过 `ZONGSOFT_REDIS_PASSWORD`、`ZONGSOFT_MYSQL_PASSWORD`、`ZONGSOFT_MYSQL_ROOT_PASSWORD`、`ZONGSOFT_POSTGRES_PASSWORD`、`ZONGSOFT_RUSTFS_ACCESS_KEY` 和 `ZONGSOFT_RUSTFS_SECRET_KEY` 环境变量覆盖默认值。
+这些凭据仅用于本地开发。Compose 模式可以通过 `ZONGSOFT_REDIS_PASSWORD`、`ZONGSOFT_MYSQL_PASSWORD`、`ZONGSOFT_MYSQL_ROOT_PASSWORD`、`ZONGSOFT_POSTGRES_PASSWORD`、`ZONGSOFT_CLICKHOUSE_PASSWORD`、`ZONGSOFT_TDENGINE_ROOT_PASSWORD`、`ZONGSOFT_RUSTFS_ACCESS_KEY` 和 `ZONGSOFT_RUSTFS_SECRET_KEY` 环境变量覆盖默认值。
 安装升迁包时，应确保 MySQL root 密码与 `.env` 中的 `[mysql] root_password` 一致。

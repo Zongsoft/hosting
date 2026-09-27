@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
     - name: host
-      image: dotnet/sdk:10.0
+      image: mcr.microsoft.com/dotnet/sdk:10.0
       workingDir: /Zongsoft/hosting
       securityContext:
         privileged: true
