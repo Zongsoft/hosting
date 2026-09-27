@@ -5,7 +5,7 @@ nuget:Zongsoft.Diagnostics@1.9.0
 nuget:Zongsoft.Hardwares@0.1.0
 
 [plugins zongsoft intelligences]
-nuget:Zongsoft.Intelligences@0.4.1
+nuget:Zongsoft.Intelligences@0.4.2
 
 [plugins zongsoft net]
 nuget:Zongsoft.Net@7.2.0
