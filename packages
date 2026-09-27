@@ -11,10 +11,10 @@ nuget:Zongsoft.Intelligences@0.4.2
 nuget:Zongsoft.Net@7.2.0
 
 [plugins zongsoft data]
-nuget:Zongsoft.Data@7.29.0
+nuget:Zongsoft.Data@7.30.0
 
 [plugins zongsoft data mysql]
-nuget:Zongsoft.Data.MySql@7.11.0
+nuget:Zongsoft.Data.MySql@7.12.0
 
 [plugins zongsoft data sqlite]
 nuget:Zongsoft.Data.SQLite@3.7.0
