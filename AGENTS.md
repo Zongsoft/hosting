@@ -67,6 +67,7 @@
 
 各宿主项目中的 `deploy.cmd` 是执行部署的脚本文件。注意：它的内部还包含了可选的制作安装包的命令：[`dotnet-pack`](https://github.com/Zongsoft/tools/tree/main/packager)。
 > 提示：执行该脚本时，如果只部署不打包，则传入 `exit` 给其内部的打包命令。
+> 当前 `exit` / `quit` 跳过打包分支返回退出码 `1`，不要将其解释为前面的部署失败。
 
 ### 手工部署
 
@@ -112,6 +113,10 @@
 `pack.cmd` 是制作安装包的脚本，其内部通过 `dotnet-pack` 工具制作相应格式的安装包，如 `.deb`, `.rpm`, `tar.gz` 格式。
 
 > 如果是在独立的 Linux 环境中测试宿主程序，最好通过该脚本制作相应格式的安装包进行测试验证。
+
+独立 `pack.cmd` 默认 tar、Release、x64，所有格式均设置 Linux 目标；它只打包已有输出，不执行构建或部署。`deploy.cmd` 中的打包阶段沿用本次编译配置和架构。输出在对应宿主 `.packages/`。工具调用省略 `--framework`，从 Variables 读取共享值；`deploy.cmd` 的 Cake 调用仍传入 `%framework%`，须与 hosting `.env` 一致。当前所有 `deploy.cmd` 和 daemon/Web `pack.cmd` 的环境输入未赋回 `environment`，验证时应预设进程环境变量 `Environment`。
+
+根目录 `migrate.cmd` 调用独立 `dotnet-migrate` 制作配套升迁归档和启动脚本，输出在 `.migration/`；默认输入是 `.deploy/$(scheme)/migration/$(version)/*.migration`。宿主打包脚本中的 migrator 提示仅查找已有产物，不制作升迁；必须匹配最终 Edition、版本与 RID。归档内部不套 `.migration`，安装包仅把配套文件收纳到安装根 `.migration/`，执行时解压到独立临时目录。详细参数和版本回写见 [README](README.zh-Hans.md#安装包与升迁包)。
 
 升级包用于程序运行中的版本发现、下载、解压、部署和重启等自动升级流程。
 `upgrade.pack.cmd` 用于制作升级包，`upgrade.publish.cmd` 用于发布升级包；

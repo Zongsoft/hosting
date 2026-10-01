@@ -29,7 +29,7 @@ Applications are currently divided into three host types:
 
 A host application is responsible only for initializing the runtime environment. It serves as a plugin container and contains no concrete business implementation itself. Deployment means placing the required plugins and their related files, such as configuration and certificates, in the appropriate subdirectories under `plugins`.
 
-Run `deploy.cmd` on Windows or `deploy.sh` on Linux/Unix to perform the operations defined by the deployment files (`*.deploy`).
+Run the interactive Windows script `deploy.cmd` from the target host directory to build, apply the deployment files (`*.deploy`), and then choose whether to create an installation package. This repository supplies scripts for `daemon`, `terminal`, and `web/default`.
 
 > The deployment scripts use **Z**ongsoft.**T**ools.**D**eployer. For usage instructions, see the documentation in its open-source repository:
 > - English: [https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
@@ -37,9 +37,9 @@ Run `deploy.cmd` on Windows or `deploy.sh` on Linux/Unix to perform the operatio
 
 The `deploy.cmd` scripts in `web/default`, `daemon`, and `terminal` use `--overwrite:newest`, `--prerelease:true`, and `--verbosity:quiet`, allowing plugin dependencies that are available only as prerelease packages. Missing optional files are skipped with warnings. A failed build or deployment stops the script before packaging. Daemon and terminal plugins are deployed to `bin/<configuration>/<target-framework>/plugins`.
 
-The deployment and packaging tool calls in `deploy.cmd` and `pack.cmd` omit `--framework`, so the tools resolve `framework` from their merged Variables. Set `framework` in the hosting root's `.env` to share it across hosts. Neither script prompts for a framework. The Cake build still reads the process environment variable `framework`; set it before running `deploy.cmd` and keep it consistent with the value used for deployment and packaging.
+The deployment and packaging tool calls in `deploy.cmd` and `pack.cmd` omit `--framework`, so the tools resolve `framework` from their merged Variables. Set `framework` in the hosting root's `.env` to share it across hosts. Neither script prompts for a framework. `deploy.cmd` still passes the process environment variable `%framework%` to Cake as its `--framework` argument; Cake does not read `.env`. Set this process variable before deployment and keep it consistent with `.env`. See “Installation and migration packages” below for setup.
 
-Each host uses the same packaging arguments in `deploy.cmd` and `pack.cmd`. Daemon explicitly sets `--daemon:zongsoft.daemon` to generate its service through the packager; terminal keeps `--daemon:disabled`. Their application names remain `zongsoft.daemon` and `zongsoft.terminal`, matching their respective `.version` files and runtime application names. Their `--title` values are `Zongsoft.Daemon` and `Zongsoft.Terminal`. Web generates its Nginx configuration with `--web:nginx`.
+Each host uses the same payload and service definitions in `deploy.cmd` and `pack.cmd`. Packaging after deployment inherits the build configuration and architecture; the standalone `pack.cmd` asks for these separately and does not build or deploy plugins. Daemon explicitly sets `--daemon:zongsoft.daemon` to generate its service through the packager; terminal keeps `--daemon:disabled`. Their application names remain `zongsoft.daemon` and `zongsoft.terminal`, matching their respective `.version` files and runtime application names. Their `--title` values are `Zongsoft.Daemon` and `Zongsoft.Terminal`. Web generates its Nginx configuration with `--web:nginx`.
 All hosts pass `Environment` and `DOTNET_ENVIRONMENT` using the selected environment value and list both in `--daemon-environments`; Web also passes and lists `ASPNETCORE_ENVIRONMENT`. Daemon and Web services receive these variables. The standalone terminal `pack.cmd` also asks for the environment, defaulting to `development` if no value is entered or inherited.
 
 ### Local Plugin Verification and Startup Troubleshooting
@@ -90,13 +90,15 @@ Configuration files should be named according to the environment to which their 
 
 The `.deploy` directory under `hosting` is the root directory for deployment-related resources. Its structure is as follows:
 
-- `certificates`: certificate files
+- `certificates`: optional certificate files
 	> Certificates that are independent of a deployment platform.
 
 - `{scheme}`: deployment scheme
-	- `certificates`: certificate files
-		> Certificates associated with the deployment scheme.
 	- `options`: configuration files
+	- `migration`: migration inputs
+		> `<version>/*.migration` references SQL files or declares Amazon S3 buckets; `.ini` files in the same directory or an ancestor supply migration connection parameters.
+
+Add `certificates` directories as needed; the current default scheme contains `options/` and `migration/`. The hosting root's `.env` supplies shared tool variables, `.migration/` holds generated migration archives and launchers, and each host's `.packages/` holds installation packages.
 
 ### Deployment Tool
 
@@ -126,6 +128,96 @@ dotnet tool update -g zongsoft.tools.deployer
 > ```bash
 > dotnet tool install -g cake.tool
 > ```
+
+## Installation and migration packages
+
+### Tools and shared variables
+
+The [packager](https://github.com/Zongsoft/tools/tree/main/packager) command `dotnet-pack` creates installation packages; the independent [migrator](https://github.com/Zongsoft/tools/tree/main/migrator) command `dotnet-migrate` creates migration archives. Install or update the global tools as needed:
+
+```powershell
+dotnet tool install -g Zongsoft.Tools.Packager
+dotnet tool install -g Zongsoft.Tools.Migrator
+# For an installed tool, use dotnet tool update -g <package-name>
+```
+
+Set `framework` at the root level of the hosting root's `.env`, for example:
+
+```ini
+framework=net10.0
+```
+
+Tools merge defaults, process environment variables, `.env` files from the filesystem root down to the source directory (working directory for migrator), and explicit command options, in that order. An omitted, null, or empty `framework` option uses Variables; whitespace alone is not treated as empty. Section entries such as `[mysql] root_password` become variables such as `mysql_root_password` for migration `.ini` references.
+
+Prepare deployment environment variables in the current PowerShell window, then enter the target host directory:
+
+```powershell
+$env:framework = 'net10.0' # Match hosting/.env
+$env:Environment = 'development'
+Set-Location D:/Zongsoft/hosting/daemon
+.\deploy.cmd
+```
+
+Currently, all three `deploy.cmd` scripts and the daemon/Web `pack.cmd` scripts store the environment prompt's input in `value` without assigning it back to `environment`. Set the process environment variable `Environment` before starting these scripts. The standalone terminal `pack.cmd` accepts an environment directly, retaining the process value on empty input or otherwise defaulting to `development`.
+
+### Package after deployment or package existing files
+
+Run `deploy.cmd` from the target host directory and select the scheme (default `default`), environment, remote debugging, platform, and architecture. Remote debugging defaults to `on`, selecting Debug/Windows; `off` selects Release/Linux, with a subsequent prompt to change the platform. For Linux installation verification, select `off`, `linux`, and the matching architecture. A failed build or deployment stops the sequence. Web deployment also clears the site's `plugins/` directory first.
+
+After deployment, enter `tar`, `deb`, or `rpm` at the format prompt to create an installation package. Enter `exit` or `quit` to skip packaging; this branch currently returns exit code `1`. Running `pack.cmd` directly packages existing files only:
+
+```powershell
+Set-Location D:/Zongsoft/hosting/web/default
+.\pack.cmd
+```
+
+| Standalone `pack.cmd` parameter | Default or behavior |
+| --- | --- |
+| Format | `tar`; also supports `deb` and `rpm`. All three set the target platform to Linux |
+| Edition, version | May be empty; resolved from the host source directory's direct `.edition` (preferred) or `.version`. Edition is separate from the Debug/Release build configuration |
+| Environment | See above; passed as `Environment` and `DOTNET_ENVIRONMENT`, plus `ASPNETCORE_ENVIRONMENT` for Web |
+| Build configuration | `Release`; `Debug` is supported and must match existing output |
+| Architecture | `x64`; `arm64` is supported and must match the application and migration executor |
+| Scheme | Only the standalone Web script asks; defaults to `default`. It packages existing files without reapplying the scheme |
+| Migration name or path | Empty skips integration; for example `zongsoft`. See below |
+
+| Host | Application name / service | Payload and default installation directory |
+| --- | --- | --- |
+| daemon | `zongsoft.daemon` / `zongsoft.daemon.service` | Flattened `bin/$(compilation)/$(framework)`; `/opt/zongsoft/daemon` |
+| terminal | `zongsoft.terminal` / service disabled | The same flattened build directory; `/opt/zongsoft/terminal` |
+| web/default | `Zongsoft.Hosting.Web` / `zongsoft.web.service` | MIME files, configuration, wwwroot, plugins, and the flattened build directory; `/opt/zongsoft/web`, application listener `127.0.0.1:8069` |
+
+All scripts exclude `logs/`; Web additionally excludes `*.staticwebassets.*` in the build directory. The `:~` alias places directory contents at the installation root without retaining the original `bin/...` hierarchy. See the [Web README](web/README.md#packaging-the-default-site) for its service and Nginx configuration. Terminal disables systemd services, so `--daemon-environments` does not set process variables for an interactively launched terminal.
+
+Output goes to the selected host's `.packages/`, for example `zongsoft.daemon@1.0.0-x64.deb`; a nonempty Edition is appended to the package name. Tar produces a matching `.tar.gz` archive and `.sh` installation entry; keep both together. Deb/rpm each produce one package file. These scripts do not enable `--overwrite`, so an existing output of the same name causes generation to fail.
+
+After successful packaging, an existing source `.edition` and `.version` are both rewritten, creating `.version` if absent. If only `.version` exists, only it is updated; if neither exists, both are created together. The installation payload always contains `.version` for the final identity and excludes the source directory's direct `.edition`. Installing or upgrading an installation package is a separate action; these scripts do not install it.
+
+### Create a migration package before installation-package integration
+
+Run `migrate.cmd` from the hosting root. Enter the migration name (default `zongsoft`), optional Edition, required version number/version file/directory, platform (default `linux`), architecture (default `x64`), and scheme (default `default`). Empty input at the first path prompt selects `.deploy/$(scheme)/migration/$(version)/*.migration`; alternatively, supply files one by one and then finish with empty input. A filename without directory separators resolves under that scheme/version directory; relative paths with directories resolve from the hosting root. Bare `*` is rejected; use `*.migration`.
+
+For example, create the default Linux x64 migration package from the hosting root:
+
+```powershell
+dotnet-migrate --name:zongsoft --version:1.0.0 --platform:linux --architecture:x64 --scheme:default --output:.migration '.deploy/$(scheme)/migration/$(version)/*.migration'
+```
+
+This produces `.migration/zongsoft(migrate)@1.0.0_linux-x64.tar.gz` and its matching `.sh`. Windows x64 produces a `win-x64` archive and `.cmd`; Linux also supports arm64. Creation parses inputs, expands variables, and packages files without connecting to or changing databases/buckets. The script has no overwrite switch; to recreate an existing output, invoke the tool directly with explicit `--overwrite`.
+
+The default version directory contains MySQL and Amazon S3 inputs; connection parameters are in `.deploy/default/migration/*.ini`. The archive root contains `migration.json`, `id`, the internal launcher, the native executor, and its dependencies. SQL files are under `.artifacts/mysql/`, without a `.migration` wrapper.
+
+Next, enter `zongsoft` at the migration prompt in the host's `deploy.cmd` or `pack.cmd`. The packager searches the host source directory and its ancestors, including each direct `.migration/`, for a matching pair using the final Edition, version, and RID. Both files must come from the same location and match completely. An input with a directory checks only that directory, for example `../.migration/zongsoft` from daemon or `../../.migration/zongsoft` from Web. This option does not create migration artifacts.
+
+The installation package carries the archive and external launcher unchanged under its installation root's `.migration/`. At execution, the launcher extracts to a separate temporary directory, with the plan and executor at its root, and cleans it afterward. Installation runs `apply` with state under `/var/lib/<package-name>/packager`; a failed migration prevents service startup. Before starting, systemd runs `check` against the local completion marker. Terminal also runs an integrated migration at installation despite disabling daemon support. SQL scripts themselves must make repeated execution safe.
+
+### Package metadata and dependencies
+
+The current hosting scripts have no separate prompts for homepage, manufacturer, maintainer, or dependencies. Set root-level `homepage`, `manufacturer`, `maintainer`, and `dependencies` variables in an applicable `.env`, or invoke `dotnet-pack` directly with these options. The homepage option is `--homepage`; `--manufacturer` and `--maintainer` both default to `Zongsoft`. A null or empty manufacturer also uses the default; whitespace is preserved.
+
+Deb/rpm share the `--dependencies` syntax `name[:range]`, for example `--dependencies:"aspnetcore-runtime-10.0:[10.0,11.0)"` or `--dependencies:"aspnetcore-runtime-10.0:[10.0)"`. Commas/semicolons outside a range mean all groups are required; `|` means alternatives. The packager converts this to Debian `Depends` and RPM `Requires` without mapping distribution package names. RPM alternatives require 4.13+, and bounded ranges require 4.14+. See the packager's bilingual README for complete rules.
+
+`upgrade.pack.cmd` / `upgrade.publish.cmd` use `dotnet-upgrade` to create and publish automatic-upgrade artifacts, independently of Linux installation and migration packages. Upgrade packaging still prompts for framework; the framework prompt convention for `deploy.cmd` / `pack.cmd` does not apply to it.
 
 ## Containerization
 

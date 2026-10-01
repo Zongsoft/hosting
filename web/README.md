@@ -14,11 +14,19 @@ This repository currently provides the `default` site. Additional site directori
 
 ## Packaging the default site
 
+Run `deploy.cmd` from `web/default` to build and deploy before choosing whether to package, or run `pack.cmd` to package existing files. Standalone defaults are tar, Release, and x64; every format targets Linux. Output goes to `web/default/.packages/`. The shared framework comes from the hosting root's `.env` variable `framework`; deployment also requires the matching process environment variable for Cake. See the [hosting README](../README.md#installation-and-migration-packages) for parameters, version-file updates, and migration integration.
+
+The application name must be `Zongsoft.Hosting.Web` so the generated service starts `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`; the title and service identifier are `Zongsoft.Web` and `zongsoft.web`. The generated service receives `Environment`, `DOTNET_ENVIRONMENT`, and `ASPNETCORE_ENVIRONMENT`. The current environment prompt does not assign its input back, so set the process environment variable `Environment` before running the scripts.
+
 `default/web.profile` defines IPv4/IPv6 HTTP listeners on ports 80 and 8080. `server = ~` uses the application address supplied by `--listen:8069`. Both `deploy.cmd` and `pack.cmd` use `--daemon:zongsoft.web --web:nginx` to generate the systemd service and Nginx configuration, replacing `.deploy/default/systemd` and `.deploy/default/nginx`.
 
 The installed configuration is `/opt/zongsoft/web/.web/nginx/zongsoft.web.conf`. Default activation creates the `/etc/nginx/conf.d/zongsoft.web.conf` symlink, validates Nginx configuration, and reloads Nginx if it is running; a stopped Nginx remains stopped. Image builds can set `HOSTER_WEB_ACTIVATION=0` (or case-insensitive `false`) to deliver the configuration without activating it. The image builder reads `.web/nginx/` below the installation root. This switch controls only the Web hoster; the application service follows its daemon lifecycle.
 
 `--web` does not change payload selection. These scripts explicitly select their inputs without selecting `web.profile`, so only the generated Nginx configuration is included. Add a positional argument to include a source Profile, or use `--exclude:*.profile` to exclude Profiles.
+
+The payload includes the hosting root's `mime/`, site configuration, `wwwroot/`, `plugins/`, and `bin/$(compilation)/$(framework)` flattened to the installation root. It excludes `logs/` and build-directory `*.staticwebassets.*`. The standalone `pack.cmd` scheme prompt does not redeploy scheme files; run `deploy.cmd` first to switch deployment configuration.
+
+Enter `zongsoft` at the migration prompt to include an archive and external launcher already created in the hosting root's `.migration/`. Their Edition, version, and RID must match the installation package. Installation applies the migration from a separate temporary directory; the installation root's `.migration/` holds the artifact pair without nesting contents under `.migration/.migration/`.
 
 Development containers only prepare the systemd/Nginx environment. Application packages install their services and hoster configuration; neither container mode links prebuilt service or Nginx files from the source tree.
 

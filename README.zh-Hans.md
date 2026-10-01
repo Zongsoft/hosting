@@ -29,7 +29,7 @@
 
 宿主程序只负责初始化运行时环境，作为插件的承载容器其自身并不含有具体的功能实现，我们通过将需要的插件及其相关附属(配置、证书)文件放置在 `plugins` 目录下的相应子目录中，这个行为即为部署。
 
-运行 `deploy.cmd` _(**W**indows)_ 或 `deploy.sh` _(**L**inux/**U**nix)_ 脚本以执行由部署文件 _(`*.deploy`)_ 所定义的部署内容。
+在对应宿主目录中运行 Windows 交互脚本 `deploy.cmd`，执行构建及部署文件 _(`*.deploy`)_ 定义的部署内容，再选择是否制作安装包。本仓库提供 `daemon`、`terminal`、`web/default` 三套脚本。
 
 > 提示：部署脚本依赖 **Z**ongsoft.**T**ools.**D**eployer 工具进行部署操作，有关该工具的使用说明，请参考其开源项目的相关文档：
 > - 英文：[https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
@@ -37,9 +37,9 @@
 
 `web/default`、`daemon` 和 `terminal` 的 `deploy.cmd` 统一使用 `--overwrite:newest`、`--prerelease:true` 和 `--verbosity:quiet`，允许选择仅提供预发布版本的插件依赖；可选文件缺失时跳过并输出警告。编译或部署返回失败时立即退出，不进入后续打包阶段。daemon 和 terminal 的插件部署到 `bin/<编译配置>/<目标框架>/plugins`。
 
-`deploy.cmd` 和 `pack.cmd` 调用部署、打包工具时均省略 `--framework`，由工具从合并后的 Variables 中读取 `framework`。在 hosting 根目录的 `.env` 中定义 `framework`，即可统一各宿主的部署、打包框架。两个脚本均不再询问框架；Cake 构建仍读取进程环境变量 `framework`，执行 `deploy.cmd` 前应设置该变量，并与部署、打包使用的值保持一致。
+`deploy.cmd` 和 `pack.cmd` 调用部署、打包工具时均省略 `--framework`，由工具从合并后的 Variables 中读取 `framework`。在 hosting 根目录的 `.env` 中定义 `framework`，即可统一各宿主的部署、打包框架。两个脚本均不再询问框架；`deploy.cmd` 仍将进程环境变量 `%framework%` 作为 Cake 的 `--framework` 参数传入，Cake 不读取 `.env`。执行部署脚本前应设置该进程变量，并与 `.env` 保持一致。具体设置方式见下文“安装包与升迁包”。
 
-每个宿主的 `deploy.cmd` 与 `pack.cmd` 使用相同的打包参数。daemon 显式使用 `--daemon:zongsoft.daemon` 由打包器生成服务，terminal 保持 `--daemon:disabled`；两者的应用名称分别保持 `zongsoft.daemon`、`zongsoft.terminal`，与各自 `.version` 和运行时应用名一致。`--title` 分别为 `Zongsoft.Daemon`、`Zongsoft.Terminal`。Web 的 Nginx 配置由 `--web:nginx` 生成。
+每个宿主的 `deploy.cmd` 与 `pack.cmd` 使用相同的载荷和服务定义。部署后打包沿用本次构建配置和架构；独立 `pack.cmd` 另行询问这些参数，不执行编译或插件部署。daemon 显式使用 `--daemon:zongsoft.daemon` 由打包器生成服务，terminal 保持 `--daemon:disabled`；两者的应用名称分别保持 `zongsoft.daemon`、`zongsoft.terminal`，与各自 `.version` 和运行时应用名一致。`--title` 分别为 `Zongsoft.Daemon`、`Zongsoft.Terminal`。Web 的 Nginx 配置由 `--web:nginx` 生成。
 各宿主均以所选环境值传入 `Environment` 和 `DOTNET_ENVIRONMENT`，并在 `--daemon-environments` 中声明这两个变量；Web 还传入并声明 `ASPNETCORE_ENVIRONMENT`。daemon 和 Web 生成的服务会写入这些变量。terminal 的独立 `pack.cmd` 也会询问环境，未输入且未继承已有值时默认为 `development`。
 
 ### 本地插件验证与常见启动问题
@@ -90,13 +90,15 @@
 
 位于 `hosting` 目录下的 `.deploy` 目录即为存放部署相关的各种资源的‘根’目录，其下级结构如下：
 
-- `certificates` 证书文件目录
+- `certificates` 证书文件目录（可选）
 	> 注：部署平台无关的证书文件。
 
 - `{scheme}` 部署方案
-	- `certificates` 证书文件目录
-		> 注：与部署方案有关联的证书文件。
 	- `options` 配置文件目录
+	- `migration` 升迁输入目录
+		> `<版本>/*.migration` 引用 SQL 或声明 Amazon S3 桶；同目录或父目录的 `.ini` 提供升迁连接参数。
+
+`certificates` 为按需添加的证书目录；当前默认方案包含 `options/` 和 `migration/`。hosting 根目录的 `.env` 为工具提供共享变量，`.migration/` 存放制作完成的升迁归档与启动脚本，各宿主的 `.packages/` 存放安装包。
 
 ### 部署工具
 
@@ -123,6 +125,96 @@ dotnet tool update -g zongsoft.tools.deployer
 > ```bash
 > dotnet tool install -g cake.tool
 > ```
+
+## 安装包与升迁包
+
+### 准备工具和共享变量
+
+安装包由 [packager](https://github.com/Zongsoft/tools/tree/main/packager) 的 `dotnet-pack` 制作；升迁归档由独立 [migrator](https://github.com/Zongsoft/tools/tree/main/migrator) 的 `dotnet-migrate` 制作。按需安装或更新对应全局工具：
+
+```powershell
+dotnet tool install -g Zongsoft.Tools.Packager
+dotnet tool install -g Zongsoft.Tools.Migrator
+# 已安装时使用 dotnet tool update -g <工具包名>
+```
+
+在 hosting 根目录 `.env` 的根层设置 `framework`，例如：
+
+```ini
+framework=net10.0
+```
+
+工具依次合并默认值、进程环境变量、从文件系统根到源目录（migrator 为工作目录）的 `.env` 和显式命令选项，后者覆盖前者。`framework` 未指定或为 null/空字符串时从 Variables 取值；纯空白不按空值处理。`.env` 中 `[mysql] root_password` 等段落条目转换为 `mysql_root_password` 这样的变量名，再供升迁 `.ini` 引用。
+
+在当前 PowerShell 窗口中准备部署用的环境变量，再进入目标宿主目录：
+
+```powershell
+$env:framework = 'net10.0' # 与 hosting/.env 一致
+$env:Environment = 'development'
+Set-Location D:/Zongsoft/hosting/daemon
+.\deploy.cmd
+```
+
+当前三个 `deploy.cmd` 及 daemon/Web 的 `pack.cmd` 将环境提示的输入暂存到 `value`，没有赋回 `environment`；因此应在启动脚本前设置进程环境变量 `Environment`。terminal 的独立 `pack.cmd` 可直接输入环境，留空时沿用进程值，否则默认 `development`。
+
+### 部署后打包或独立打包
+
+从目标宿主目录运行 `deploy.cmd`，依次选择方案（默认 `default`）、环境、远程调试、平台和架构。远程调试默认 `on`，对应 Debug/Windows；`off` 对应 Release/Linux，可在后续平台提示中调整。用于 Linux 安装验证时选择 `off`、`linux` 及匹配的架构。构建或部署失败会停止后续流程。Web 部署还会先清理站点的 `plugins/`。
+
+部署成功后，在格式提示中输入 `tar`、`deb` 或 `rpm` 制作安装包；输入 `exit` 或 `quit` 跳过打包，此分支当前返回退出码 `1`。直接运行 `pack.cmd` 则只打包已有文件：
+
+```powershell
+Set-Location D:/Zongsoft/hosting/web/default
+.\pack.cmd
+```
+
+| 独立 `pack.cmd` 参数 | 默认或行为 |
+| --- | --- |
+| 格式 | `tar`；也支持 `deb`、`rpm`，三者均设置目标平台为 Linux |
+| Edition、版本 | 可留空，按宿主源目录直属 `.edition`（优先）或 `.version` 确定；Edition 与 Debug/Release 编译配置不同 |
+| 环境 | 见上文；写入 `Environment`、`DOTNET_ENVIRONMENT`，Web 另有 `ASPNETCORE_ENVIRONMENT` |
+| 编译配置 | `Release`；可选 `Debug`，必须对应现有输出 |
+| 架构 | `x64`；可选 `arm64`，必须与程序和升迁执行器匹配 |
+| 方案 | 仅 Web 的独立脚本询问，默认 `default`；该脚本只打包现有部署文件，不重新应用方案 |
+| 升迁名称或路径 | 留空跳过；如 `zongsoft`，详见下文 |
+
+| 宿主 | 应用名 / 服务 | 载荷与默认安装目录 |
+| --- | --- | --- |
+| daemon | `zongsoft.daemon` / `zongsoft.daemon.service` | 展平 `bin/$(compilation)/$(framework)`；安装到 `/opt/zongsoft/daemon` |
+| terminal | `zongsoft.terminal` / 禁用服务 | 展平同样的构建目录；安装到 `/opt/zongsoft/terminal` |
+| web/default | `Zongsoft.Hosting.Web` / `zongsoft.web.service` | MIME、配置、wwwroot、plugins 及展平的构建目录；安装到 `/opt/zongsoft/web`，应用监听 `127.0.0.1:8069` |
+
+所有脚本排除 `logs/`；Web 还排除构建目录中的 `*.staticwebassets.*`。`:~` 表示把所选目录的内容展平到安装根，不保留原来的 `bin/...` 层级。Web 的服务与 Nginx 配置详见 [Web README](web/README.zh-Hans.md#默认站点打包)。terminal 禁用 systemd 服务，因此 `--daemon-environments` 不会给交互式运行的终端设置进程环境。
+
+输出位于所选宿主的 `.packages/`，如 `zongsoft.daemon@1.0.0-x64.deb`；Edition 非空时追加到包名。tar 生成同名 `.tar.gz` 和 `.sh` 安装入口，须配套保留；deb/rpm 各生成一个包文件。脚本未启用 `--overwrite`，同名产物已存在时制包失败。
+
+制包成功后，源目录存在 `.edition` 时同时回写 `.edition` 和 `.version`（缺失则创建），只有 `.version` 时只更新它，两者均无时成组创建。安装包内始终包含最终身份的 `.version`，不交付源目录直属 `.edition`。安装和升级安装包是另外的操作，脚本不会自动安装。
+
+### 先制作升迁包，再集成安装包
+
+在 hosting 根目录运行 `migrate.cmd`，依次填写升迁名称（默认 `zongsoft`）、可选 Edition、必填版本号/版本文件/目录、平台（默认 `linux`）、架构（默认 `x64`）和方案（默认 `default`）。首次输入路径时留空会使用 `.deploy/$(scheme)/migration/$(version)/*.migration`；也可连续指定文件，之后留空结束。无目录分隔符的文件名基于该方案和版本目录定位，带目录的相对路径基于 hosting 根目录。裸 `*` 不接受，须用 `*.migration`。
+
+例如在 hosting 根目录制作默认输入的 Linux x64 升迁包：
+
+```powershell
+dotnet-migrate --name:zongsoft --version:1.0.0 --platform:linux --architecture:x64 --scheme:default --output:.migration '.deploy/$(scheme)/migration/$(version)/*.migration'
+```
+
+生成 `.migration/zongsoft(migrate)@1.0.0_linux-x64.tar.gz` 与同名 `.sh`。Windows x64 生成对应 `win-x64` 归档与 `.cmd`；Linux 另支持 arm64。制作只解析输入、展开变量并打包，不连接或修改数据库/桶；脚本没有覆盖开关，重新制作同名产物需直接调用工具并明确添加 `--overwrite`。
+
+默认版本目录包含 MySQL 与 Amazon S3 输入，连接参数位于 `.deploy/default/migration/*.ini`。升迁包根部直接包含 `migration.json`、`id`、内部启动入口、原生执行器和依赖，SQL 位于 `.artifacts/mysql/`，不套 `.migration` 目录。
+
+随后在宿主 `deploy.cmd` 或 `pack.cmd` 的升迁提示中填写 `zongsoft`。打包器从宿主源目录逐级查找父目录及各层直属 `.migration/`，按最终 Edition、版本和 RID 查找配套文件；两者必须来自同一位置并完整匹配。带目录的输入只定位指定目录，如 daemon 下的 `../.migration/zongsoft` 或 Web 下的 `../../.migration/zongsoft`。该选项不会自动制作升迁包。
+
+安装包把归档和外部启动脚本原样放入安装根 `.migration/`；执行时脚本解压到独立临时目录，计划和执行器直接位于临时目录根部，执行结束后清理。安装时运行 `apply`，状态保存在 `/var/lib/<包名>/packager`，升迁失败阻止服务启动；systemd 启动前运行 `check` 比较本地成功标记。terminal 即使禁用 daemon，也会在安装时执行所集成的升迁。SQL 的重复执行由脚本自身保证幂等。
+
+### 包元数据与依赖
+
+当前 hosting 脚本没有单独的主页、厂家、维护者或依赖提示。可在工具读取的 `.env` 根层定义 `homepage`、`manufacturer`、`maintainer`、`dependencies`，或直接调用 `dotnet-pack` 传入对应选项。主页选项为 `--homepage`；厂家 `--manufacturer` 和维护者 `--maintainer` 默认均为 `Zongsoft`。厂家为 null/空字符串时也使用默认值，纯空白保留。
+
+deb/rpm 的 `--dependencies` 统一采用 `name[:range]`，例如 `--dependencies:"aspnetcore-runtime-10.0:[10.0,11.0)"` 或 `--dependencies:"aspnetcore-runtime-10.0:[10.0)"`。区间外的逗号/分号表示同时依赖，`|` 表示任选一个；打包器分别转换为 Debian `Depends` 和 RPM `Requires`，不自动映射发行版包名。RPM 的替代依赖要求 4.13+，双边范围要求 4.14+。具体规则见 packager 的双语 README。
+
+`upgrade.pack.cmd` / `upgrade.publish.cmd` 使用 `dotnet-upgrade` 制作和发布自动升级产物，与上述 Linux 安装包、升迁包流程独立；升级打包脚本仍询问 framework，不适用 `deploy.cmd` / `pack.cmd` 的框架提示约定。
 
 ## 容器化
 
