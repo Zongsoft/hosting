@@ -57,10 +57,6 @@ SET architecture=
 SET /p architecture=Please enter the architecture%ITALIC%%DARK_YELLOW%(x64/x32/arm64)%RESET% you want to deploy:
 if "%architecture%"=="" (SET architecture=x64)
 
-SET framework=
-SET /p framework=Please enter the framework%ITALIC%%DARK_YELLOW%(net10.0/net9.0/net8.0)%RESET% you want to deploy: 
-if "%framework%"=="" (SET framework=net10.0)
-
 dotnet cake             ^
 	--edition=%compilation% ^
 	--platform=%platform%   ^
@@ -82,7 +78,6 @@ dotnet deploy                      ^
 	--environment:%environment%   ^
 	--debug:%debug%               ^
 	--edition:%compilation%       ^
-	--framework:%framework%       ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
 	.deploy                       ^
@@ -135,16 +130,16 @@ dotnet-pack %format%              ^
 	--edition:%edition%           ^
 	--version:%version%           ^
 	--compilation:%compilation%   ^
-	--framework:%framework%       ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
 	--migrator:"%migrator%"       ^
 	--Environment:%environment%   ^
+	--DOTNET_ENVIRONMENT:%environment% ^
 	--ASPNETCORE_ENVIRONMENT:%environment% ^
 	--listen:8069                 ^
 	--daemon:zongsoft.web         ^
 	--web:nginx                   ^
-	--daemon-environments:Environment,ASPNETCORE_ENVIRONMENT ^
+	--daemon-environments:Environment,DOTNET_ENVIRONMENT,ASPNETCORE_ENVIRONMENT ^
 	--exclude:**/logs/;bin/$(compilation)/$(framework)/*.staticwebassets.* ^
 	--output:.packages            ^
 	../../mime                    ^

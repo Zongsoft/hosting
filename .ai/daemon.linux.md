@@ -23,7 +23,7 @@
 - `debug`，如用户说“默认”，按脚本默认输入。
 - `platform`，Linux 发布必须输入 `linux`。
 - `architecture`，通常为 `x64` 或 `arm64`。
-- `framework`，例如 `net10.0`。
+- `framework`：部署和打包工具从 Variables 取得；Cake 构建仍使用进程环境变量 `framework`，执行脚本前应按确认值设置该变量。
 - 安装包格式：`.deb`、`.rpm` 或 `.tar.gz`，分别在脚本中输入 `deb`、`rpm`、`tar`。
 - `version`，不能为空。
 - `edition`，可为空。
@@ -34,6 +34,7 @@
 
 1. 进入 `<repo-root>\daemon`。
 2. 执行 `.\deploy.cmd`，按已确认参数回答脚本提示。
+   当前编译、部署阶段依次询问 scheme、environment、debug、platform、architecture，共 5 项，不再询问 framework。自动化应分阶段输入，等部署结束并进入安装包格式提示后再输入 format、edition、version、migrator；需要升迁时，可先停在格式提示，运行根目录 `migrate.cmd` 生成配套文件后继续。
 3. 脚本成功后，按时间、版本、架构和格式定位新安装包。
 4. 将安装包复制到目标 Linux 的 `/opt`。
 5. 按包格式安装：
@@ -52,6 +53,7 @@
 - `systemctl is-active <service-name>` 输出 `active`，或已记录符合预期的实际运行状态。
 - 如果没有 systemd 服务，`ps -ef | grep -i Zongsoft` 或包内说明能证明后台进程运行。
 - `journalctl -u <service-name> -n 200 --no-pager` 中没有阻断启动的错误。
+- 生成的服务含 `Environment` 和 `DOTNET_ENVIRONMENT`，最新启动日志的 Hosting environment 与确认的部署环境一致。
 - `/opt` 下安装内容与包名、版本和架构匹配。
 
 ## 故障分流

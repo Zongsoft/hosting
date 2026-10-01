@@ -37,7 +37,10 @@ Run `deploy.cmd` on Windows or `deploy.sh` on Linux/Unix to perform the operatio
 
 The `deploy.cmd` scripts in `web/default`, `daemon`, and `terminal` use `--overwrite:newest`, `--prerelease:true`, and `--verbosity:quiet`, allowing plugin dependencies that are available only as prerelease packages. Missing optional files are skipped with warnings. A failed build or deployment stops the script before packaging. Daemon and terminal plugins are deployed to `bin/<configuration>/<target-framework>/plugins`.
 
+The deployment and packaging tool calls in `deploy.cmd` and `pack.cmd` omit `--framework`, so the tools resolve `framework` from their merged Variables. Set `framework` in the hosting root's `.env` to share it across hosts. Neither script prompts for a framework. The Cake build still reads the process environment variable `framework`; set it before running `deploy.cmd` and keep it consistent with the value used for deployment and packaging.
+
 Each host uses the same packaging arguments in `deploy.cmd` and `pack.cmd`. Daemon explicitly sets `--daemon:zongsoft.daemon` to generate its service through the packager; terminal keeps `--daemon:disabled`. Their application names remain `zongsoft.daemon` and `zongsoft.terminal`, matching their respective `.version` files and runtime application names. Their `--title` values are `Zongsoft.Daemon` and `Zongsoft.Terminal`. Web generates its Nginx configuration with `--web:nginx`.
+All hosts pass `Environment` and `DOTNET_ENVIRONMENT` using the selected environment value and list both in `--daemon-environments`; Web also passes and lists `ASPNETCORE_ENVIRONMENT`. Daemon and Web services receive these variables. The standalone terminal `pack.cmd` also asks for the environment, defaulting to `development` if no value is entered or inherited.
 
 ### Local Plugin Verification and Startup Troubleshooting
 

@@ -37,7 +37,10 @@
 
 `web/default`、`daemon` 和 `terminal` 的 `deploy.cmd` 统一使用 `--overwrite:newest`、`--prerelease:true` 和 `--verbosity:quiet`，允许选择仅提供预发布版本的插件依赖；可选文件缺失时跳过并输出警告。编译或部署返回失败时立即退出，不进入后续打包阶段。daemon 和 terminal 的插件部署到 `bin/<编译配置>/<目标框架>/plugins`。
 
+`deploy.cmd` 和 `pack.cmd` 调用部署、打包工具时均省略 `--framework`，由工具从合并后的 Variables 中读取 `framework`。在 hosting 根目录的 `.env` 中定义 `framework`，即可统一各宿主的部署、打包框架。两个脚本均不再询问框架；Cake 构建仍读取进程环境变量 `framework`，执行 `deploy.cmd` 前应设置该变量，并与部署、打包使用的值保持一致。
+
 每个宿主的 `deploy.cmd` 与 `pack.cmd` 使用相同的打包参数。daemon 显式使用 `--daemon:zongsoft.daemon` 由打包器生成服务，terminal 保持 `--daemon:disabled`；两者的应用名称分别保持 `zongsoft.daemon`、`zongsoft.terminal`，与各自 `.version` 和运行时应用名一致。`--title` 分别为 `Zongsoft.Daemon`、`Zongsoft.Terminal`。Web 的 Nginx 配置由 `--web:nginx` 生成。
+各宿主均以所选环境值传入 `Environment` 和 `DOTNET_ENVIRONMENT`，并在 `--daemon-environments` 中声明这两个变量；Web 还传入并声明 `ASPNETCORE_ENVIRONMENT`。daemon 和 Web 生成的服务会写入这些变量。terminal 的独立 `pack.cmd` 也会询问环境，未输入且未继承已有值时默认为 `development`。
 
 ### 本地插件验证与常见启动问题
 

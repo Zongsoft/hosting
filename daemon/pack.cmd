@@ -51,10 +51,6 @@ SET compilation=
 SET /p "compilation=Please enter the compilation configuration(Debug/Release, default:Release) you want to pack: "
 if "%compilation%"=="" (SET compilation=Release)
 
-SET framework=
-SET /p framework=Please enter the framework(net10.0/net9.0/net8.0) you want to pack: 
-if "%framework%"=="" (SET framework=net10.0)
-
 SET architecture=
 SET /p architecture=Please enter the architecture(x64/arm64) you want to pack: 
 if "%architecture%"=="" (SET architecture=x64)
@@ -70,13 +66,13 @@ dotnet-pack %format%              ^
 	--edition:%edition%           ^
 	--version:%version%           ^
 	--compilation:%compilation%   ^
-	--framework:%framework%       ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
 	--migrator:"%migrator%"       ^
 	--Environment:%environment%   ^
+	--DOTNET_ENVIRONMENT:%environment% ^
 	--daemon:zongsoft.daemon      ^
-	--daemon-environments:Environment ^
+	--daemon-environments:Environment,DOTNET_ENVIRONMENT ^
 	--exclude:**/logs/;           ^
 	--output:.packages            ^
 	bin/$(compilation)/$(framework):~
