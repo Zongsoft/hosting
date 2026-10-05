@@ -34,7 +34,7 @@ services:
           - zongsoft
 
   etcd:
-    image: quay.io/coreos/etcd:v3.7.1
+    image: quay.io/coreos/etcd:v3.7.2
     hostname: etcd
     entrypoint: /usr/local/bin/etcd
     command:
@@ -57,7 +57,7 @@ services:
           - zongsoft.distributed
 
   redis:
-    image: redis:latest
+    image: redis:8.10.2
     hostname: redis
     environment:
       REDIS_PASSWORD: ${ZONGSOFT_REDIS_PASSWORD:-xxxxxx}
@@ -79,7 +79,7 @@ services:
           - zongsoft.caching
 
   mysql:
-    image: mysql:8.4.8
+    image: mysql:8.4.11
     hostname: mysql
     command:
       - --local-infile=ON
@@ -190,7 +190,7 @@ services:
           - zongsoft.data.mysql
 
   postgres:
-    image: postgres:18.3
+    image: postgres:18.6
     hostname: postgres
     environment:
       TZ: Asia/Shanghai
@@ -290,7 +290,7 @@ services:
           - zongsoft.data.postgres
 
   clickhouse:
-    image: clickhouse/clickhouse-server:latest
+    image: clickhouse/clickhouse-server:26.9.10.4
     hostname: clickhouse
     environment:
       CLICKHOUSE_DB: zongsoft
@@ -323,7 +323,7 @@ services:
           - zongsoft.data.tdengine
 
   rustfs:
-    image: rustfs/rustfs:latest
+    image: rustfs/rustfs:1.0.1
     hostname: rustfs
     environment:
       RUSTFS_CONSOLE_ENABLE: "true"
