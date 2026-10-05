@@ -1,4 +1,6 @@
 @echo off
+setlocal EnableExtensions DisableDelayedExpansion
+pushd "%~dp0" || exit /b 1
 
 REM 获取ESC字符
 for /F "delims=#" %%a in ('"prompt #$E# & echo on & for %%b in (1) do rem"') do set "ESC=%%a"
@@ -60,10 +62,10 @@ if "%architecture%"=="" (SET architecture=x64)
 dotnet cake             ^
 	--edition=%compilation% ^
 	--platform=%platform%   ^
-	--architecture=%architecture% ^
-	--framework=%framework%
+	--architecture=%architecture%
 
-if errorlevel 1 exit /b %errorlevel%
+set "deployExitCode=%errorlevel%"
+if not "%deployExitCode%"=="0" goto exit_script
 
 dotnet deploy                      ^
 	--verbosity:quiet             ^
@@ -82,7 +84,8 @@ dotnet deploy                      ^
 	../.deploy/%scheme%/$(host).deploy        ^
 	../.deploy/%scheme%/$(site).deploy
 
-if errorlevel 1 exit /b %errorlevel%
+set "deployExitCode=%errorlevel%"
+if not "%deployExitCode%"=="0" goto exit_script
 
 echo.
 
@@ -96,8 +99,8 @@ SET /p format=%ITALIC%%MAGENTA%TIPS:%RESET%%ITALIC% Enter '%ITALIC%%BLUE%exit%RE
 <nul SET /p "=%CURSOR_NEXT_LINE%"
 
 if "%format%"=="" goto format_label
-if /i "%format%"=="exit" exit /b 1
-if /i "%format%"=="quit" exit /b 1
+if /i "%format%"=="exit" (set "deployExitCode=1" & goto exit_script)
+if /i "%format%"=="quit" (set "deployExitCode=1" & goto exit_script)
 
 if /i "%format%"=="tar" (
 	SET platform=linux
@@ -117,7 +120,6 @@ SET /p edition=Please enter the edition you want to pack:
 SET version=
 SET /p version=Please enter the version you want to pack%ITALIC%%DARK_YELLOW%(major.minor.patch%DARK_GRAY%.revision%DARK_YELLOW%)%RESET%: 
 
-setlocal DisableDelayedExpansion
 SET "migrator="
 SET /p "migrator=Please enter the migrator name or path(e.g. zongsoft; Enter to skip): "
 if defined migrator SET "migrator=%migrator:"=%"
@@ -139,9 +141,9 @@ dotnet-pack %format%              ^
 	--output:.packages            ^
 	bin/$(compilation)/$(framework):~
 
-if not "%errorlevel%"=="0" (
-	pause
-	exit /b %errorlevel%
-)
+set "deployExitCode=%errorlevel%"
+if not "%deployExitCode%"=="0" pause
 
-endlocal
+:exit_script
+popd
+endlocal & exit /b %deployExitCode%

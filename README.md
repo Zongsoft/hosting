@@ -35,12 +35,14 @@ Run the interactive Windows script `deploy.cmd` from the target host directory t
 > - English: [https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
 > - Chinese: [https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md)
 
-The `deploy.cmd` scripts in `web/default`, `daemon`, and `terminal` use `--overwrite:newest`, `--prerelease:true`, and `--verbosity:quiet`, allowing plugin dependencies that are available only as prerelease packages. Missing optional files are skipped with warnings. A failed build or deployment stops the script before packaging. Daemon and terminal plugins are deployed to `bin/<configuration>/<target-framework>/plugins`.
+The `deploy.cmd` scripts in `web/default`, `daemon`, and `terminal` use `--overwrite:newest`, `--prerelease:true`, and `--verbosity:quiet`, allowing plugin dependencies that are available only as prerelease packages. Missing optional files are skipped with warnings. A failed build or deployment stops the script before packaging. If daemon fails to build, deploy, or package, it displays the failed stage and exit code, then waits for a key before exiting. Daemon and terminal plugins are deployed to `bin/<configuration>/<target-framework>/plugins`.
 
-The deployment and packaging tool calls in `deploy.cmd` and `pack.cmd` omit `--framework`, so the tools resolve `framework` from their merged Variables. Set `framework` in the hosting root's `.env` to share it across hosts. Neither script prompts for a framework. `deploy.cmd` still passes the process environment variable `%framework%` to Cake as its `--framework` argument; Cake does not read `.env`. Set this process variable before deployment and keep it consistent with `.env`. See “Installation and migration packages” below for setup.
+The host `deploy.cmd` and `pack.cmd` scripts use their own directory as the working directory, so they can also be called from another directory. Build, deployment, Web plugin cleanup and packaging paths remain relative to that host. On completion, failure or skipped packaging, the scripts restore the caller's directory and environment.
+
+The deployment and packaging tool calls in `deploy.cmd` and `pack.cmd` omit `--framework`, so the tools resolve `framework` from their merged Variables. Set `framework` in the hosting root's `.env` to share it across hosts. Neither script prompts for a framework. All host `deploy.cmd` scripts also omit `--framework` from the Cake call, using the default in each host's `build.cake`. Cake does not read `.env`; keep its build target consistent with the framework used for deployment and packaging. See “Installation and migration packages” below for setup.
 
 Each host uses the same payload and service definitions in `deploy.cmd` and `pack.cmd`. Packaging after deployment inherits the build configuration and architecture; the standalone `pack.cmd` asks for these separately and does not build or deploy plugins. Daemon explicitly sets `--daemon:zongsoft.daemon` to generate its service through the packager; terminal keeps `--daemon:disabled`. Their application names remain `zongsoft.daemon` and `zongsoft.terminal`, matching their respective `.version` files and runtime application names. Their `--title` values are `Zongsoft.Daemon` and `Zongsoft.Terminal`. Web generates its Nginx configuration with `--web:nginx`.
-All hosts pass `Environment` and `DOTNET_ENVIRONMENT` using the selected environment value and list both in `--daemon-environments`; Web also passes and lists `ASPNETCORE_ENVIRONMENT`. Daemon and Web services receive these variables. The standalone terminal `pack.cmd` also asks for the environment, defaulting to `development` if no value is entered or inherited.
+All hosts pass `Environment` and `DOTNET_ENVIRONMENT` using the selected environment value and list both in `--daemon-environments`; Web also passes and lists `ASPNETCORE_ENVIRONMENT`. Daemon and Web services receive these variables. The standalone terminal `pack.cmd` also asks for the environment, retaining the process `Environment` value on empty input or otherwise defaulting to `development`.
 
 ### Local Plugin Verification and Startup Troubleshooting
 
@@ -152,19 +154,49 @@ Tools merge defaults, process environment variables, `.env` files from the files
 Prepare deployment environment variables in the current PowerShell window, then enter the target host directory:
 
 ```powershell
-$env:framework = 'net10.0' # Match hosting/.env
 $env:Environment = 'development'
 Set-Location D:/Zongsoft/hosting/daemon
 .\deploy.cmd
 ```
 
-Currently, all three `deploy.cmd` scripts and the daemon/Web `pack.cmd` scripts store the environment prompt's input in `value` without assigning it back to `environment`. Set the process environment variable `Environment` before starting these scripts. The standalone terminal `pack.cmd` accepts an environment directly, retaining the process value on empty input or otherwise defaulting to `development`.
+The three deploy.cmd scripts still require the process Environment variable because their environment prompt stores input in value. Standalone pack.cmd now accepts environment directly and retains the process `Environment` value on empty input or otherwise defaults to `development`.
+
+### Container delivery
+
+The maker reuses the hosting root's `.env` through its existing Profile variable pipeline. Use explicit variable references in the .container manifest and templates to reuse settings; CMD does not parse .env or export credentials.
+
+The built-in MySQL template binds `[mysql] root_password` from `.env` to `MYSQL_ROOT_PASSWORD`. An explicit `settings=root-password=...` or `environment!MYSQL_ROOT_PASSWORD=...` in the component overrides it. Other settings still require an explicit variable reference or template binding.
+
+Install/update the global `Zongsoft.Tools.Containerizer` tool separately. `containerize.cmd` directly calls `dotnet-containerize` on PATH, without probing tool locations. The maker's [README](https://github.com/Zongsoft/tools/tree/main/containerizer) describes local compilation and global installation.
+
+Run `.\containerize.cmd` to choose a complete build, `plan` (editable manifest only), `make` (build from a manifest), or `run` (verify a delivery locally). The existing distribution/architecture/engine menus remain available for new selections. Scripts do not ask for individual service settings; maintain `.containerized/.settings`, then edit the generated `.container` for per-delivery changes.
+
+```cmd
+containerize.cmd plan
+containerize.cmd make .containerized\zongsoft@1.0-x64.container
+containerize.cmd plan .containerized\zongsoft@1.0-x64.container --version:1.1
+containerize.cmd make .containerized\zongsoft@1.0-x64.container --version:1.1
+```
+
+The last two lines are alternative ways to create a new release. A named subcommand followed by inputs/options runs without the new-delivery prompts; a single `.container` argument remains shorthand for `make`. Interactive `make` lists the `*.container` files directly inside `.containerized`, sorted by filename, followed by a manual-path option. Only that last option prompts for a path; when no files are found, it is the only choice. After selecting a manifest, you can enter an optional new release version. This menu also appears for `containerize.cmd make` without a path. Saved selections are retained; only version and engine selections can override a manifest in the interactive script. Source is fixed to the hosting directory and output to `.containerized`. Both scripts restore the calling directory/environment.
+
+New selections default to application name `zongsoft`, Debian 13, x64, automatic engine selection and offline bootstrap/images. An empty release version uses a date version; existing delivery archives are never overwritten. Prepare installation packages with deploy.cmd/pack.cmd and migrations with migrate.cmd first; containerize.cmd does not compile hosts or generate migrations. Component inputs include template IDs such as redis, package files, and directories such as daemon or web/default.
+
+The image delivery option is `--imaging:online|offline`, with matching root/service `imaging` entries in `.container`; `bootstrap` still controls engine dependencies independently.
+
+`.containerized/.settings` replaces the infrastructure `.version` list (application package `.version` files are unrelated). It preserves the existing image tags and references root `.env` variables for Redis, MySQL and RustFS secrets. Redis defaults to persistent storage and both RDB/AOF; edit a planned manifest to use `storage=temporary;persistence=none` for a particular test build. No password values are copied into shared settings. Other services' required parameters still need to be supplied when selected.
+
+`plan` creates only `name[-tag]@version-architecture.container`, without using an engine or resolving image digests. Missing required parameters produce magenta warnings and a successful draft; fix them before `make`. `make` ignores subsequent changes to shared `.settings`, resolves variables, and publishes the completed manifest plus its `.tar.gz` only after success. Failed builds retain the draft. The archive includes English/Chinese READMEs and an identical completed manifest. Shared settings can be version controlled; generated archives remain ignored.
+
+Interactive run lists the hosting root's `.containerized/*.tar.gz`, ending with manual path entry. Esc returns from manual input to file selection, then to the operation menu. `containerize.cmd run FILE.tar.gz [--engine:podman]` runs directly without build options or a version prompt. The tool prints actual loopback Web/TCP entries; keep the window open and use Ctrl+C to remove the environment and test data. First base preparation may need Internet access. Package scheme settings, DNS/certificates and external connections remain unchanged. See the maker's run documentation for verified platforms and failure inspection.
+
+The build branches do not perform onsite installation or service control. The run branch installs inside a disposable local verification container. Runtime health checks validate process/listener liveness, not business readiness; see the maker's platform acceptance matrix before selecting a deployment combination.
 
 ### Package after deployment or package existing files
 
 Run `deploy.cmd` from the target host directory and select the scheme (default `default`), environment, remote debugging, platform, and architecture. Remote debugging defaults to `on`, selecting Debug/Windows; `off` selects Release/Linux, with a subsequent prompt to change the platform. For Linux installation verification, select `off`, `linux`, and the matching architecture. A failed build or deployment stops the sequence. Web deployment also clears the site's `plugins/` directory first.
 
-After deployment, enter `tar`, `deb`, or `rpm` at the format prompt to create an installation package. Enter `exit` or `quit` to skip packaging; this branch currently returns exit code `1`. Running `pack.cmd` directly packages existing files only:
+After deployment, enter `tar`, `deb`, or `rpm` at the format prompt to create an installation package. Enter `exit` or `quit` to skip packaging; this branch currently returns exit code `1` and does not trigger daemon's failure pause. Running `pack.cmd` directly packages existing files only:
 
 ```powershell
 Set-Location D:/Zongsoft/hosting/web/default
@@ -330,7 +362,19 @@ For convenient development, host directories can be bind-mounted into the root o
 
 #### Registry Mirrors
 
-Depending on local network conditions, configure container registry mirrors before pulling images:
+Containerizer builds and local `run` use explicitly configured image sources in `.containerized/.mirrors`. For example:
+
+```ini
+docker.io=docker.m.daocloud.io
+mcr.microsoft.com=mcr.m.daocloud.io
+quay.io=quay.m.daocloud.io
+```
+
+Separate multiple mirrors for one registry with semicolons; they are tried in order. The tool first reuses local images verified against the digest and architecture, then tries mirrors, then the original registry. Once resolved, the digest does not change during fallback. Default builds and `make` read this file from the final output directory; `run` reads it beside the selected archive; `plan` does not access registries. The file is not recorded in `.container` or delivery archives, and the tool does not modify global Podman/Docker configuration. Without rules, existing engine behavior is preserved. Image mirrors do not fix APT/DNF package feeds or broken proxy settings.
+
+These public mirrors are explicitly selected for this directory; the tool neither embeds nor automatically enables them. Other endpoints use `host[:port][/prefix]`, without schemes, tags, digests or credentials. The local `.mirrors` includes all 11 registries in [DaoCloud's official list](https://github.com/DaoCloud/public-image-mirror). New entries use its recommended `m.daocloud.io/<source-registry>` prefix; the original three aliases are retained. `k8s.gcr.io` is a legacy entry and upstream marks `registry.ollama.ai` experimental.
+
+For direct Podman, K8s Pod or Compose operations, configure global mirrors in the Podman machine manually if needed:
 
 1. Enter the Podman machine:
 
@@ -348,16 +392,22 @@ Depending on local network conditions, configure container registry mirrors befo
 
 	```toml
 	[[registry]]
-	  prefix = "docker.io"
 	  location = "docker.io"
-
-	[[registry.mirror]]
-	  prefix = "mcr.microsoft.com"
-	  location = "mcr.m.daocloud.io"
-
 	[[registry.mirror]]
 	  location = "docker.m.daocloud.io"
+
+	[[registry]]
+	  location = "mcr.microsoft.com"
+	[[registry.mirror]]
+	  location = "mcr.m.daocloud.io"
+
+	[[registry]]
+	  location = "quay.io"
+	[[registry.mirror]]
+	  location = "quay.m.daocloud.io"
 	```
+
+	Each `[[registry.mirror]]` belongs to its preceding `[[registry]]`. MCR needs its own registry entry and cannot be a Docker Hub mirror. Do not put `prefix` in mirror entries.
 
 3. Exit and restart the Podman machine:
 

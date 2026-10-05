@@ -23,7 +23,7 @@
 - `debug`，通常正式 Linux 发布为 `off`；如用户说“默认”，按脚本默认输入。
 - `platform`，Linux 发布必须输入 `linux`。
 - `architecture`，通常为 `x64` 或 `arm64`。
-- `framework`：部署和打包工具从 Variables 取得；Cake 构建仍使用进程环境变量 `framework`，执行脚本前应按确认值设置该变量。
+- `framework`：部署和打包工具从 Variables 取得；脚本不向 Cake 传入 `--framework`，沿用 `web/default/build.cake` 的默认值。Cake 不读取 `.env`；构建框架应与 hosting `.env` 中部署、打包使用的框架保持一致。
 - 安装包格式：`.deb`、`.rpm` 或 `.tar.gz`，分别在脚本中输入 `deb`、`rpm`、`tar`。
 - `version`，不能为空。
 - `edition`，可为空。

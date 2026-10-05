@@ -1,4 +1,6 @@
 @echo off
+setlocal EnableExtensions DisableDelayedExpansion
+pushd "%~dp0" || exit /b 1
 
 REM 获取ESC字符
 for /F "delims=#" %%a in ('"prompt #$E# & echo on & for %%b in (1) do rem"') do set "ESC=%%a"
@@ -31,11 +33,11 @@ set "CURSOR_PREVIOUS_LINE=%ESC%[1F"
 set "RESET=%ESC%[0m"
 
 SET scheme=
-SET /p scheme=Please enter the scheme name you want to deploy: 
+SET /p scheme=Please enter the scheme name you want to deploy:
 if "%scheme%"=="" (SET scheme=default)
 
 SET environment=%Environment%
-SET /p value=Please enter the environment name you want to pack%ITALIC%(%GREEN%%Environment%%RESET%:%ITALIC%%DARK_YELLOW%[development/test/production]%RESET%): 
+SET /p value=Please enter the environment name you want to pack%ITALIC%(%GREEN%%Environment%%RESET%:%ITALIC%%DARK_YELLOW%[development/test/production]%RESET%):
 if "%value%"=="" (
 	if "%environment%"=="" (SET environment=development)
 )
@@ -50,21 +52,23 @@ if /i "%debug%"=="on" (SET compilation=Debug) else (SET compilation=Release)
 SET platform=
 if /i "%debug%"=="on" (SET platform=windows) else (SET platform=linux)
 
-SET /p value=Please enter the platform%ITALIC%%DARK_YELLOW%(windows/linux/mac)%RESET% you want to deploy: 
+SET /p value=Please enter the platform%ITALIC%%DARK_YELLOW%(windows/linux/mac)%RESET% you want to deploy:
 if "%value%" neq "" (SET platform=%value%)
 
 SET architecture=
 SET /p architecture=Please enter the architecture%ITALIC%%DARK_YELLOW%(x64/x32/arm64)%RESET% you want to deploy:
 if "%architecture%"=="" (SET architecture=x64)
 
-dotnet cake             ^
+set "deployStage=Build"
+dotnet cake ^
 	--edition=%compilation% ^
 	--platform=%platform%   ^
-	--architecture=%architecture% ^
-	--framework=%framework%
+	--architecture=%architecture%
 
-if errorlevel 1 exit /b %errorlevel%
+set "deployExitCode=%errorlevel%"
+if not "%deployExitCode%"=="0" goto failure
 
+set "deployStage=Deployment"
 dotnet deploy                      ^
 	--verbosity:quiet             ^
 	--overwrite:newest            ^
@@ -82,7 +86,8 @@ dotnet deploy                      ^
 	../.deploy/%scheme%/$(host).deploy        ^
 	../.deploy/%scheme%/$(site).deploy
 
-if errorlevel 1 exit /b %errorlevel%
+set "deployExitCode=%errorlevel%"
+if not "%deployExitCode%"=="0" goto failure
 
 echo.
 
@@ -96,8 +101,8 @@ SET /p format=%ITALIC%%MAGENTA%TIPS:%RESET%%ITALIC% Enter '%ITALIC%%BLUE%exit%RE
 <nul SET /p "=%CURSOR_NEXT_LINE%"
 
 if "%format%"=="" goto format_label
-if /i "%format%"=="exit" exit /b 1
-if /i "%format%"=="quit" exit /b 1
+if /i "%format%"=="exit" (set "deployExitCode=1" & goto exit_script)
+if /i "%format%"=="quit" (set "deployExitCode=1" & goto exit_script)
 
 if /i "%format%"=="tar" (
 	SET platform=linux
@@ -112,16 +117,16 @@ if /i "%format%"=="tar" (
 )
 
 SET edition=
-SET /p edition=Please enter the edition you want to pack: 
+SET /p edition=Please enter the edition you want to pack:
 
 SET version=
-SET /p version=Please enter the version you want to pack%ITALIC%%DARK_YELLOW%(major.minor.patch%DARK_GRAY%.revision%DARK_YELLOW%)%RESET%: 
+SET /p version=Please enter the version you want to pack%ITALIC%%DARK_YELLOW%(major.minor.patch%DARK_GRAY%.revision%DARK_YELLOW%)%RESET%:
 
-setlocal DisableDelayedExpansion
 SET "migrator="
 SET /p "migrator=Please enter the migrator name or path(e.g. zongsoft; Enter to skip): "
 if defined migrator SET "migrator=%migrator:"=%"
 
+set "deployStage=Packaging"
 dotnet-pack %format%              ^
 	--name:zongsoft.daemon        ^
 	--title:Zongsoft.Daemon        ^
@@ -139,9 +144,15 @@ dotnet-pack %format%              ^
 	--output:.packages            ^
 	bin/$(compilation)/$(framework):~
 
-if not "%errorlevel%"=="0" (
-	pause
-	exit /b %errorlevel%
-)
+set "deployExitCode=%errorlevel%"
+if not "%deployExitCode%"=="0" goto failure
+goto exit_script
 
-endlocal
+:failure
+echo.
+echo %RED%Error: %deployStage% failed with exit code %deployExitCode%. See the output above.%RESET%
+pause
+
+:exit_script
+popd
+endlocal & exit /b %deployExitCode%

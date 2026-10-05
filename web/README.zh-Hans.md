@@ -18,9 +18,9 @@
 
 ## 默认站点打包
 
-从 `web/default` 目录运行 `deploy.cmd` 可构建、部署后选择打包；运行 `pack.cmd` 则直接打包已有文件，默认 tar、Release、x64，所有格式均面向 Linux。输出位于 `web/default/.packages/`。共享框架来自 hosting 根目录 `.env` 的 `framework`，部署前还需设置同值的进程环境变量供 Cake 使用。完整参数、版本回写与升迁包流程见 [hosting README](../README.zh-Hans.md#安装包与升迁包)。
+从 `web/default` 目录运行 `deploy.cmd` 可构建、部署后选择打包；运行 `pack.cmd` 则直接打包已有文件，默认 tar、Release、x64，所有格式均面向 Linux。输出位于 `web/default/.packages/`。部署和打包框架来自 hosting 根目录 `.env` 的 `framework`；Cake 调用省略 `--framework`，使用 `default/build.cake` 的默认值，应保持构建框架与部署、打包使用的框架一致。完整参数、版本回写与升迁包流程见 [hosting README](../README.zh-Hans.md#安装包与升迁包)。
 
-应用名必须为 `Zongsoft.Hosting.Web`，使生成的服务启动 `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`；标题和服务标识分别为 `Zongsoft.Web`、`zongsoft.web`。生成服务写入 `Environment`、`DOTNET_ENVIRONMENT`、`ASPNETCORE_ENVIRONMENT`。当前环境提示未赋回输入值，应在运行脚本前设置进程环境变量 `Environment`。
+应用名必须为 `Zongsoft.Hosting.Web`，使生成的服务启动 `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`；标题和服务标识分别为 `Zongsoft.Web`、`zongsoft.web`。生成服务写入 `Environment`、`DOTNET_ENVIRONMENT`、`ASPNETCORE_ENVIRONMENT`。独立 pack.cmd 已直接接受环境输入；deploy.cmd 的环境提示仍未赋回，应预设进程 Environment。
 
 `default/web.profile` 定义 HTTP 80 与 8080 的 IPv4/IPv6 入口，`server = ~` 使用打包时 `--listen:8069` 对应的应用地址。`deploy.cmd` 和 `pack.cmd` 使用 `--daemon:zongsoft.web --web:nginx` 生成 systemd 服务与 Nginx 配置，不再引用 `.deploy/default/systemd` 或 `.deploy/default/nginx`。
 

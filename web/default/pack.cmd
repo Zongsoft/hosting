@@ -1,4 +1,6 @@
 @echo off
+setlocal EnableExtensions DisableDelayedExpansion
+pushd "%~dp0" || exit /b 1
 
 REM 获取ESC字符
 for /F "delims=#" %%a in ('"prompt #$E# & echo on & for %%b in (1) do rem"') do set "ESC=%%a"
@@ -20,6 +22,7 @@ set "DARK_CYAN=%ESC%[36m"
 
 set "RESET=%ESC%[0m"
 
+SET "format="
 SET /p format=Please enter the packaging format(tar/deb/rpm) you want to pack:
 if "%format%"=="" (SET format=tar)
 
@@ -32,34 +35,32 @@ if /i "%format%"=="tar" (
 ) else (
 	echo %DARK_RED%Error: %RED%Unsupported package format '%format%'.%RESET%
 	pause
-	exit /b 1
+	popd
+	endlocal & exit /b 1
 )
 
 SET edition=
-SET /p edition=Please enter the edition you want to pack: 
+SET /p "edition=Please enter the edition you want to pack: "
 
 SET version=
-SET /p version=Please enter the version you want to pack: 
+SET /p "version=Please enter the version you want to pack: "
 
-SET environment=%Environment%
-SET /p value=Please enter the environment name you want to pack(%Environment%:[development/test/production]): 
-if "%value%"=="" (
-	if "%environment%"=="" (SET environment=development)
-)
+SET "environment=%Environment%"
+SET /p "environment=Please enter the environment(development/test/production, default:development): "
+if "%environment%"=="" (SET "environment=development")
 
 SET compilation=
 SET /p "compilation=Please enter the compilation configuration(Debug/Release, default:Release) you want to pack: "
 if "%compilation%"=="" (SET compilation=Release)
 
 SET architecture=
-SET /p architecture=Please enter the architecture(x64/arm64) you want to pack: 
+SET /p architecture=Please enter the architecture(x64/arm64):
 if "%architecture%"=="" (SET architecture=x64)
 
 SET scheme=
-SET /p scheme=Please enter the scheme name you want to pack: 
+SET /p scheme=Please enter the scheme name you want to pack:
 if "%scheme%"=="" (SET scheme=default)
 
-setlocal DisableDelayedExpansion
 SET "migrator="
 SET /p "migrator=Please enter the migrator name or path(e.g. zongsoft; Enter to skip): "
 if defined migrator SET "migrator=%migrator:"=%"
@@ -67,15 +68,15 @@ if defined migrator SET "migrator=%migrator:"=%"
 dotnet-pack %format%              ^
 	--name:Zongsoft.Hosting.Web   ^
 	--title:Zongsoft.Web          ^
-	--edition:%edition%           ^
-	--version:%version%           ^
-	--compilation:%compilation%   ^
-	--platform:%platform%         ^
-	--architecture:%architecture% ^
+	--edition:"%edition%"           ^
+	--version:"%version%"           ^
+	--compilation:"%compilation%"   ^
+	--platform:"%platform%"         ^
+	--architecture:"%architecture%" ^
 	--migrator:"%migrator%"       ^
-	--Environment:%environment%   ^
-	--DOTNET_ENVIRONMENT:%environment% ^
-	--ASPNETCORE_ENVIRONMENT:%environment% ^
+	--Environment:"%environment%"   ^
+	--DOTNET_ENVIRONMENT:"%environment%" ^
+	--ASPNETCORE_ENVIRONMENT:"%environment%" ^
 	--listen:8069                 ^
 	--daemon:zongsoft.web         ^
 	--web:nginx                   ^
@@ -90,9 +91,8 @@ dotnet-pack %format%              ^
 	plugins                       ^
 	bin/$(compilation)/$(framework):~
 
-if not "%errorlevel%"=="0" (
-	pause
-	exit /b %errorlevel%
-)
+set "packExitCode=%errorlevel%"
+if not "%packExitCode%"=="0" pause
 
-endlocal
+popd
+endlocal & exit /b %packExitCode%

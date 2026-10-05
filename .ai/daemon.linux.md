@@ -23,7 +23,7 @@
 - `debug`，如用户说“默认”，按脚本默认输入。
 - `platform`，Linux 发布必须输入 `linux`。
 - `architecture`，通常为 `x64` 或 `arm64`。
-- `framework`：部署和打包工具从 Variables 取得；Cake 构建仍使用进程环境变量 `framework`，执行脚本前应按确认值设置该变量。
+- `framework`：部署和打包工具从 Variables 取得；脚本不向 Cake 传入 `--framework`，沿用 [`daemon/build.cake`](../daemon/build.cake) 的默认值。Cake 不读取 `.env`；构建框架应与 hosting `.env` 中部署、打包使用的框架保持一致。
 - 安装包格式：`.deb`、`.rpm` 或 `.tar.gz`，分别在脚本中输入 `deb`、`rpm`、`tar`。
 - `version`，不能为空。
 - `edition`，可为空。
@@ -57,6 +57,8 @@
 - `/opt` 下安装内容与包名、版本和架构匹配。
 
 ## 故障分流
+
+构建、部署或打包失败时，脚本显示失败阶段和退出码，并等待按键后退出；退出时恢复调用者的目录与环境。输入 `exit` / `quit` 主动跳过打包仍返回 `1`，不触发失败暂停。
 
 - 编译失败：记录 `deploy.cmd` 中构建阶段的首个有效错误，优先检查 SDK、目标框架、框架源码和 NuGet 包。
 - 部署失败：检查 `.deploy`、`../.deploy/<scheme>/`、插件来源和目标路径。

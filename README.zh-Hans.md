@@ -35,9 +35,11 @@
 > - 英文：[https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
 > - 中文：[https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md)
 
-`web/default`、`daemon` 和 `terminal` 的 `deploy.cmd` 统一使用 `--overwrite:newest`、`--prerelease:true` 和 `--verbosity:quiet`，允许选择仅提供预发布版本的插件依赖；可选文件缺失时跳过并输出警告。编译或部署返回失败时立即退出，不进入后续打包阶段。daemon 和 terminal 的插件部署到 `bin/<编译配置>/<目标框架>/plugins`。
+`web/default`、`daemon` 和 `terminal` 的 `deploy.cmd` 统一使用 `--overwrite:newest`、`--prerelease:true` 和 `--verbosity:quiet`，允许选择仅提供预发布版本的插件依赖；可选文件缺失时跳过并输出警告。编译或部署返回失败时停止后续流程，不进入打包阶段。daemon 的构建、部署或打包失败时会显示失败阶段和退出码，并等待按键后退出。daemon 和 terminal 的插件部署到 `bin/<编译配置>/<目标框架>/plugins`。
 
-`deploy.cmd` 和 `pack.cmd` 调用部署、打包工具时均省略 `--framework`，由工具从合并后的 Variables 中读取 `framework`。在 hosting 根目录的 `.env` 中定义 `framework`，即可统一各宿主的部署、打包框架。两个脚本均不再询问框架；`deploy.cmd` 仍将进程环境变量 `%framework%` 作为 Cake 的 `--framework` 参数传入，Cake 不读取 `.env`。执行部署脚本前应设置该进程变量，并与 `.env` 保持一致。具体设置方式见下文“安装包与升迁包”。
+各宿主的 `deploy.cmd` 和 `pack.cmd` 均以脚本所在目录为工作目录，也可从其它目录调用。构建、部署、Web 插件清理及打包路径仍基于对应宿主；正常结束、失败或跳过打包时均恢复调用者的目录和环境。
+
+`deploy.cmd` 和 `pack.cmd` 调用部署、打包工具时均省略 `--framework`，由工具从合并后的 Variables 中读取 `framework`。在 hosting 根目录的 `.env` 中定义 `framework`，即可统一各宿主的部署、打包框架。两个脚本均不再询问框架；所有宿主的 `deploy.cmd` 调用 Cake 时也省略 `--framework`，使用各宿主 `build.cake` 的默认值。Cake 不读取 `.env`，应保持构建框架与部署、打包使用的框架一致。具体设置方式见下文“安装包与升迁包”。
 
 每个宿主的 `deploy.cmd` 与 `pack.cmd` 使用相同的载荷和服务定义。部署后打包沿用本次构建配置和架构；独立 `pack.cmd` 另行询问这些参数，不执行编译或插件部署。daemon 显式使用 `--daemon:zongsoft.daemon` 由打包器生成服务，terminal 保持 `--daemon:disabled`；两者的应用名称分别保持 `zongsoft.daemon`、`zongsoft.terminal`，与各自 `.version` 和运行时应用名一致。`--title` 分别为 `Zongsoft.Daemon`、`Zongsoft.Terminal`。Web 的 Nginx 配置由 `--web:nginx` 生成。
 各宿主均以所选环境值传入 `Environment` 和 `DOTNET_ENVIRONMENT`，并在 `--daemon-environments` 中声明这两个变量；Web 还传入并声明 `ASPNETCORE_ENVIRONMENT`。daemon 和 Web 生成的服务会写入这些变量。terminal 的独立 `pack.cmd` 也会询问环境，未输入且未继承已有值时默认为 `development`。
@@ -149,19 +151,49 @@ framework=net10.0
 在当前 PowerShell 窗口中准备部署用的环境变量，再进入目标宿主目录：
 
 ```powershell
-$env:framework = 'net10.0' # 与 hosting/.env 一致
 $env:Environment = 'development'
 Set-Location D:/Zongsoft/hosting/daemon
 .\deploy.cmd
 ```
 
-当前三个 `deploy.cmd` 及 daemon/Web 的 `pack.cmd` 将环境提示的输入暂存到 `value`，没有赋回 `environment`；因此应在启动脚本前设置进程环境变量 `Environment`。terminal 的独立 `pack.cmd` 可直接输入环境，留空时沿用进程值，否则默认 `development`。
+当前三个 deploy.cmd 的环境提示仍暂存到 value，应在启动前设置进程 Environment；独立 pack.cmd 已直接接受环境输入，留空保留进程 `Environment`，未继承已有值时默认为 `development`。
+
+### 容器交付
+
+制作工具通过既有 Profile 变量流程复用 hosting 根目录的 `.env`。在 .container 清单和模板中使用显式变量引用即可复用配置；CMD 不解析 .env，也不导出凭据。
+
+内置 MySQL 模板将 `.env` 的 `[mysql] root_password` 映射到 `MYSQL_ROOT_PASSWORD`。组件中的显式 `settings=root-password=...` 或 `environment!MYSQL_ROOT_PASSWORD=...` 可覆盖它；其它设置仍需显式变量引用或模板绑定。
+
+另行安装或更新全局 `Zongsoft.Tools.Containerizer` 工具。`containerize.cmd` 直接调用 PATH 上的 `dotnet-containerize`，不探测工具位置；本地编译及全局安装方式见 [制作工具 README](https://github.com/Zongsoft/tools/tree/main/containerizer)。
+
+执行 `.\containerize.cmd`，可选择完整制作、`plan`（只生成可编辑清单）、`make`（依据清单制作）或 `run`（本机预演交付包）。新建选择保留原有发行版、架构和引擎菜单；脚本不逐项询问服务参数。在 `.containerized/.settings` 维护默认设置，需要本次单独调整时编辑生成的 `.container`。
+
+```cmd
+containerize.cmd plan
+containerize.cmd make .containerized\zongsoft@1.0-x64.container
+containerize.cmd plan .containerized\zongsoft@1.0-x64.container --version:1.1
+containerize.cmd make .containerized\zongsoft@1.0-x64.container --version:1.1
+```
+
+最后两行是制作新发行版的两种替代方式。子命令后提供输入及选项时直接执行，跳过新建提示；单独传入 `.container` 仍作为 make 简写。交互 make 按文件名排序列出 `.containerized` 目录中的全部 `*.container` 文件（不递归子目录），最后一项为手动输入路径；只有选择末项才询问路径，没有找到文件时仅显示该项。选定清单后，可输入新的发行版本。直接运行 `containerize.cmd make` 且未提供路径时也显示此菜单。沿用清单保存的选择；交互脚本只允许版本和引擎选择覆盖清单。source 固定为 hosting 目录，output 固定为 `.containerized`；脚本退出时恢复调用者目录及环境。
+
+新建默认应用名 `zongsoft`、Debian 13、x64、自动引擎以及离线 bootstrap/镜像。发行版本留空使用日期版本；已有交付包不覆盖。事先用 deploy.cmd/pack.cmd 准备安装包，以 migrate.cmd 准备升迁；脚本不编译宿主，也不制作升迁。组件可输入 redis 等模板标识、安装包文件，以及 daemon、web/default 等目录。
+
+镜像交付方式使用 `--imaging:online|offline`，对应 `.container` 根部及服务段落的 `imaging`；`bootstrap` 仍独立控制引擎依赖。旧 `--mode` 作为未知命令选项被忽略；根部/服务段落的 `mode` 条目不再接受。
+
+`.containerized/.settings` 替换基础服务的 `.version`（与应用安装包自身的 `.version` 无关）。保留已有镜像 tag，Redis、MySQL 和 RustFS 密码引用根 `.env` 的变量。Redis 默认持久存储及 RDB/AOF 双持久化；某次测试可在 plan 清单中改用 `storage=temporary;persistence=none`。共享配置不复制密码值；选用其他服务时仍需填写它们的必填参数。
+
+`plan` 只生成 `name[-tag]@version-architecture.container`，不访问引擎、不解析镜像摘要。缺少必填参数时以紫红色告警并正常保存草稿，make 前补齐。`make` 不重新读取公共 `.settings`，在制作时展开变量；成功后才发布完整清单及 `.tar.gz`，失败保留编辑后的草稿。包内包含中英文 README 和相同完整清单。共享设置可纳入版本管理，生成归档继续忽略。
+
+交互 run 列出 hosting 根目录 `.containerized/*.tar.gz`，末项手工输入路径。Esc 从手工输入退回文件选择，再退回操作菜单。`containerize.cmd run FILE.tar.gz [--engine:podman]` 直接执行，不附加制作选项、不询问版本。工具显示实际回环 Web/TCP 入口；请保留窗口，按 Ctrl+C 删除环境及测试数据。首次准备底图可能联网；包内 scheme 配置、域名/证书及外部连接保持原样。已验证平台及失败检查方式见制作工具的 run 文档。
+
+制作分支不执行现场安装或服务管理；run 分支在可清理的本机验证容器内安装。健康检查只证明进程/监听存活，不代表业务就绪；部署组合的验收范围见制作工具说明。
 
 ### 部署后打包或独立打包
 
 从目标宿主目录运行 `deploy.cmd`，依次选择方案（默认 `default`）、环境、远程调试、平台和架构。远程调试默认 `on`，对应 Debug/Windows；`off` 对应 Release/Linux，可在后续平台提示中调整。用于 Linux 安装验证时选择 `off`、`linux` 及匹配的架构。构建或部署失败会停止后续流程。Web 部署还会先清理站点的 `plugins/`。
 
-部署成功后，在格式提示中输入 `tar`、`deb` 或 `rpm` 制作安装包；输入 `exit` 或 `quit` 跳过打包，此分支当前返回退出码 `1`。直接运行 `pack.cmd` 则只打包已有文件：
+部署成功后，在格式提示中输入 `tar`、`deb` 或 `rpm` 制作安装包；输入 `exit` 或 `quit` 跳过打包，此分支当前返回退出码 `1`，不会触发 daemon 的失败暂停。直接运行 `pack.cmd` 则只打包已有文件：
 
 ```powershell
 Set-Location D:/Zongsoft/hosting/web/default
@@ -328,7 +360,19 @@ wsl ss -tlnp | grep ':6379'
 
 #### 镜像配置
 
-基于某些众所周知的国情，务必先配置 _**D**ocker_ 镜像，步骤如下：
+容器化工具制作及本机 `run` 使用 `.containerized/.mirrors` 中显式配置的镜像源。例如：
+
+```ini
+docker.io=docker.m.daocloud.io
+mcr.microsoft.com=mcr.m.daocloud.io
+quay.io=quay.m.daocloud.io
+```
+
+一个仓库可以配置多个镜像源，以分号分隔，按顺序尝试。工具先复用符合摘要与架构要求的本地缓存，再尝试镜像源，最后尝试原仓库；确定摘要后不会在切换来源时更换镜像。默认制作和 `make` 从最终输出目录读取该文件，`run` 从所选交付包所在目录读取；`plan` 不访问镜像仓库。该文件不写入 `.container` 或交付包，也不会修改 Podman/Docker 的全局配置。不配置时沿用引擎已有行为。镜像源不解决 APT/DNF 软件包源及失效的网络代理问题。
+
+上面的公共镜像源是本目录明确选择的配置，工具不内置或自动启用它们。 `.mirrors` 已补齐 [DaoCloud 官方清单](https://github.com/DaoCloud/public-image-mirror) 的 11 个 Registry；新增项使用上游推荐的 `m.daocloud.io/<源仓库>` 前缀，原有三个别名保留。`k8s.gcr.io` 是旧入口，`registry.ollama.ai` 在上游标为实验性。使用其他镜像源时填写 `主机[:端口][/路径前缀]`，不包含协议、tag、digest 或凭据。
+
+直接运行 Podman、K8s Pod 或 Compose 时，如需全局镜像源，可手工配置 Podman 虚拟机，步骤如下：
 
 1. 进入虚拟机
 
@@ -346,16 +390,22 @@ wsl ss -tlnp | grep ':6379'
 
 	```toml
 	[[registry]]
-	  prefix = "docker.io"
 	  location = "docker.io"
-
-	[[registry.mirror]]
-	  prefix = "mcr.microsoft.com"
-	  location = "mcr.m.daocloud.io"
-
 	[[registry.mirror]]
 	  location = "docker.m.daocloud.io"
+
+	[[registry]]
+	  location = "mcr.microsoft.com"
+	[[registry.mirror]]
+	  location = "mcr.m.daocloud.io"
+
+	[[registry]]
+	  location = "quay.io"
+	[[registry.mirror]]
+	  location = "quay.m.daocloud.io"
 	```
+
+	每个 `[[registry.mirror]]` 属于它前面的 `[[registry]]`；MCR 必须有独立的 `[[registry]]`，不能作为 Docker Hub 的镜像源。镜像源条目中不填写 `prefix`。
 
 3. 退出并重启虚拟机
 	```shell
