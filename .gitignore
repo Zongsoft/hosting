@@ -415,3 +415,8 @@ FodyWeavers.xsd
 # output directory
 .migration/
 **/.packages/
+
+# Container delivery artifacts
+.containerized/*
+!.containerized/.mirrors
+!.containerized/.settings

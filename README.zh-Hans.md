@@ -175,7 +175,16 @@ containerize.cmd plan .containerized\zongsoft@1.0-x64.container --version:1.1
 containerize.cmd make .containerized\zongsoft@1.0-x64.container --version:1.1
 ```
 
+使用 `containerize.cmd --refresh` 进入原菜单，可在本次完整制作或 make 中重新准备公共运行环境；plan/run 不刷新，无参数仍默认复用。也可直接执行 `containerize.cmd make FILE.container --version:1.1 --refresh`。选项不写入 `.container`，不修改基础服务固定摘要；应用安装包仍每次重新制作镜像。
+
+
 最后两行是制作新发行版的两种替代方式。子命令后提供输入及选项时直接执行，跳过新建提示；单独传入 `.container` 仍作为 make 简写。交互 make 按文件名排序列出 `.containerized` 目录中的全部 `*.container` 文件（不递归子目录），最后一项为手动输入路径；只有选择末项才询问路径，没有找到文件时仅显示该项。选定清单后，可输入新的发行版本。直接运行 `containerize.cmd make` 且未提供路径时也显示此菜单。沿用清单保存的选择；交互脚本只允许版本和引擎选择覆盖清单。source 固定为 hosting 目录，output 固定为 `.containerized`；脚本退出时恢复调用者目录及环境。
+
+完整制作、plan 或 make 执行结束后，脚本显式显示成功提示，或失败提示及工具原始退出码，并保留工具的具体诊断输出。成功与失败均等待按键后结束，命令窗口会保留，便于检查结果。
+
+脚本按操作选择、交付设置、输入与执行结果分区显示。标题使用加粗青色，辅助说明与按键提示使用灰色，菜单选中行带背景高亮；成功、告警、错误分别使用绿、黄、红色并带明确状态标记。输入字段与默认值/按键说明分行显示，连续输入项之间不留空行。重定向输出保持纯文本，控制台中可设置 `NO_COLOR` 禁用脚本颜色。方向键、Esc 返回、字面路径、直接传参及工具退出码沿用既有行为。
+
+新建交付物时，升迁目录菜单提供三个选项：无升迁（默认）、hosting 目录下的 `.migration`、手动输入。手动输入留空或仅输入空白也表示不启用升迁；输入时按 Esc 返回该菜单。
 
 新建默认应用名 `zongsoft`、Debian 13、x64、自动引擎以及离线 bootstrap/镜像。发行版本留空使用日期版本；已有交付包不覆盖。事先用 deploy.cmd/pack.cmd 准备安装包，以 migrate.cmd 准备升迁；脚本不编译宿主，也不制作升迁。组件可输入 redis 等模板标识、安装包文件，以及 daemon、web/default 等目录。
 
@@ -183,9 +192,11 @@ containerize.cmd make .containerized\zongsoft@1.0-x64.container --version:1.1
 
 `.containerized/.settings` 替换基础服务的 `.version`（与应用安装包自身的 `.version` 无关）。保留已有镜像 tag，Redis、MySQL 和 RustFS 密码引用根 `.env` 的变量。Redis 默认持久存储及 RDB/AOF 双持久化；某次测试可在 plan 清单中改用 `storage=temporary;persistence=none`。共享配置不复制密码值；选用其他服务时仍需填写它们的必填参数。
 
+Web 安装包的 Nginx 监听来自包内 `.web/nginx/.bindings`。未填写端口覆盖时发布所有受支持的监听，包内声明 80 与 8080 时两者都会发布。Nginx 使用 `settings=port=80:18080,443:none`：容器 80 优先映射到宿主 18080，443 仅保留内部监听。已有 `.container` 必须直接采用此语法，Nginx 不接受 `port=127.0.0.1:80`。修改 `.settings` 不会改变已保存的清单。
+
 `plan` 只生成 `name[-tag]@version-architecture.container`，不访问引擎、不解析镜像摘要。缺少必填参数时以紫红色告警并正常保存草稿，make 前补齐。`make` 不重新读取公共 `.settings`，在制作时展开变量；成功后才发布完整清单及 `.tar.gz`，失败保留编辑后的草稿。包内包含中英文 README 和相同完整清单。共享设置可纳入版本管理，生成归档继续忽略。
 
-交互 run 列出 hosting 根目录 `.containerized/*.tar.gz`，末项手工输入路径。Esc 从手工输入退回文件选择，再退回操作菜单。`containerize.cmd run FILE.tar.gz [--engine:podman]` 直接执行，不附加制作选项、不询问版本。工具显示实际回环 Web/TCP 入口；请保留窗口，按 Ctrl+C 删除环境及测试数据。首次准备底图可能联网；包内 scheme 配置、域名/证书及外部连接保持原样。已验证平台及失败检查方式见制作工具的 run 文档。
+交互 run 列出 hosting 根目录 `.containerized/*.tar.gz`，末项手工输入路径。Esc 从手工输入退回文件选择，再退回操作菜单。`containerize.cmd run FILE.tar.gz [--engine:podman]` 直接执行，不附加制作选项、不询问版本。工具显示实际本机 Web/TCP 映射及尚未探测局域网可达性的网卡地址；请保留窗口，按 Ctrl+C 删除环境及测试数据。首次准备底图可能联网；Web 请求引擎按所有 IPv4 接口发布，局域网接入还取决于宿主/虚拟机转发和防火墙；Web 探测定向连接实际本机映射，保留 Host/SNI 和证书验证。已验证平台及失败检查方式见制作工具的 run 文档。
 
 制作分支不执行现场安装或服务管理；run 分支在可清理的本机验证容器内安装。健康检查只证明进程/监听存活，不代表业务就绪；部署组合的验收范围见制作工具说明。
 
@@ -225,6 +236,8 @@ Set-Location D:/Zongsoft/hosting/web/default
 ### 先制作升迁包，再集成安装包
 
 在 hosting 根目录运行 `migrate.cmd`，依次填写升迁名称（默认 `zongsoft`）、可选 Edition、必填版本号/版本文件/目录、平台（默认 `linux`）、架构（默认 `x64`）和方案（默认 `default`）。首次输入路径时留空会使用 `.deploy/$(scheme)/migration/$(version)/*.migration`；也可连续指定文件，之后留空结束。无目录分隔符的文件名基于该方案和版本目录定位，带目录的相对路径基于 hosting 根目录。裸 `*` 不接受，须用 `*.migration`。
+
+升迁脚本与 `containerize.cmd` 使用一致的样式：标题加粗青色，字段标签青色，辅助提示灰色；成功、告警、错误分别使用绿、黄、红色的 `[OK]`、`[WARN]`、`[ERROR]` 标记。连续输入项之间不留空行。重定向输出保持纯文本，可设置 `NO_COLOR` 禁用脚本颜色。成功后正常结束；失败时保留工具诊断、等待按键并返回原始退出码。
 
 例如在 hosting 根目录制作默认输入的 Linux x64 升迁包：
 

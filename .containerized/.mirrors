@@ -1,0 +1,24 @@
+# Containerizer image download sources for this workstation.
+# Multiple mirrors are separated by semicolons; the original registry is the final fallback.
+# This file is not included in container delivery archives.
+
+quay.io=quay.m.daocloud.io
+docker.io=docker.m.daocloud.io
+mcr.microsoft.com=mcr.m.daocloud.io
+
+# Full registry list: https://github.com/DaoCloud/public-image-mirror
+# New entries use DaoCloud's recommended m.daocloud.io/<registry> prefix.
+# The existing aliases above remain valid and are intentionally preserved.
+
+dhi.io=m.daocloud.io/dhi.io
+gcr.io=m.daocloud.io/gcr.io
+ghcr.io=m.daocloud.io/ghcr.io
+docker.elastic.co=m.daocloud.io/docker.elastic.co
+
+# Legacy Kubernetes registry; upstream moved to registry.k8s.io.
+nvcr.io=m.daocloud.io/nvcr.io
+k8s.gcr.io=m.daocloud.io/k8s.gcr.io
+registry.k8s.io=m.daocloud.io/registry.k8s.io
+
+# Experimental according to DaoCloud; this entry does not imply container image support.
+registry.ollama.ai=m.daocloud.io/registry.ollama.ai
