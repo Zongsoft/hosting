@@ -305,15 +305,21 @@ goto exit_script
 REM ---- Small UI helpers; arguments are fixed labels or setting names, never user data ----
 :initialize_style
 set "uiColor="
-for %%c in (HEADING CYAN GREEN YELLOW RED DIM RESET) do set "%%c="
+for %%c in (HEADING CYAN GREEN YELLOW RED DIM RESET CURSOR_SAVE CURSOR_RESTORE CURSOR_NEXT_LINE CURSOR_PREVIOUS_LINE CURSOR_INDENT) do set "%%c="
 REM 0: console, 1: redirected input, 2: redirected output.
-set "inputBreak="
 "%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -Command "if([Console]::IsOutputRedirected) { exit 2 }; if([Console]::IsInputRedirected) { exit 1 }; exit 0"
 set "consoleMode=!errorlevel!"
-if not "!consoleMode!"=="0" set "inputBreak=1"
-if defined NO_COLOR exit /b 0
 if "!consoleMode!"=="2" exit /b 0
 for /f "delims=#" %%a in ('"prompt #$E# & echo on & for %%b in (1) do rem"') do set "ESC=%%a"
+REM Cursor positioning also applies when NO_COLOR disables colors.
+if "!consoleMode!"=="0" (
+	set "CURSOR_SAVE=!ESC![s"
+	set "CURSOR_RESTORE=!ESC![u"
+	set "CURSOR_NEXT_LINE=!ESC![1E"
+	set "CURSOR_PREVIOUS_LINE=!ESC![1F"
+	set "CURSOR_INDENT=!ESC![3G"
+)
+if defined NO_COLOR exit /b 0
 set "uiColor=1"
 set "HEADING=!ESC![1;96m"
 set "CYAN=!ESC![96m"
@@ -339,7 +345,29 @@ exit /b 0
 
 :write_prompt
 echo   !CYAN!!inputLabel!!RESET!
+
+:write_hint
 if defined inputHint echo   !DIM!!inputHint!!RESET!
+exit /b 0
+
+REM Keep the hint below the field while reading at the end of its label.
+:write_input_prompt
+if not defined CURSOR_SAVE (
+	echo   !CYAN!!inputLabel!:!RESET!
+	exit /b 0
+)
+<nul set /p "=!CURSOR_NEXT_LINE!!CURSOR_PREVIOUS_LINE!"
+<nul set /p "=!CURSOR_INDENT!!CYAN!!inputLabel!: !RESET!!CURSOR_SAVE!!CURSOR_NEXT_LINE!"
+<nul set /p "=!CURSOR_INDENT!!DIM!!inputHint!!RESET!!CURSOR_RESTORE!"
+exit /b 0
+
+:finish_input
+if defined CURSOR_NEXT_LINE (
+	<nul set /p "=!CURSOR_NEXT_LINE!"
+) else (
+	call :write_hint
+)
+echo(
 exit /b 0
 
 :write_warning
@@ -417,6 +445,7 @@ call :write_prompt
 	"}; exit $choice"
 set "menuExitCode=!errorlevel!"
 if "!menuExitCode!"=="3" goto select_text
+echo(
 if !menuExitCode! lss 10 exit /b 1
 set /a menuIndex=menuExitCode-9
 set "input="
@@ -451,11 +480,11 @@ REM Manual paths share normalization with ordinary input; Escape returns code 2.
 :read_input_escape
 set "input="
 set "manualInputFile=!TEMP!\containerize-input-!RANDOM!-!RANDOM!.tmp"
-call :write_prompt
+call :write_input_prompt
 "%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -Command ^
 	"$ErrorActionPreference = 'Stop';" ^
 	"if([Console]::IsInputRedirected -or [Console]::IsOutputRedirected) { exit 3; };" ^
-	"[Console]::Write('> '); $buffer = [System.Text.StringBuilder]::new();" ^
+	"$buffer = [System.Text.StringBuilder]::new();" ^
 	"while($true) {" ^
 		"$key = [Console]::ReadKey($true);" ^
 		"if($key.Key -eq 'Escape') { [Console]::WriteLine(); exit 2; };" ^
@@ -464,7 +493,10 @@ call :write_prompt
 		"if(-not [char]::IsControl($key.KeyChar)) { [void]$buffer.Append($key.KeyChar); [Console]::Write($key.KeyChar); };" ^
 	"}; [IO.File]::WriteAllText($env:manualInputFile, $buffer.ToString(), [Console]::OutputEncoding);"
 set "manualInputExitCode=!errorlevel!"
-if "!manualInputExitCode!"=="2" exit /b 2
+if "!manualInputExitCode!"=="2" (
+	call :finish_input
+	exit /b 2
+)
 if "!manualInputExitCode!"=="3" goto read_input_line
 if not "!manualInputExitCode!"=="0" (
 	if exist "!manualInputFile!" del /q "!manualInputFile!" >nul 2>nul
@@ -477,13 +509,13 @@ goto normalize_input
 REM No CALL expansion of input values; preserve %, ! and shell metacharacters.
 :read_input
 set "input="
-call :write_prompt
+call :write_input_prompt
 
 :read_input_line
-set /p "input=!CYAN!> !RESET!"
-if defined inputBreak echo(
+set /p "input="
 
 :normalize_input
+call :finish_input
 call :trim_input
 if not defined input exit /b 0
 if "!input:~0,1!"=="!quote!" if "!input:~-1!"=="!quote!" (

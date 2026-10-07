@@ -110,15 +110,21 @@ endlocal & endlocal & exit /b %migrateExitCode%
 
 REM ---- UI helpers; CALL arguments are fixed labels or names, never user data ----
 :initialize_style
-for %%c in (HEADING CYAN GREEN YELLOW RED DIM RESET) do set "%%c="
+for %%c in (HEADING CYAN GREEN YELLOW RED DIM RESET CURSOR_SAVE CURSOR_RESTORE CURSOR_NEXT_LINE CURSOR_PREVIOUS_LINE CURSOR_INDENT) do set "%%c="
 REM 0: console, 1: redirected input, 2: redirected output.
-set "inputBreak="
 "%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -Command "if([Console]::IsOutputRedirected) { exit 2 }; if([Console]::IsInputRedirected) { exit 1 }; exit 0"
 set "consoleMode=!errorlevel!"
-if not "!consoleMode!"=="0" set "inputBreak=1"
-if defined NO_COLOR exit /b 0
 if "!consoleMode!"=="2" exit /b 0
 for /f "delims=#" %%a in ('"prompt #$E# & echo on & for %%b in (1) do rem"') do set "ESC=%%a"
+REM Cursor positioning also applies when NO_COLOR disables colors.
+if "!consoleMode!"=="0" (
+	set "CURSOR_SAVE=!ESC![s"
+	set "CURSOR_RESTORE=!ESC![u"
+	set "CURSOR_NEXT_LINE=!ESC![1E"
+	set "CURSOR_PREVIOUS_LINE=!ESC![1F"
+	set "CURSOR_INDENT=!ESC![3G"
+)
+if defined NO_COLOR exit /b 0
 set "HEADING=!ESC![1;96m"
 set "CYAN=!ESC![96m"
 set "GREEN=!ESC![92m"
@@ -141,9 +147,28 @@ echo   !HEADING!%~1!RESET!
 echo   !DIM!------------------------------------------------------------!RESET!
 exit /b 0
 
-:write_prompt
-echo   !CYAN!!inputLabel!!RESET!
+:write_hint
 if defined inputHint echo   !DIM!!inputHint!!RESET!
+exit /b 0
+
+REM Keep the hint below the field while reading at the end of its label.
+:write_input_prompt
+if not defined CURSOR_SAVE (
+	echo   !CYAN!!inputLabel!:!RESET!
+	exit /b 0
+)
+<nul set /p "=!CURSOR_NEXT_LINE!!CURSOR_PREVIOUS_LINE!"
+<nul set /p "=!CURSOR_INDENT!!CYAN!!inputLabel!: !RESET!!CURSOR_SAVE!!CURSOR_NEXT_LINE!"
+<nul set /p "=!CURSOR_INDENT!!DIM!!inputHint!!RESET!!CURSOR_RESTORE!"
+exit /b 0
+
+:finish_input
+if defined CURSOR_NEXT_LINE (
+	<nul set /p "=!CURSOR_NEXT_LINE!"
+) else (
+	call :write_hint
+)
+echo(
 exit /b 0
 
 :write_warning
@@ -170,9 +195,9 @@ exit /b 0
 REM Input helpers do not CALL-expand values; %, ! and metacharacters remain literal.
 :read_input
 set "input="
-call :write_prompt
-set /p "input=!CYAN!> !RESET!"
-if defined inputBreak echo(
+call :write_input_prompt
+set /p "input="
+call :finish_input
 call :trim_input
 if not defined input exit /b 0
 if "!input:~0,1!"=="!quote!" if "!input:~-1!"=="!quote!" (
