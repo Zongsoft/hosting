@@ -34,7 +34,7 @@
 
 1. 进入 `<repo-root>\daemon`。
 2. 执行 `.\deploy.cmd`，按已确认参数回答脚本提示。
-   当前编译、部署阶段依次询问 scheme、environment、debug、platform、architecture，共 5 项，不再询问 framework。自动化应分阶段输入，等部署结束并进入安装包格式提示后再输入 format、edition、version、migrator；需要升迁时，可先停在格式提示，运行根目录 `migrate.cmd` 生成配套文件后继续。
+   当前编译、部署阶段依次询问 scheme、environment、debug、platform、architecture，共 5 项，不再询问 framework。自动化应分阶段输入，等部署结束并进入安装包格式提示后再输入 format、edition、version、升迁输入名称或路径（传给 `--migration`）；需要升迁时，可先停在格式提示，运行根目录 `migrate.cmd` 生成配套文件后继续。
 3. 脚本成功后，按时间、版本、架构和格式定位新安装包。
 4. 将安装包复制到目标 Linux 的 `/opt`。
 5. 按包格式安装：

@@ -57,19 +57,19 @@ SET architecture=
 SET /p architecture=Please enter the architecture(x64/arm64):
 if "%architecture%"=="" (SET architecture=x64)
 
-SET "migrator="
-SET /p "migrator=Please enter the migrator name or path(e.g. zongsoft; Enter to skip): "
-if defined migrator SET "migrator=%migrator:"=%"
+SET "migration="
+SET /p "migration=Please enter the migration input name or path(e.g. zongsoft; Enter to skip): "
+if defined migration SET "migration=%migration:"=%"
 
 dotnet-pack %format%              ^
 	--name:zongsoft.terminal      ^
-	--title:Zongsoft.Terminal      ^
+	--title:Zongsoft.Terminal       ^
 	--edition:"%edition%"           ^
 	--version:"%version%"           ^
 	--compilation:"%compilation%"   ^
 	--platform:"%platform%"         ^
 	--architecture:"%architecture%" ^
-	--migrator:"%migrator%"       ^
+	--migration:"%migration%"       ^
 	--Environment:"%environment%"   ^
 	--DOTNET_ENVIRONMENT:"%environment%" ^
 	--daemon:disabled             ^

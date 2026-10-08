@@ -61,9 +61,9 @@ SET scheme=
 SET /p scheme=Please enter the scheme name you want to pack:
 if "%scheme%"=="" (SET scheme=default)
 
-SET "migrator="
-SET /p "migrator=Please enter the migrator name or path(e.g. zongsoft; Enter to skip): "
-if defined migrator SET "migrator=%migrator:"=%"
+SET "migration="
+SET /p "migration=Please enter the migration input name or path(e.g. zongsoft; Enter to skip): "
+if defined migration SET "migration=%migration:"=%"
 
 dotnet-pack %format%              ^
 	--name:Zongsoft.Hosting.Web   ^
@@ -73,7 +73,7 @@ dotnet-pack %format%              ^
 	--compilation:"%compilation%"   ^
 	--platform:"%platform%"         ^
 	--architecture:"%architecture%" ^
-	--migrator:"%migrator%"       ^
+	--migration:"%migration%"       ^
 	--Environment:"%environment%"   ^
 	--DOTNET_ENVIRONMENT:"%environment%" ^
 	--ASPNETCORE_ENVIRONMENT:"%environment%" ^

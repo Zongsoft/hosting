@@ -222,7 +222,7 @@ Set-Location D:/Zongsoft/hosting/web/default
 | Build configuration | `Release`; `Debug` is supported and must match existing output |
 | Architecture | `x64`; `arm64` is supported and must match the application and migration executor |
 | Scheme | Only the standalone Web script asks; defaults to `default`. It packages existing files without reapplying the scheme |
-| Migration name or path | Empty skips integration; for example `zongsoft`. See below |
+| Migration input name or path (`--migration`) | Empty skips integration; for example `zongsoft`. See below |
 
 | Host | Application name / service | Payload and default installation directory |
 | --- | --- | --- |
@@ -252,7 +252,7 @@ This produces `.migration/zongsoft(migrate)@1.0.0_linux-x64.tar.gz` and its matc
 
 The default version directory contains MySQL and Amazon S3 inputs; connection parameters are in `.deploy/default/migration/*.ini`. The archive root contains `migration.json`, `id`, the internal launcher, the native executor, and its dependencies. SQL files are under `.artifacts/mysql/`, without a `.migration` wrapper.
 
-Next, enter `zongsoft` at the migration prompt in the host's `deploy.cmd` or `pack.cmd`. The packager searches the host source directory and its ancestors, including each direct `.migration/`, for a matching pair using the final Edition, version, and RID. Both files must come from the same location and match completely. An input with a directory checks only that directory, for example `../.migration/zongsoft` from daemon or `../../.migration/zongsoft` from Web. This option does not create migration artifacts.
+Next, enter `zongsoft` at the migration prompt in the host's `deploy.cmd` or `pack.cmd`. The scripts pass this input to `dotnet-pack` through `--migration`. The packager searches the host source directory and its ancestors, including each direct `.migration/`, for a matching pair using the final Edition, version, and RID. Both files must come from the same location and match completely. An input with a directory checks only that directory, for example `../.migration/zongsoft` from daemon or `../../.migration/zongsoft` from Web. This option does not create migration artifacts.
 
 The installation package carries the archive and external launcher unchanged under its installation root's `.migration/`. At execution, the launcher extracts to a separate temporary directory, with the plan and executor at its root, and cleans it afterward. Installation runs `apply` with state under `/var/lib/<package-name>/packager`; a failed migration prevents service startup. Before starting, systemd runs `check` against the local completion marker. Terminal also runs an integrated migration at installation despite disabling daemon support. SQL scripts themselves must make repeated execution safe.
 

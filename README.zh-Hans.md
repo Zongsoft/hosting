@@ -219,7 +219,7 @@ Set-Location D:/Zongsoft/hosting/web/default
 | 编译配置 | `Release`；可选 `Debug`，必须对应现有输出 |
 | 架构 | `x64`；可选 `arm64`，必须与程序和升迁执行器匹配 |
 | 方案 | 仅 Web 的独立脚本询问，默认 `default`；该脚本只打包现有部署文件，不重新应用方案 |
-| 升迁名称或路径 | 留空跳过；如 `zongsoft`，详见下文 |
+| 升迁输入名称或路径（`--migration`） | 留空跳过；如 `zongsoft`，详见下文 |
 
 | 宿主 | 应用名 / 服务 | 载荷与默认安装目录 |
 | --- | --- | --- |
@@ -249,7 +249,7 @@ dotnet-migrate --name:zongsoft --version:1.0.0 --platform:linux --architecture:x
 
 默认版本目录包含 MySQL 与 Amazon S3 输入，连接参数位于 `.deploy/default/migration/*.ini`。升迁包根部直接包含 `migration.json`、`id`、内部启动入口、原生执行器和依赖，SQL 位于 `.artifacts/mysql/`，不套 `.migration` 目录。
 
-随后在宿主 `deploy.cmd` 或 `pack.cmd` 的升迁提示中填写 `zongsoft`。打包器从宿主源目录逐级查找父目录及各层直属 `.migration/`，按最终 Edition、版本和 RID 查找配套文件；两者必须来自同一位置并完整匹配。带目录的输入只定位指定目录，如 daemon 下的 `../.migration/zongsoft` 或 Web 下的 `../../.migration/zongsoft`。该选项不会自动制作升迁包。
+随后在宿主 `deploy.cmd` 或 `pack.cmd` 的升迁提示中填写 `zongsoft`，脚本通过 `--migration` 将此输入传给 `dotnet-pack`。打包器从宿主源目录逐级查找父目录及各层直属 `.migration/`，按最终 Edition、版本和 RID 查找配套文件；两者必须来自同一位置并完整匹配。带目录的输入只定位指定目录，如 daemon 下的 `../.migration/zongsoft` 或 Web 下的 `../../.migration/zongsoft`。该选项不会自动制作升迁包。
 
 安装包把归档和外部启动脚本原样放入安装根 `.migration/`；执行时脚本解压到独立临时目录，计划和执行器直接位于临时目录根部，执行结束后清理。安装时运行 `apply`，状态保存在 `/var/lib/<包名>/packager`，升迁失败阻止服务启动；systemd 启动前运行 `check` 比较本地成功标记。terminal 即使禁用 daemon，也会在安装时执行所集成的升迁。SQL 的重复执行由脚本自身保证幂等。
 

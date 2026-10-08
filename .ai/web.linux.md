@@ -48,7 +48,7 @@
 
 - `deploy.cmd` 必须在真实 Windows 控制台中运行。`dotnet-deploy`、`dotnet-pack` 使用的终端库在 stdin/stdout 被捕获或重定向时可能抛出 `ConsoleTerminal`/`句柄无效` 异常。
 - 如果当前文件是 LF 换行，捕获式 `cmd` 可能在 ESC 初始化行报 `& was unexpected at this time.`；不要改脚本绕过，将该脚本转换为 CRLF 换行格式后再执行。
-- 不要一次性管道输入全部答案：前半段的 `dotnet cake` 或 `dotnet deploy` 可能消费后续输入，导致脚本停在安装包格式提示。自动化时先输入 scheme、environment、debug、platform、architecture 共 5 项，等 `dotnet` 子进程结束并进入打包提示后，再依次输入 `format`、`edition`、`version`、`migrator`。需要升迁时，可先停在格式提示，运行根目录 `migrate.cmd` 生成配套文件后继续。
+- 不要一次性管道输入全部答案：前半段的 `dotnet cake` 或 `dotnet deploy` 可能消费后续输入，导致脚本停在安装包格式提示。自动化时先输入 scheme、environment、debug、platform、architecture 共 5 项，等 `dotnet` 子进程结束并进入打包提示后，再依次输入 `format`、`edition`、`version`、升迁输入名称或路径（传给 `--migration`）。需要升迁时，可先停在格式提示，运行根目录 `migrate.cmd` 生成配套文件后继续。
 - 可用可见 `cmd.exe` 窗口配合 `WScript.Shell.SendKeys` 分阶段输入；不要把 `dotnet-pack` 的 stdout/stderr 重定向到日志文件。
 - `web/default/deploy.cmd` 当前用 `--name:Zongsoft.Hosting.Web`、`--title:Zongsoft.Web`、`--daemon:zongsoft.web` 打包：Debian 包名为 `zongsoft.web`，systemd 服务仍为 `zongsoft.web.service`。
 - `dotnet-pack` 生成 service 时按 `--name` 定位宿主 DLL；如果改回 `--name:Zongsoft.Web`，会生成 `ExecStart=dotnet /opt/zongsoft/web/Zongsoft.Web.dll ...`，这是类库入口，会启动失败。

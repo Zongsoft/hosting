@@ -116,7 +116,7 @@
 
 独立 `pack.cmd` 默认 tar、Release、x64，所有格式均设置 Linux 目标；它只打包已有输出，不执行构建或部署。`deploy.cmd` 中的打包阶段沿用本次编译配置和架构。输出在对应宿主 `.packages/`。工具调用省略 `--framework`，从 Variables 读取共享值；所有宿主的 `deploy.cmd` 调用 Cake 时也省略 `--framework`，使用各宿主 `build.cake` 的默认值。Cake 不读取 `.env`，构建框架须与部署、打包使用的框架一致。daemon 的构建、部署或打包失败时显示失败阶段和退出码，等待按键后退出，并恢复调用者的目录与环境。当前 deploy.cmd 的环境输入仍未赋回 environment，验证时应预设进程 Environment；独立 pack.cmd 已直接接受输入，留空保留进程 `Environment`，未继承已有值时默认为 `development`。
 
-根目录 `migrate.cmd` 调用独立 `dotnet-migrate` 制作配套升迁归档和启动脚本，输出在 `.migration/`；默认输入是 `.deploy/$(scheme)/migration/$(version)/*.migration`。宿主打包脚本中的 migrator 提示仅查找已有产物，不制作升迁；必须匹配最终 Edition、版本与 RID。归档内部不套 `.migration`，安装包仅把配套文件收纳到安装根 `.migration/`，执行时解压到独立临时目录。详细参数和版本回写见 [README](README.zh-Hans.md#安装包与升迁包)。
+根目录 `migrate.cmd` 调用独立 `dotnet-migrate` 制作配套升迁归档和启动脚本，输出在 `.migration/`；默认输入是 `.deploy/$(scheme)/migration/$(version)/*.migration`。宿主打包脚本通过 `--migration` 传入升迁名称或路径，仅查找已有产物，不制作升迁；必须匹配最终 Edition、版本与 RID。归档内部不套 `.migration`，安装包仅把配套文件收纳到安装根 `.migration/`，执行时解压到独立临时目录。详细参数和版本回写见 [README](README.zh-Hans.md#安装包与升迁包)。
 
 升级包用于程序运行中的版本发现、下载、解压、部署和重启等自动升级流程。
 `upgrade.pack.cmd` 用于制作升级包，`upgrade.publish.cmd` 用于发布升级包；

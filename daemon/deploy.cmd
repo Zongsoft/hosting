@@ -122,20 +122,20 @@ SET /p edition=Please enter the edition you want to pack:
 SET version=
 SET /p version=Please enter the version you want to pack%ITALIC%%DARK_YELLOW%(major.minor.patch%DARK_GRAY%.revision%DARK_YELLOW%)%RESET%:
 
-SET "migrator="
-SET /p "migrator=Please enter the migrator name or path(e.g. zongsoft; Enter to skip): "
-if defined migrator SET "migrator=%migrator:"=%"
+SET "migration="
+SET /p "migration=Please enter the migration input name or path(e.g. zongsoft; Enter to skip): "
+if defined migration SET "migration=%migration:"=%"
 
 set "deployStage=Packaging"
 dotnet-pack %format%              ^
 	--name:zongsoft.daemon        ^
-	--title:Zongsoft.Daemon        ^
+	--title:Zongsoft.Daemon       ^
 	--edition:%edition%           ^
 	--version:%version%           ^
 	--compilation:%compilation%   ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
-	--migrator:"%migrator%"       ^
+	--migration:"%migration%"     ^
 	--Environment:%environment%   ^
 	--DOTNET_ENVIRONMENT:%environment% ^
 	--daemon:zongsoft.daemon      ^

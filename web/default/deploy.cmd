@@ -33,11 +33,11 @@ set "CURSOR_PREVIOUS_LINE=%ESC%[1F"
 set "RESET=%ESC%[0m"
 
 SET scheme=
-SET /p scheme=Please enter the scheme name you want to deploy: 
+SET /p scheme=Please enter the scheme name you want to deploy:
 if "%scheme%"=="" (SET scheme=default)
 
 SET environment=%Environment%
-SET /p value=Please enter the environment name you want to pack%ITALIC%(%GREEN%%Environment%%RESET%:%ITALIC%%DARK_YELLOW%[development/test/production]%RESET%): 
+SET /p value=Please enter the environment name you want to pack%ITALIC%(%GREEN%%Environment%%RESET%:%ITALIC%%DARK_YELLOW%[development/test/production]%RESET%):
 if "%value%"=="" (
 	if "%environment%"=="" (SET environment=development)
 )
@@ -52,7 +52,7 @@ if /i "%debug%"=="on" (SET compilation=Debug) else (SET compilation=Release)
 SET platform=
 if /i "%debug%"=="on" (SET platform=windows) else (SET platform=linux)
 
-SET /p value=Please enter the platform%ITALIC%%DARK_YELLOW%(windows/linux/mac)%RESET% you want to deploy: 
+SET /p value=Please enter the platform%ITALIC%%DARK_YELLOW%(windows/linux/mac)%RESET% you want to deploy:
 if "%value%" neq "" (SET platform=%value%)
 
 SET architecture=
@@ -117,14 +117,14 @@ if /i "%format%"=="tar" (
 )
 
 SET edition=
-SET /p edition=Please enter the edition you want to pack: 
+SET /p edition=Please enter the edition you want to pack:
 
 SET version=
-SET /p version=Please enter the version you want to pack%ITALIC%%DARK_YELLOW%(major.minor.patch%DARK_GRAY%.revision%DARK_YELLOW%)%RESET%: 
+SET /p version=Please enter the version you want to pack%ITALIC%%DARK_YELLOW%(major.minor.patch%DARK_GRAY%.revision%DARK_YELLOW%)%RESET%:
 
-SET "migrator="
-SET /p "migrator=Please enter the migrator name or path(e.g. zongsoft; Enter to skip): "
-if defined migrator SET "migrator=%migrator:"=%"
+SET "migration="
+SET /p "migration=Please enter the migration input name or path(e.g. zongsoft; Enter to skip): "
+if defined migration SET "migration=%migration:"=%"
 
 dotnet-pack %format%              ^
 	--name:Zongsoft.Hosting.Web   ^
@@ -134,7 +134,7 @@ dotnet-pack %format%              ^
 	--compilation:%compilation%   ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
-	--migrator:"%migrator%"       ^
+	--migration:"%migration%"     ^
 	--Environment:%environment%   ^
 	--DOTNET_ENVIRONMENT:%environment% ^
 	--ASPNETCORE_ENVIRONMENT:%environment% ^
