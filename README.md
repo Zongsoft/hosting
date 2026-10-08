@@ -431,6 +431,8 @@ For direct Podman, K8s Pod or Compose operations, configure global mirrors in th
 
 #### Network Proxy
 
+The following example uses v2rayN's mixed proxy port `10808`. Keep v2rayN running on Windows and enable connections from the LAN so the machine can reach the host proxy in NAT mode. If `/etc/environment` or `/etc/profile.d/proxy.sh` already contains proxy settings, update their ports as well; both HTTP and HTTPS proxy URLs can use `http://<Windows-host-address>:10808`.
+
 1. Enter the Podman machine:
 
 	```shell
@@ -445,7 +447,7 @@ cat > /usr/local/bin/set-podman-proxy-env.sh <<'EOF'
 set -euo pipefail
 
 WIN_HOST="$(ip route | awk '/default/ {print $3; exit}')"
-PROXY="socks5h://${WIN_HOST}:1080"
+PROXY="socks5h://${WIN_HOST}:10808"
 NO_PROXY_VALUE="localhost,127.0.0.1,::1"
 
 systemctl set-environment \

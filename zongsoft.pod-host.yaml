@@ -22,9 +22,9 @@ spec:
           exec /sbin/init
       env:
         - name: http_proxy
-          value: "http://172.24.96.1:1080"
+          value: "http://172.24.96.1:10808"
         - name: https_proxy
-          value: "http://172.24.96.1:1080"
+          value: "http://172.24.96.1:10808"
         - name: no_proxy
           value: "localhost,127.0.0.1,10.89.1.0/24,zongsoft.io,zongsoft.data,zongsoft.caching"
       volumeMounts:

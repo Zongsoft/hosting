@@ -428,6 +428,8 @@ quay.io=quay.m.daocloud.io
 
 #### 网络代理
 
+下面以 v2rayN 的 `10808` 混合代理端口为例。请确保 Windows 上的 v2rayN 正在运行，并开启“允许来自局域网的连接”，使 NAT 模式的虚拟机能够访问宿主机代理。如果 `/etc/environment` 或 `/etc/profile.d/proxy.sh` 已有旧代理配置，也应同步更新端口；HTTP 和 HTTPS 的代理地址均可使用 `http://<Windows宿主地址>:10808`。
+
 1. 进入虚拟机
 
 	```shell
@@ -445,7 +447,7 @@ cat > /usr/local/bin/set-podman-proxy-env.sh <<'EOF'
 set -euo pipefail
 
 WIN_HOST="$(ip route | awk '/default/ {print $3; exit}')"
-PROXY="socks5h://${WIN_HOST}:1080"
+PROXY="socks5h://${WIN_HOST}:10808"
 NO_PROXY_VALUE="localhost,127.0.0.1,::1"
 
 systemctl set-environment \
