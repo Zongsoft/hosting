@@ -79,10 +79,10 @@ dotnet deploy                      ^
 	--edition:%compilation%       ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
-	--destination:bin/$(edition)/$(framework) ^
+	--destination:bin/${edition}/${framework} ^
 	.deploy                                   ^
-	../.deploy/%scheme%/$(host).deploy        ^
-	../.deploy/%scheme%/$(site).deploy
+	../.deploy/%scheme%/${host}.deploy        ^
+	../.deploy/%scheme%/${site}.deploy
 
 set "deployExitCode=%errorlevel%"
 if not "%deployExitCode%"=="0" goto exit_script
@@ -139,7 +139,7 @@ dotnet-pack %format%              ^
 	--daemon-environments:Environment,DOTNET_ENVIRONMENT ^
 	--exclude:**/logs/;           ^
 	--output:.packages            ^
-	bin/$(compilation)/$(framework):~
+	bin/${compilation}/${framework}:~
 
 set "deployExitCode=%errorlevel%"
 if not "%deployExitCode%"=="0" pause

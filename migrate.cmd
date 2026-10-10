@@ -13,7 +13,7 @@ set "platform=linux"
 set "architecture=x64"
 set "scheme=default"
 set "output=.migration"
-set "migrationRoot=.deploy/$(scheme)/migration/$(version)"
+set "migrationRoot=.deploy/${scheme}/migration/${version}"
 call :initialize_style
 call :write_banner
 

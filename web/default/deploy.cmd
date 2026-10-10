@@ -83,8 +83,8 @@ dotnet deploy                      ^
 	--platform:%platform%         ^
 	--architecture:%architecture% ^
 	.deploy                       ^
-	../../.deploy/%scheme%/$(host).deploy ^
-	../../.deploy/%scheme%/$(site).deploy
+	../../.deploy/%scheme%/${host}.deploy ^
+	../../.deploy/%scheme%/${site}.deploy
 
 set "deployExitCode=%errorlevel%"
 if not "%deployExitCode%"=="0" goto exit_script
@@ -142,7 +142,7 @@ dotnet-pack %format%              ^
 	--daemon:zongsoft.web         ^
 	--web:nginx                   ^
 	--daemon-environments:Environment,DOTNET_ENVIRONMENT,ASPNETCORE_ENVIRONMENT ^
-	--exclude:**/logs/;bin/$(compilation)/$(framework)/*.staticwebassets.* ^
+	--exclude:**/logs/;bin/${compilation}/${framework}/*.staticwebassets.* ^
 	--output:.packages            ^
 	../../mime                    ^
 	appsettings.json              ^
@@ -150,7 +150,7 @@ dotnet-pack %format%              ^
 	web*.option                   ^
 	wwwroot                       ^
 	plugins                       ^
-	bin/$(compilation)/$(framework):~
+	bin/${compilation}/${framework}:~
 
 set "deployExitCode=%errorlevel%"
 if not "%deployExitCode%"=="0" pause

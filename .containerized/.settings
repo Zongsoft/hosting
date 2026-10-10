@@ -5,7 +5,7 @@
 # Databases
 [mysql]
 tag=8.4.11
-settings=storage=persistent;root-password=$(mysql_root_password)
+settings=storage=persistent;root-password=${mysql:root_password}
 
 [mariadb]
 tag=13.0.2
@@ -39,7 +39,7 @@ settings=storage=persistent
 # Caches
 [redis]
 tag=8.10.2
-settings=storage=persistent;persistence=both;password=$(redis_password)
+settings=storage=persistent;persistence=both;password=${redis:password}
 
 [valkey]
 tag=9.1.2
@@ -92,7 +92,7 @@ settings=storage=persistent
 # Object storage
 [rustfs]
 tag=1.0.1
-settings=storage=persistent;access-key=$(rustfs_access_key);secret-key=$(rustfs_secret_key)
+settings=storage=persistent;access-key=${rustfs:access_key};secret-key=${rustfs:secret_key}
 
 
 # Web and reverse proxies

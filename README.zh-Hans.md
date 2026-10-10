@@ -146,7 +146,9 @@ dotnet tool install -g Zongsoft.Tools.Migrator
 framework=net10.0
 ```
 
-工具依次合并默认值、进程环境变量、从文件系统根到源目录（migrator 为工作目录）的 `.env` 和显式命令选项，后者覆盖前者。`framework` 未指定或为 null/空字符串时从 Variables 取值；纯空白不按空值处理。`.env` 中 `[mysql] root_password` 等段落条目转换为 `mysql_root_password` 这样的变量名，再供升迁 `.ini` 引用。
+工具依次合并默认值、进程环境变量、从文件系统根到源目录（migrator 为工作目录）的 `.env` 和显式命令选项，后者覆盖前者。`framework` 未指定或为 null/空字符串时从 Variables 取值；纯空白不按空值处理。`.env` 通过 Core `Profile.ToVariables()` 提供原始变量：`[mysql] root_password` 用 `${mysql:root_password}` 引用；多级章节以点号连接为命名空间，条目名的点号和连字符转换为下划线。命令选项优先，同名来源首次命中即生效，包括 null。
+
+模板统一使用 Core `${name}` / `${namespace:name}` 语法和转义规则。路径优先相对路径，绝对路径使用 `/`。`#@import ../.shared/${product}.env` 在读取到该指令时求值，每条指令导入一个完整路径；可引用显式命令选项、当前文件此前读入的条目及已完成的导入，不能引用后续声明。Profile 本身保留原始值。
 
 在当前 PowerShell 窗口中准备部署用的环境变量，再进入目标宿主目录：
 
@@ -188,9 +190,9 @@ containerize.cmd make .containerized\zongsoft@1.0-x64.container --version:1.1
 
 新建默认应用名 `zongsoft`、Debian 13、x64、自动引擎以及离线 bootstrap/镜像。发行版本留空使用日期版本；已有交付包不覆盖。事先用 deploy.cmd/pack.cmd 准备安装包，以 migrate.cmd 准备升迁；脚本不编译宿主，也不制作升迁。组件可输入 redis 等模板标识、安装包文件，以及 daemon、web/default 等目录。
 
-镜像交付方式使用 `--imaging:online|offline`，对应 `.container` 根部及服务段落的 `imaging`；`bootstrap` 仍独立控制引擎依赖。旧 `--mode` 作为未知命令选项被忽略；根部/服务段落的 `mode` 条目不再接受。
+镜像交付方式使用 `--imaging:online|offline`，对应 `.container` 根部及服务段落的 `imaging`；`bootstrap` 仍独立控制引擎依赖。
 
-`.containerized/.settings` 替换基础服务的 `.version`（与应用安装包自身的 `.version` 无关）。保留已有镜像 tag，Redis、MySQL 和 RustFS 密码引用根 `.env` 的变量。Redis 默认持久存储及 RDB/AOF 双持久化；某次测试可在 plan 清单中改用 `storage=temporary;persistence=none`。共享配置不复制密码值；选用其他服务时仍需填写它们的必填参数。
+`.containerized/.settings` 保存基础服务的默认配置。保留已有镜像 tag，Redis、MySQL 和 RustFS 密码引用根 `.env` 的变量。Redis 默认持久存储及 RDB/AOF 双持久化；某次测试可在 plan 清单中改用 `storage=temporary;persistence=none`。共享配置不复制密码值；选用其他服务时仍需填写它们的必填参数。
 
 Web 安装包的 Nginx 监听来自包内 `.web/nginx/.bindings`。未填写端口覆盖时发布所有受支持的监听，包内声明 80 与 8080 时两者都会发布。Nginx 使用 `settings=port=80:18080,443:none`：容器 80 优先映射到宿主 18080，443 仅保留内部监听。已有 `.container` 必须直接采用此语法，Nginx 不接受 `port=127.0.0.1:80`。修改 `.settings` 不会改变已保存的清单。
 
@@ -223,7 +225,7 @@ Set-Location D:/Zongsoft/hosting/web/default
 
 | 宿主 | 应用名 / 服务 | 载荷与默认安装目录 |
 | --- | --- | --- |
-| daemon | `zongsoft.daemon` / `zongsoft.daemon.service` | 展平 `bin/$(compilation)/$(framework)`；安装到 `/opt/zongsoft/daemon` |
+| daemon | `zongsoft.daemon` / `zongsoft.daemon.service` | 展平 `bin/${compilation}/${framework}`；安装到 `/opt/zongsoft/daemon` |
 | terminal | `zongsoft.terminal` / 禁用服务 | 展平同样的构建目录；安装到 `/opt/zongsoft/terminal` |
 | web/default | `Zongsoft.Hosting.Web` / `zongsoft.web.service` | MIME、配置、wwwroot、plugins 及展平的构建目录；安装到 `/opt/zongsoft/web`，应用监听 `127.0.0.1:8069` |
 
@@ -235,14 +237,14 @@ Set-Location D:/Zongsoft/hosting/web/default
 
 ### 先制作升迁包，再集成安装包
 
-在 hosting 根目录运行 `migrate.cmd`，依次填写升迁名称（默认 `zongsoft`）、可选 Edition、必填版本号/版本文件/目录、平台（默认 `linux`）、架构（默认 `x64`）和方案（默认 `default`）。首次输入路径时留空会使用 `.deploy/$(scheme)/migration/$(version)/*.migration`；也可连续指定文件，之后留空结束。无目录分隔符的文件名基于该方案和版本目录定位，带目录的相对路径基于 hosting 根目录。裸 `*` 不接受，须用 `*.migration`。
+在 hosting 根目录运行 `migrate.cmd`，依次填写升迁名称（默认 `zongsoft`）、可选 Edition、必填版本号/版本文件/目录、平台（默认 `linux`）、架构（默认 `x64`）和方案（默认 `default`）。首次输入路径时留空会使用 `.deploy/${scheme}/migration/${version}/*.migration`；也可连续指定文件，之后留空结束。无目录分隔符的文件名基于该方案和版本目录定位，带目录的相对路径基于 hosting 根目录。裸 `*` 不接受，须用 `*.migration`。
 
 升迁脚本与 `containerize.cmd` 使用一致的样式：标题加粗青色，字段标签青色，辅助提示灰色；成功、告警、错误分别使用绿、黄、红色的 `[OK]`、`[WARN]`、`[ERROR]` 标记。辅助提示显示在文本输入项下方，并与字段名左侧对齐，光标紧跟字段名和冒号后的空格，按 Enter 进入下一项；连续输入项之间保留一个空行。重定向输出保持纯文本，可设置 `NO_COLOR` 禁用脚本颜色。成功后正常结束；失败时保留工具诊断、等待按键并返回原始退出码。
 
 例如在 hosting 根目录制作默认输入的 Linux x64 升迁包：
 
 ```powershell
-dotnet-migrate --name:zongsoft --version:1.0.0 --platform:linux --architecture:x64 --scheme:default --output:.migration '.deploy/$(scheme)/migration/$(version)/*.migration'
+dotnet-migrate --name:zongsoft --version:1.0.0 --platform:linux --architecture:x64 --scheme:default --output:.migration '.deploy/${scheme}/migration/${version}/*.migration'
 ```
 
 生成 `.migration/zongsoft(migrate)@1.0.0_linux-x64.tar.gz` 与同名 `.sh`。Windows x64 生成对应 `win-x64` 归档与 `.cmd`；Linux 另支持 arm64。制作只解析输入、展开变量并打包，不连接或修改数据库/桶；脚本没有覆盖开关，重新制作同名产物需直接调用工具并明确添加 `--overwrite`。

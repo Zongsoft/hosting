@@ -81,7 +81,7 @@ dotnet-pack %format%              ^
 	--daemon:zongsoft.web         ^
 	--web:nginx                   ^
 	--daemon-environments:Environment,DOTNET_ENVIRONMENT,ASPNETCORE_ENVIRONMENT ^
-	--exclude:**/logs/;bin/$(compilation)/$(framework)/*.staticwebassets.* ^
+	--exclude:**/logs/;bin/${compilation}/${framework}/*.staticwebassets.* ^
 	--output:.packages            ^
 	../../mime                    ^
 	appsettings.json              ^
@@ -89,7 +89,7 @@ dotnet-pack %format%              ^
 	web*.option                   ^
 	wwwroot                       ^
 	plugins                       ^
-	bin/$(compilation)/$(framework):~
+	bin/${compilation}/${framework}:~
 
 set "packExitCode=%errorlevel%"
 if not "%packExitCode%"=="0" pause

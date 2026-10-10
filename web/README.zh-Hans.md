@@ -28,7 +28,7 @@
 
 `--web` 不改变输入文件的收录规则；当前脚本显式选择载荷，没有选择 `web.profile`，因此包内只包含生成后的 Nginx 配置。需要交付原始 Profile 时可添加位置参数；排除时使用 `--exclude:*.profile`。
 
-当前载荷包括 hosting 根目录的 `mime/`、站点配置、`wwwroot/`、`plugins/` 和展平到安装根的 `bin/$(compilation)/$(framework)`。排除 `logs/` 及构建目录中的 `*.staticwebassets.*`。独立 `pack.cmd` 的 scheme 提示不会重新部署方案文件；如需切换部署配置，应先运行 `deploy.cmd`。
+当前载荷包括 hosting 根目录的 `mime/`、站点配置、`wwwroot/`、`plugins/` 和展平到安装根的 `bin/${compilation}/${framework}`。排除 `logs/` 及构建目录中的 `*.staticwebassets.*`。独立 `pack.cmd` 的 scheme 提示不会重新部署方案文件；如需切换部署配置，应先运行 `deploy.cmd`。
 
 升迁提示可填写 `zongsoft`，收录预先在 hosting `.migration/` 中制作的归档和外部脚本；两者的 Edition、版本、RID 必须与安装包匹配。安装时执行升迁，归档解压到独立临时目录；安装根 `.migration/` 只收纳配套产物，不产生 `.migration/.migration/` 的内容嵌套。
 

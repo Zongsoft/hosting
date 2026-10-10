@@ -76,7 +76,7 @@ dotnet-pack %format%              ^
 	--daemon-environments:Environment,DOTNET_ENVIRONMENT ^
 	--exclude:**/logs/;           ^
 	--output:.packages            ^
-	bin/$(compilation)/$(framework):~
+	bin/${compilation}/${framework}:~
 
 set "packExitCode=%errorlevel%"
 if not "%packExitCode%"=="0" pause

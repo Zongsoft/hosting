@@ -24,7 +24,7 @@ The installed configuration is `/opt/zongsoft/web/.web/nginx/zongsoft.web.conf`.
 
 `--web` does not change payload selection. These scripts explicitly select their inputs without selecting `web.profile`, so only the generated Nginx configuration is included. Add a positional argument to include a source Profile, or use `--exclude:*.profile` to exclude Profiles.
 
-The payload includes the hosting root's `mime/`, site configuration, `wwwroot/`, `plugins/`, and `bin/$(compilation)/$(framework)` flattened to the installation root. It excludes `logs/` and build-directory `*.staticwebassets.*`. The standalone `pack.cmd` scheme prompt does not redeploy scheme files; run `deploy.cmd` first to switch deployment configuration.
+The payload includes the hosting root's `mime/`, site configuration, `wwwroot/`, `plugins/`, and `bin/${compilation}/${framework}` flattened to the installation root. It excludes `logs/` and build-directory `*.staticwebassets.*`. The standalone `pack.cmd` scheme prompt does not redeploy scheme files; run `deploy.cmd` first to switch deployment configuration.
 
 Enter `zongsoft` at the migration prompt to include an archive and external launcher already created in the hosting root's `.migration/`. Their Edition, version, and RID must match the installation package. Installation applies the migration from a separate temporary directory; the installation root's `.migration/` holds the artifact pair without nesting contents under `.migration/.migration/`.
 

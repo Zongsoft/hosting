@@ -149,7 +149,9 @@ Set `framework` at the root level of the hosting root's `.env`, for example:
 framework=net10.0
 ```
 
-Tools merge defaults, process environment variables, `.env` files from the filesystem root down to the source directory (working directory for migrator), and explicit command options, in that order. An omitted, null, or empty `framework` option uses Variables; whitespace alone is not treated as empty. Section entries such as `[mysql] root_password` become variables such as `mysql_root_password` for migration `.ini` references.
+Tools merge defaults, process environment variables, `.env` files from the filesystem root down to the source directory (working directory for migrator), and explicit command options, in that order. An omitted, null, or empty `framework` option uses Variables; whitespace alone is not treated as empty. Profile sections are variable namespaces: `[mysql] root_password` is referenced as `${mysql:root_password}`; nested sections use dots and entry dots/hyphens become underscores. Command options take precedence; the first matching source wins, including null.
+
+Templates follow Core `${name}` / `${namespace:name}` syntax and escaping. Prefer relative paths; use `/` for absolute paths. `#@import ../.shared/${product}.env` is evaluated when encountered and imports one complete path. It can use explicit command options, earlier entries and completed imports, but not later declarations. Profile itself retains raw values.
 
 Prepare deployment environment variables in the current PowerShell window, then enter the target host directory:
 
@@ -193,7 +195,7 @@ New selections default to application name `zongsoft`, Debian 13, x64, automatic
 
 The image delivery option is `--imaging:online|offline`, with matching root/service `imaging` entries in `.container`; `bootstrap` still controls engine dependencies independently.
 
-`.containerized/.settings` replaces the infrastructure `.version` list (application package `.version` files are unrelated). It preserves the existing image tags and references root `.env` variables for Redis, MySQL and RustFS secrets. Redis defaults to persistent storage and both RDB/AOF; edit a planned manifest to use `storage=temporary;persistence=none` for a particular test build. No password values are copied into shared settings. Other services' required parameters still need to be supplied when selected.
+`.containerized/.settings` stores infrastructure defaults. It preserves the existing image tags and references root `.env` variables for Redis, MySQL and RustFS secrets. Redis defaults to persistent storage and both RDB/AOF; edit a planned manifest to use `storage=temporary;persistence=none` for a particular test build. No password values are copied into shared settings. Other services' required parameters still need to be supplied when selected.
 
 For packaged Web applications, Nginx listeners come from the package's `.web/nginx/.bindings`. With no port override, every supported listener is published, including 80 and 8080 when declared. Nginx settings use `settings=port=80:18080,443:none`: container 80 prefers host 18080, while 443 stays internal. A saved `.container` must contain this syntax directly; `port=127.0.0.1:80` is invalid for Nginx. Changing `.settings` does not change a saved manifest.
 
@@ -226,7 +228,7 @@ Set-Location D:/Zongsoft/hosting/web/default
 
 | Host | Application name / service | Payload and default installation directory |
 | --- | --- | --- |
-| daemon | `zongsoft.daemon` / `zongsoft.daemon.service` | Flattened `bin/$(compilation)/$(framework)`; `/opt/zongsoft/daemon` |
+| daemon | `zongsoft.daemon` / `zongsoft.daemon.service` | Flattened `bin/${compilation}/${framework}`; `/opt/zongsoft/daemon` |
 | terminal | `zongsoft.terminal` / service disabled | The same flattened build directory; `/opt/zongsoft/terminal` |
 | web/default | `Zongsoft.Hosting.Web` / `zongsoft.web.service` | MIME files, configuration, wwwroot, plugins, and the flattened build directory; `/opt/zongsoft/web`, application listener `127.0.0.1:8069` |
 
@@ -238,14 +240,14 @@ After successful packaging, an existing source `.edition` and `.version` are bot
 
 ### Create a migration package before installation-package integration
 
-Run `migrate.cmd` from the hosting root. Enter the migration name (default `zongsoft`), optional Edition, required version number/version file/directory, platform (default `linux`), architecture (default `x64`), and scheme (default `default`). Empty input at the first path prompt selects `.deploy/$(scheme)/migration/$(version)/*.migration`; alternatively, supply files one by one and then finish with empty input. A filename without directory separators resolves under that scheme/version directory; relative paths with directories resolve from the hosting root. Bare `*` is rejected; use `*.migration`.
+Run `migrate.cmd` from the hosting root. Enter the migration name (default `zongsoft`), optional Edition, required version number/version file/directory, platform (default `linux`), architecture (default `x64`), and scheme (default `default`). Empty input at the first path prompt selects `.deploy/${scheme}/migration/${version}/*.migration`; alternatively, supply files one by one and then finish with empty input. A filename without directory separators resolves under that scheme/version directory; relative paths with directories resolve from the hosting root. Bare `*` is rejected; use `*.migration`.
 
 Migration prompts use the same style as `containerize.cmd`: bold cyan headings, cyan fields, gray hints, and green/yellow/red `[OK]`/`[WARN]`/`[ERROR]` markers. Hints appear below each text input, aligned with the field label; type directly after the field name and colon, then press Enter to continue. Consecutive input fields are separated by one blank row. Redirected output remains plain text; `NO_COLOR` disables script colors. On success the script exits normally; on failure it keeps tool diagnostics visible, waits for a key and returns the original exit code.
 
 For example, create the default Linux x64 migration package from the hosting root:
 
 ```powershell
-dotnet-migrate --name:zongsoft --version:1.0.0 --platform:linux --architecture:x64 --scheme:default --output:.migration '.deploy/$(scheme)/migration/$(version)/*.migration'
+dotnet-migrate --name:zongsoft --version:1.0.0 --platform:linux --architecture:x64 --scheme:default --output:.migration '.deploy/${scheme}/migration/${version}/*.migration'
 ```
 
 This produces `.migration/zongsoft(migrate)@1.0.0_linux-x64.tar.gz` and its matching `.sh`. Windows x64 produces a `win-x64` archive and `.cmd`; Linux also supports arm64. Creation parses inputs, expands variables, and packages files without connecting to or changing databases/buckets. The script has no overwrite switch; to recreate an existing output, invoke the tool directly with explicit `--overwrite`.
