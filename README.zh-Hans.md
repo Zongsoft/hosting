@@ -146,7 +146,7 @@ dotnet tool install -g Zongsoft.Tools.Migrator
 framework=net10.0
 ```
 
-工具依次合并默认值、进程环境变量、从文件系统根到源目录（migrator 为工作目录）的 `.env` 和显式命令选项，后者覆盖前者。`framework` 未指定或为 null/空字符串时从 Variables 取值；纯空白不按空值处理。`.env` 通过 Core `Profile.ToVariables()` 提供原始变量：`[mysql] root_password` 用 `${mysql:root_password}` 引用；多级章节以点号连接为命名空间，条目名的点号和连字符转换为下划线。命令选项优先，同名来源首次命中即生效，包括 null。
+工具按显式命令选项、从源目录至文件系统根目录的各级 `.env`（migrator 为工作目录）、进程环境变量的优先级查询；deployer 还在命令选项之后查询目标应用的 appsettings。仅当普通来源全部未命中时，Core 才查询描述符默认值。所有变量（包括 `framework`）的显式 null 或空字符串都表示查询成功并阻止回退，必要值由使用它的业务操作校验。`.env` 通过 Core `Profile.ToVariables()` 提供原始变量：`[mysql] root_password` 用 `${mysql:root_password}` 引用；多级章节以点号连接为命名空间，条目名的点号和连字符转换为下划线。工具明确启用变量回退；具名引用先查询当前命名空间的全部来源，再逐级进入父命名空间及全局。同一命名空间内按上述来源顺序首次命中即生效，包括 null；只有全局普通查询也全部失败后，才使用已声明的命令默认值。
 
 模板统一使用 Core `${name}` / `${namespace:name}` 语法和转义规则。路径优先相对路径，绝对路径使用 `/`。`#@import ../.shared/${product}.env` 在读取到该指令时求值，每条指令导入一个完整路径；可引用显式命令选项、当前文件此前读入的条目及已完成的导入，不能引用后续声明。Profile 本身保留原始值。
 
