@@ -1,82 +1,82 @@
 [plugins zongsoft diagnostics]
-nuget:Zongsoft.Diagnostics@1.9.0
+nuget:Zongsoft.Diagnostics@1.10.0
 
 [plugins zongsoft hardwares]
-nuget:Zongsoft.Hardwares@0.1.0
+nuget:Zongsoft.Hardwares@0.2.0
 
 [plugins zongsoft intelligences]
-nuget:Zongsoft.Intelligences@0.4.2
+nuget:Zongsoft.Intelligences@0.5.0
 
 [plugins zongsoft net]
-nuget:Zongsoft.Net@7.2.0
+nuget:Zongsoft.Net@7.3.0
 
 [plugins zongsoft data]
-nuget:Zongsoft.Data@7.30.0
+nuget:Zongsoft.Data@7.31.0
 
 [plugins zongsoft data mysql]
-nuget:Zongsoft.Data.MySql@7.12.0
+nuget:Zongsoft.Data.MySql@7.13.0
 
 [plugins zongsoft data sqlite]
-nuget:Zongsoft.Data.SQLite@3.7.0
+nuget:Zongsoft.Data.SQLite@3.8.0
 
 [plugins zongsoft data tdengine]
-nuget:Zongsoft.Data.TDengine@2.9.0
+nuget:Zongsoft.Data.TDengine@2.10.0
 
 [plugins zongsoft data postgres]
-nuget:Zongsoft.Data.PostgreSql@1.6.0
+nuget:Zongsoft.Data.PostgreSql@1.7.0
 
 [plugins zongsoft data clickhouse]
-nuget:Zongsoft.Data.ClickHouse@2.11.0
+nuget:Zongsoft.Data.ClickHouse@2.12.0
 
 [plugins zongsoft commands]
-nuget:Zongsoft.Commands@7.13.0
+nuget:Zongsoft.Commands@7.14.0
 
 [plugins zongsoft reporting]
-nuget:Zongsoft.Reporting@7.0.0
+nuget:Zongsoft.Reporting@7.1.0
 
 [plugins zongsoft security]
-nuget:Zongsoft.Security@7.8.0
+nuget:Zongsoft.Security@7.9.0
 
 [plugins zongsoft externals aliyun]
-nuget:Zongsoft.Externals.Aliyun@7.8.0
+nuget:Zongsoft.Externals.Aliyun@7.9.0
 
 [plugins zongsoft externals amazon]
-nuget:Zongsoft.Externals.Amazon@1.2.0
+nuget:Zongsoft.Externals.Amazon@1.3.0
 
 [plugins zongsoft externals redis]
-nuget:Zongsoft.Externals.Redis@7.14.0
+nuget:Zongsoft.Externals.Redis@7.15.0
 
 [plugins zongsoft externals polly]
-nuget:Zongsoft.Externals.Polly@1.0.0
+nuget:Zongsoft.Externals.Polly@1.1.0
 
 [plugins zongsoft externals wechat]
-nuget:Zongsoft.Externals.Wechat@7.5.0
+nuget:Zongsoft.Externals.Wechat@7.6.0
 
 [plugins zongsoft externals lua]
-nuget:Zongsoft.Externals.Lua@2.2.0
+nuget:Zongsoft.Externals.Lua@2.3.0
 
 [plugins zongsoft externals python]
-nuget:Zongsoft.Externals.Python@2.2.0
+nuget:Zongsoft.Externals.Python@2.3.0
 
 [plugins zongsoft externals scriban]
-nuget:Zongsoft.Externals.Scriban@2.0.1
+nuget:Zongsoft.Externals.Scriban@2.1.0
 
 [plugins zongsoft externals closedxml]
-nuget:Zongsoft.Externals.ClosedXml@4.6.0
+nuget:Zongsoft.Externals.ClosedXml@4.7.0
 
 [plugins zongsoft externals hangfire]
-nuget:Zongsoft.Externals.Hangfire@2.9.2
+nuget:Zongsoft.Externals.Hangfire@2.10.0
 [plugins zongsoft externals hangfire redis]
-nuget:Zongsoft.Externals.Hangfire.Storages.Redis@3.1.1
+nuget:Zongsoft.Externals.Hangfire.Storages.Redis@3.2.0
 
 [plugins zongsoft messaging mqtt]
-nuget:Zongsoft.Messaging.Mqtt@7.3.0
+nuget:Zongsoft.Messaging.Mqtt@7.4.0
 
 [plugins zongsoft messaging kafka]
-nuget:Zongsoft.Messaging.Kafka@7.3.0
+nuget:Zongsoft.Messaging.Kafka@7.4.0
 
 [plugins zongsoft messaging rabbitmq]
-nuget:Zongsoft.Messaging.RabbitMQ@1.2.0
+nuget:Zongsoft.Messaging.RabbitMQ@1.3.0
 
 [plugins zongsoft messaging zeromq]
-nuget:Zongsoft.Messaging.ZeroMQ@2.1.0
+nuget:Zongsoft.Messaging.ZeroMQ@2.2.0

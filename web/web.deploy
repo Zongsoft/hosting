@@ -1,31 +1,31 @@
 #@import ../packages
 
 [plugins zongsoft grpc]
-nuget:Zongsoft.Web.Grpc@1.2.0
+nuget:Zongsoft.Web.Grpc@1.3.0
 
 [plugins zongsoft intelligences]
-nuget:Zongsoft.Intelligences.Web@0.4.2
+nuget:Zongsoft.Intelligences.Web@0.5.0
 
 [plugins zongsoft openapi]
-nuget:Zongsoft.Web.OpenApi@0.5.0
+nuget:Zongsoft.Web.OpenApi@0.6.0
 
 [plugins zongsoft diagnostics server]
-nuget:Zongsoft.Diagnostics.Protocols.Server@1.2.0
+nuget:Zongsoft.Diagnostics.Protocols.Server@1.3.0
 
 [plugins zongsoft security]
-nuget:Zongsoft.Security.Web@7.7.0
-nuget:Zongsoft.Security.Captcha@2.1.0
+nuget:Zongsoft.Security.Web@7.8.0
+nuget:Zongsoft.Security.Captcha@2.2.0
 
 [plugins zongsoft externals wechat]
-nuget:Zongsoft.Externals.Wechat.Web@7.3.0
+nuget:Zongsoft.Externals.Wechat.Web@7.4.0
 
 [plugins zongsoft externals hangfire]
-nuget:Zongsoft.Externals.Hangfire.Web@2.1.2
+nuget:Zongsoft.Externals.Hangfire.Web@2.2.0
 
 [plugins zongsoft administratives]
-nuget:Zongsoft.Administratives@1.1.0
-nuget:Zongsoft.Administratives.Web@1.1.0
+nuget:Zongsoft.Administratives@1.2.0
+nuget:Zongsoft.Administratives.Web@1.2.0
 
 [plugins zongsoft discussions]
-nuget:Zongsoft.Discussions@0.10.0
-nuget:Zongsoft.Discussions.Web@0.10.0
+nuget:Zongsoft.Discussions@0.11.0
+nuget:Zongsoft.Discussions.Web@0.11.0
