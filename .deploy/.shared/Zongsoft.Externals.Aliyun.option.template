@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<options>
+	<option path="/Externals/Aliyun">
+		<!-- 阿里云的标准配置项：name 属性表示默认服务中心的名称（Hangzhou, Shenzhen, Qingdao, Beijing, Hongkong）；intranet 属性为真(true)表示以内网地址访问，为假(false)表示以外网地址访问。 -->
+		<general name="${aliyun:region#xml}" intranet="${aliyun:intranet#xml}">
+			<certificates default="${aliyun:certificate#xml}">
+				<certificate certificate.name="${aliyun:certificate#xml}" code="${aliyun:code#xml}" secret="${aliyun:secret#xml}" />
+			</certificates>
+		</general>
+
+		<!-- 阿里云OSS的配置项 -->
+		<oss region="${aliyun:region#xml}" certificate="">
+			<bucket bucket.name="${aliyun:bucket#xml}" region="${aliyun:region#xml}" certificate="" />
+		</oss>
+
+		<!-- 阿里云电信服务的配置项 -->
+		<telecom region="${aliyun:region#xml}" certificate="">
+			<message>
+				<template template.name="Authentication" code="${aliyun:message_template#xml}" scheme="${aliyun:message_scheme#xml}" />
+			</message>
+
+			<voice numbers="${aliyun:voice_numbers#xml}">
+				<template template.name="Authentication" code="${aliyun:voice_template#xml}" />
+			</voice>
+		</telecom>
+
+		<!-- 阿里云移动推送的配置项 -->
+		<pushing region="${aliyun:region#xml}" certificate="">
+			<app app.name="${aliyun:app_name#xml}" code="${aliyun:app_code#xml}" secret="${aliyun:app_secret#xml}" />
+		</pushing>
+
+		<!-- 阿里云消息服务的配置项-->
+		<messaging name="${aliyun:account#xml}">
+			<queues region="${aliyun:region#xml}" certificate="">
+				<queue queue.name="${aliyun:queue#xml}" region="${aliyun:region#xml}" certificate="" />
+			</queues>
+
+			<topics region="${aliyun:region#xml}">
+				<topic topic.name="${aliyun:topic#xml}" region="${aliyun:region#xml}" certificate="" />
+			</topics>
+		</messaging>
+	</option>
+</options>

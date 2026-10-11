@@ -10,6 +10,7 @@
 
 ## 说明
 
+- 本目录的 `deploy.cmd` 调用 hosting 根目录部署脚本，固定本宿主、Debug、Windows、x64 和现有框架默认值，仅询问方案、环境和网络，并以 `--overwrite:alway` 始终覆盖，用于本地调试部署。
 - 宿主程序通过插件框架加载 `plugins/` 目录下的 _`*.plugin`_ 文件来构建运行环境。
 - 如果需要部署、打包、升级包等背景说明，请参考 [../AGENTS.md](../AGENTS.md)。
 

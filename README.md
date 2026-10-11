@@ -27,22 +27,32 @@ Applications are currently divided into three host types:
 
 ## Deployment
 
-A host application is responsible only for initializing the runtime environment. It serves as a plugin container and contains no concrete business implementation itself. Deployment means placing the required plugins and their related files, such as configuration and certificates, in the appropriate subdirectories under `plugins`.
+Hosts initialize the runtime; plugins and their configuration, certificates, and other assets provide application features.
 
-Run the interactive Windows script `deploy.cmd` from the target host directory to build, apply the deployment files (`*.deploy`), and then choose whether to create an installation package. This repository supplies scripts for `daemon`, `terminal`, and `web/default`.
+Run root [`deploy.cmd`](deploy.cmd) to choose a discovered host from a menu. Both deployment and packaging scan the calling directory and its subdirectories for `.deploy` files alongside `Zongsoft.Hosting.Daemon.csproj`, `Zongsoft.Hosting.Terminal.csproj`, or `Zongsoft.Hosting.Web.csproj`. Hosts such as `daemon`, `terminal`, and `web/default` appear automatically, including newly added sites. Hidden directories, directory links, `bin`, `obj`, `packages`, and `node_modules` are skipped. `deploy.cmd web/default` preselects a source relative to the calling directory; absolute paths are also accepted. The script asks for scheme, environment, network, debug mode, platform, architecture, and an optional framework override. It runs Cake inside the selected host, then executes that host's `.deploy` through `dotnet deploy --source:<host> --output:<target>`.
 
-> The deployment scripts use **Z**ongsoft.**T**ools.**D**eployer. For usage instructions, see the documentation in its open-source repository:
-> - English: [https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
-> - Chinese: [https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md)
+For local Debug deployment, run [daemon/deploy.cmd](daemon/deploy.cmd), [terminal/deploy.cmd](terminal/deploy.cmd), or [web/default/deploy.cmd](web/default/deploy.cmd). These shortcuts call root `deploy.cmd <source> --local-debug`, fixing the source to their own host directory and using `debug=on`, `platform=windows`, `architecture=x64`, and the existing framework defaults without prompting for these five settings. They use `--overwrite:alway` to always overwrite existing files. Only scheme, environment, and network retain their usual prompts and defaults. Calling a shortcut from another directory still selects its own host.
 
-The `deploy.cmd` scripts in `web/default`, `daemon`, and `terminal` use `--overwrite:newest`, `--prerelease:true`, and `--verbosity:quiet`, allowing plugin dependencies that are available only as prerelease packages. Missing optional files are skipped with warnings. A failed build or deployment stops the script before packaging. If daemon fails to build, deploy, or package, it displays the failed stage and exit code, then waits for a key before exiting. Daemon and terminal plugins are deployed to `bin/<configuration>/<target-framework>/plugins`.
+Host menus follow the directory hierarchy. Only actual hosts have numbers; parent directories such as `web` are non-selectable group headings and arrow keys skip them. Deployment and packaging select one host at a time, for example:
 
-The host `deploy.cmd` and `pack.cmd` scripts use their own directory as the working directory, so they can also be called from another directory. Build, deployment, Web plugin cleanup and packaging paths remain relative to that host. On completion, failure or skipped packaging, the scripts restore the caller's directory and environment.
+```text
+1. daemon
+2. terminal
+web
+  3. default
+```
 
-The deployment and packaging tool calls in `deploy.cmd` and `pack.cmd` omit `--framework`, so the tools resolve `framework` from their merged Variables. Set `framework` in the hosting root's `.env` to share it across hosts. Neither script prompts for a framework. All host `deploy.cmd` scripts also omit `--framework` from the Cake call, using the default in each host's `build.cake`. Cake does not read `.env`; keep its build target consistent with the framework used for deployment and packaging. See “Installation and migration packages” below for setup.
+Each deployment selects one environment and one network. Network internal/external is independent of debug mode. Debug only chooses default compilation/platform: on selects Debug/Windows and off selects Release/Linux; the platform can be changed separately. Deployer does not encode these combinations or prescribe output directories. The script uses `bin/${edition}/${framework}` for daemon/terminal and the host root for Web; direct tool calls may choose any `--output`. Deployer processes assets declared by `.deploy`; Cake builds the host.
 
-Each host uses the same payload and service definitions in `deploy.cmd` and `pack.cmd`. Packaging after deployment inherits the build configuration and architecture; the standalone `pack.cmd` asks for these separately and does not build or deploy plugins. Daemon explicitly sets `--daemon:zongsoft.daemon` to generate its service through the packager; terminal keeps `--daemon:disabled`. Their application names remain `zongsoft.daemon` and `zongsoft.terminal`, matching their respective `.version` files and runtime application names. Their `--title` values are `Zongsoft.Daemon` and `Zongsoft.Terminal`. Web generates its Nginx configuration with `--web:nginx`.
-All hosts pass `Environment` and `DOTNET_ENVIRONMENT` using the selected environment value and list both in `--daemon-environments`; Web also passes and lists `ASPNETCORE_ENVIRONMENT`. Daemon and Web services receive these variables. The standalone terminal `pack.cmd` also asks for the environment, retaining the process `Environment` value on empty input or otherwise defaulting to `development`.
+Normal deployment uses `--overwrite:newest`; local Debug shortcuts use `--overwrite:alway` (the deployer spelling for always overwrite). Both use `--prerelease:true --verbosity:quiet`. Build or deployment failure stops the sequence and identifies the failed stage and original exit code. Successful deployment returns 0. Run root [`pack.cmd`](pack.cmd) separately to create an installation package. Both scripts preserve the caller's directory and environment.
+
+`deploy.cmd`, `pack.cmd`, `containerize.cmd`, and `migrate.cmd` use Windows PowerShell and share [`.shared.ps1`](.shared.ps1) for headings, prompts, menus, and execution results. The layout uses cyan section titles, gray hints below each input, highlighted menu selections, and an execution summary. Use Up/Down or Home/End to choose, Enter to confirm, and Esc in a menu to cancel (exit code 2). Redirected input or output uses numbered choices; an empty answer selects the default, and exhausted input cancels before execution. Redirected output is plain text; `NO_COLOR` disables console colors. Deployment and packaging wait for a key after interactive success or failure; redirected runs do not pause.
+
+With an empty framework override, deployment and packaging query `.env`, while Cake uses each host's build.cake default. Cake does not read `.env`; keep these values aligned. deploy.cmd passes an explicit override to build and deployment; enter the same framework in pack.cmd. The scripts do not parse or export `.env`.
+
+Package identity is defined in the host `.env` under `[application]`; the script explicitly passes `${application:name}`, `${application:title}`, and `${application:daemon}`. Daemon uses zongsoft.daemon; terminal uses zongsoft.terminal with services disabled. Web uses entry name Zongsoft.Hosting.Web, title Zongsoft.Web, and service zongsoft.web. Services receive Environment and DOTNET_ENVIRONMENT; Web also receives ASPNETCORE_ENVIRONMENT.
+
+See the [deployer documentation](https://github.com/Zongsoft/tools/blob/main/deployer/README.md) for syntax, templates, plans, and locks.
 
 ### Local Plugin Verification and Startup Troubleshooting
 
@@ -63,44 +73,99 @@ For a minimal HTTP check, follow the [decoupled Web plugin example](https://gith
 
 ### Deployment Files
 
-Configuration files are usually specific to a product, project, deployment platform (such as standalone, intranet, private cloud, or public cloud), and environment (such as development, testing, or production). Store these context-specific files separately under `/hosting/.deploy` for centralized management and maintenance.
+`hosting/daemon/.deploy`, `hosting/terminal/.deploy`, and `hosting/web/default/.deploy` declare deployment assets. Their `${scheme}` references select scheme directories; the tool gives `.deploy/` no special directory semantics.
 
-> For more deployment-item examples, see the `.deploy` files in the host application directories.
+### Configuration reuse
 
-#### Configuration Files
+```text
+hosting/
+  .env                         # Common inherited tool variables
+  deploy.cmd
+  pack.cmd
+  .deploy/
+    .env                       # Explicitly imported connection expressions
+    .shared/                   # app, Web, and Aliyun *.template files
+    default/
+      .env                     # Scheme values and explicit imports
+      environment.development.env
+      environment.test.env
+      environment.production.env
+      network.internal.env
+      network.external.env
+      migration/               # Migration inputs
+  daemon/
+    .env                       # Import scheme, then define host values
+    .deploy
+  terminal/
+    .env
+    .deploy
+  web/
+    .env                       # Shared Web variables
+    default/
+      .env
+      .deploy
+```
 
-Configuration files should be named according to the environment to which their contents apply, with the environment name appended to the base file name. The following examples use configuration files from the **Zongsoft.Security** plugin:
+Automatic inheritance reads `.env` only along source's ancestor chain.
 
-- `Zongsoft.Security.option`
-	> Environment-independent configuration whose values act as defaults for environment-specific files.
------
-- `Zongsoft.Security.test.option`
-	> Configuration for the **test environment**. For example, its database connection string may point to a **test database** through an **intranet address**.
-- `Zongsoft.Security.production.option`
-	> Configuration for the **production environment**. For example, its database connection string may point to a **production database** through an **intranet address**.
-- `Zongsoft.Security.development.option`
-	> Configuration for the **development environment**. For example, its database connection string may point to a **development database** through an **intranet address**.
------
-- `Zongsoft.Security.test-debug.option`
-	> Debug configuration for the **test environment**. For example, its database connection string may point to a **test database** through a **public address**.
-- `Zongsoft.Security.production-debug.option`
-	> Debug configuration for the **production environment**. For example, its database connection string may point to a **production database** through a **public address**.
-- `Zongsoft.Security.development-debug.option`
-	> Debug configuration for the **development environment**. For example, its database connection string may point to a **development database** through a **public address**.
+HTTP `listen=8069` belongs in `hosting/web/.env`, shared by Web sites. Keep it out of `hosting/.env`: Packager uses the inherited value to generate `--urls` and HTTP listening metadata, which should not be assigned to daemon or terminal hosts.
 
-### Directory Structure
+For example, `hosting/daemon/.env` contains:
 
-The `.deploy` directory under `hosting` is the root directory for deployment-related resources. Its structure is as follows:
+```ini
+#@import ../.deploy/${scheme}/.env
 
-- `certificates`: optional certificate files
-	> Certificates that are independent of a deployment platform.
+host=daemon
+site=daemon
 
-- `{scheme}`: deployment scheme
-	- `options`: configuration files
-	- `migration`: migration inputs
-		> `<version>/*.migration` references SQL files or declares Amazon S3 buckets; `.ini` files in the same directory or an ancestor supply migration connection parameters.
+[application]
+name=zongsoft.daemon
+title=Zongsoft.Daemon
+daemon=zongsoft.daemon
+```
 
-Add `certificates` directories as needed; the current default scheme contains `options/` and `migration/`. The hosting root's `.env` supplies shared tool variables, `.migration/` holds generated migration archives and launchers, and each host's `.packages/` holds installation packages.
+`hosting/.deploy/default/.env` explicitly imports `../.env`, defines scheme values, then imports `environment.${environment}.env` and `network.${network}.env`. Imported files do not trigger their own ancestor search. Later same-key declarations within a Profile override earlier ones: project values after an import can override the scheme, or a later import can override project values. The tool does not prescribe project/scheme precedence.
+
+Shared templates hold structure and variables hold values. For example, `.deploy/.shared/app.option.template` references `${mysql:connection#xml}`; `.deploy/.env` composes the connection expression and scheme files supply service addresses and other values. `#xml` escapes XML characters; Core performs recursive evaluation. `.env` is never deployed. Template output drops `.template` or uses the explicit destination name from `.deploy`.
+
+Database connections cover all eight drivers in `Zongsoft.Data/drivers`. `.deploy/.env` holds connection expressions, `.deploy/default/.env` supplies scheme values, and `app.option.template` writes `/Data/connectionSettings`. The default remains the MySQL connection named `Zongsoft`; other connections use `Zongsoft.<driver>`. Deploy the corresponding driver plugin in the host’s `.deploy` before using a connection.
+
+| Variable namespace | driver | Settings definition and differences |
+| --- | --- | --- |
+| `mysql` | `MySql` | [MySqlConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/mysql/src/Configuration/MySqlConnectionSettings.cs) |
+| `postgres` | `PostgreSql` | [PostgreSqlConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/postgres/src/Configuration/PostgreSqlConnectionSettings.cs): separate `Port`, default 5432 |
+| `mssql` | `MsSql` | [MsSqlConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/mssql/src/Configuration/MsSqlConnectionSettings.cs): the complete endpoint goes in `Server`; no separate `Port` setting |
+| `sqlite` | `SQLite` | [SQLiteConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/sqlite/src/Configuration/SQLiteConnectionSettings.cs): `Database` is a file path; the sample `ReadWriteCreate` permits creating a missing file |
+| `duckdb` | `DuckDB` | [DuckDBConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/duckdb/src/Configuration/DuckDBConnectionSettings.cs): defines only `Database`, mapped to the provider’s `DataSource` |
+| `clickhouse` | `ClickHouse` | [ClickHouseConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/clickhouse/src/Configuration/ClickHouseConnectionSettings.cs) |
+| `tdengine` | `TDengine` | [TDengineConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/tdengine/src/Configuration/TDengineConnectionSettings.cs) |
+| `influx` | `Influx` | [InfluxConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/influx/src/Configuration/InfluxConnectionSettings.cs): InfluxDB 3 URL, `Token`, `Organization`, and `Precision` |
+
+Passwords for the added database servers and the Influx Token are empty for the scheme to supply. SQLite and DuckDB relative file paths are interpreted by their database providers at application runtime, not relative to the deployment source; neither needs a server or account. Environment and network files only need values that differ, reusing the rest through the existing imports.
+
+The S3 file system uses `[amazon.s3]` and `${amazon.s3:connection}`. The template writes `/Externals/Amazon/connectionSettings` with driver `amazon.s3`. Fields follow [S3ConnectionSettings](https://github.com/Zongsoft/framework/blob/main/externals/amazon/src/IO/Configuration/S3ConnectionSettings.cs): `Server`, `Region`, `AccessKey`, `SecretKey`, `AccountId`, `Client`, and `Timeout`. The default scheme uses the network address on port 9000 and reuses `${rustfs:access_key}` and `${rustfs:secret_key}` from the hosting root `.env`. An AWS S3 scheme can leave server empty and configure its region and credentials; a custom server automatically enables path-style addressing in the driver. The bucket belongs in the `zfs.s3:/<bucket>/<key>` path, not in the connection settings.
+
+Etcd uses `[etcd]` and `${etcd:connection}`. The template writes `/Externals/Etcd/connectionSettings` with driver `Etcd`. Following [EtcdConnectionSettings](https://github.com/Zongsoft/framework/blob/main/externals/etcd/src/Configuration/EtcdConnectionSettings.cs) and client construction, the connection supplies `Server`, `Port`, `UserName`, and `Password`; the default port is 2379 and credentials are empty. The server may be overridden with a comma-separated endpoint list. Applications still set `EtcdService.Namespace` for key isolation; the connection name is not a key prefix.
+
+Message-queue connections use the `messaging.mqtt`, `messaging.kafka`, `messaging.rabbitmq`, `messaging.zeromq`, and `messaging.redis` namespaces. `.deploy/.env` defines connection expressions, the scheme `.env` supplies values, and `app.option.template` writes them to `/Messaging/connectionSettings`. The default scheme supplies local examples for the added queues: Kafka on port 9092 with Plaintext, RabbitMQ on port 5672 with virtual host `/` and the default guest account, and ZeroMQ discovery on port 7969. Override these values for the actual scheme.
+
+All three hosts render `.deploy/.shared/Zongsoft.Messaging.ZeroMQ.option.template` as the plugin client configuration, replacing the package sample that would otherwise override the host connection with loopback. The `daemon` host runs the independent ZeroMQ server and also renders `Zongsoft.Messaging.ZeroMQ-daemon.option.template`. It sets fixed control, incoming, and outgoing ports from the corresponding `messaging.zeromq` variables, and a Redis storage connection named `QueueServer`. The default ports are 32100, 32101, and 32102; clients discover them through port 7969. Publish all four TCP ports so that reliable messages can also reach the storage control endpoint. A general Redis connection named `Zongsoft` does not satisfy the server's named storage lookup. Set a stable `ZONGSOFT_MESSAGING_STORAGE_IDENTIFIER` in the daemon process environment so that recreating the daemon preserves its Redis storage partition.
+
+The `container` scheme inherits `default` and overrides Redis, MySQL, RustFS, and Etcd addresses with container service names. Its ZeroMQ clients use `zongsoft.daemon`; `daemon/.env` overrides that client's address to `127.0.0.1` because the server runs in its own process. Container Web and local Debug Web can share this daemon: container clients use the service name, while the default local scheme uses loopback and the published TCP ports. Deploy and package the daemon before making a delivery that includes it.
+
+Aliyun deploys the base configuration and the selected environment configuration. Environment values live in `environment.development.env` and similar files; network files control intranet. The default scheme retains local sample addresses; real schemes must define service addresses for each network. Debug mode does not select the network. Optional ordinary Security, Hangfire, and other configuration can still be supplied at paths declared by `.deploy`.
+
+For a new scheme, put its `.env`, environment/network variable files, certificates, plugins, and other unique assets under `.deploy/<scheme>/`, reusing `.shared` templates. Optional `${host}.deploy` and Web `${site}.deploy` files can extend deployment. Shared certificates may live under `.shared/certificates/` and be explicitly referenced. Environment and network require no extra directory hierarchy.
+
+Direct deployment example, processing declared assets only:
+
+```powershell
+dotnet deploy --source:daemon --output:'bin/${edition}/${framework}' --scheme:default --environment:production --network:internal --edition:Release --platform:linux --architecture:x64 --prerelease:true
+```
+
+`--source` is relative to the invocation directory. Local relative inputs and output use source; paths inside `.deploy` and imports use the declaring file. Add `--dry-run --report:plan.json` to inspect the plan; report paths also use source.
+
+The shared application template uses `Zongsoft` (MySQL) as the default database connection. Other databases use independent names such as `Zongsoft.PostgreSql` and `Zongsoft.MsSql`, selected explicitly by an application. Do not use `Zongsoft#...` for alternatives: `#` groups sources and includes those connections in the default query.
 
 ### Deployment Tool
 
@@ -157,11 +222,11 @@ Prepare deployment environment variables in the current PowerShell window, then 
 
 ```powershell
 $env:Environment = 'development'
-Set-Location D:/Zongsoft/hosting/daemon
+Set-Location D:/Zongsoft/hosting
 .\deploy.cmd
 ```
 
-The three deploy.cmd scripts still require the process Environment variable because their environment prompt stores input in value. Standalone pack.cmd now accepts environment directly and retains the process `Environment` value on empty input or otherwise defaults to `development`.
+Root scripts accept environment input directly; empty input retains process Environment or defaults to development when undefined.
 
 ### Container delivery
 
@@ -185,13 +250,17 @@ Use `containerize.cmd --refresh` to enter the existing menu and refresh public r
 
 The last two lines are alternative ways to create a new release. A named subcommand followed by inputs/options runs without the new-delivery prompts; a single `.container` argument remains shorthand for `make`. Interactive `make` lists the `*.container` files directly inside `.containerized`, sorted by filename, followed by a manual-path option. Only that last option prompts for a path; when no files are found, it is the only choice. After selecting a manifest, you can enter an optional new release version. This menu also appears for `containerize.cmd make` without a path. Saved selections are retained; only version and engine selections can override a manifest in the interactive script. Source is fixed to the hosting directory and output to `.containerized`. Both scripts restore the calling directory/environment.
 
-After a complete build, plan or make, the script displays an explicit success message or a failure message with the original tool exit code. Tool diagnostics remain visible. Both successful and failed operations wait for a key before exiting, so the command window stays open for inspection.
+After a complete build, plan or make, the script displays an explicit success message or a failure message with the original tool exit code. Tool diagnostics remain visible. Interactive success and failure screens wait for a key before exiting. Redirected runs do not pause, and exhausted input cancels before execution.
 
 The script groups operation selection, delivery settings, inputs and execution results into labeled sections. Titles are bold cyan, helper/key instructions are gray, and the selected menu row has a highlighted background. Success, warnings and errors use green, yellow and red, with explicit status markers. Default/key instructions appear below each text input, aligned with the field label; type directly after the field name and colon (for example, `Application name: `). Press Enter to continue, with one blank row between consecutive inputs. Redirected output stays plain text; set `NO_COLOR` to disable script colors in a console. Arrow-key navigation, Esc/back, literal paths, direct arguments and tool exit codes retain their behavior.
 
 When creating a delivery, the migration directory menu offers three choices: no migrations (default), `.migration` under the hosting directory, or manual entry. Empty or whitespace-only manual input also disables migrations; press Esc during manual entry to return to this menu.
 
-New selections default to application name `zongsoft`, Debian 13, x64, automatic engine selection and offline bootstrap/images. An empty release version uses a date version; existing delivery archives are never overwritten. Prepare installation packages with deploy.cmd/pack.cmd and migrations with migrate.cmd first; containerize.cmd does not compile hosts or generate migrations. Component inputs include template IDs such as redis, package files, and directories such as daemon or web/default.
+New selections default to application name `zongsoft`, Debian 13, x64, automatic engine selection and offline bootstrap/images. An empty release version uses a date version; existing delivery archives are never overwritten. Prepare installation packages with deploy.cmd/pack.cmd and migrations with migrate.cmd first; containerize.cmd does not compile hosts or generate migrations. For container deliveries, leave the Migration prompt in `pack.cmd` empty and select `.migration` in `containerize.cmd`; Containerizer runs the migration after infrastructure is ready. Packager-integrated migrations are for direct installation of application packages.
+
+Next, enter basic services one per line (such as redis, mysql, rustfs, or a service template path) and finish with an empty line. Then choose applications from the discovered host hierarchy. Space toggles a host and Enter confirms; multiple hosts or no hosts may be selected. Redirected input accepts comma-separated host numbers (such as `1,3`) or full relative paths; an empty answer selects no hosts. Choose at least one service or host; group headings such as `web` cannot be selected.
+
+Host discovery is shared with deployment/packaging, and the tool still receives full relative paths such as `web/default`. Use direct commands such as `containerize.cmd plan <input> ...` for explicit installation packages or other directories; choose existing `.container` files through make.
 
 The image delivery option is `--imaging:online|offline`, with matching root/service `imaging` entries in `.container`; `bootstrap` still controls engine dependencies independently.
 
@@ -205,14 +274,16 @@ Interactive run lists the hosting root's `.containerized/*.tar.gz`, ending with 
 
 The build branches do not perform onsite installation or service control. The run branch installs inside a disposable local verification container. Runtime health checks validate process/listener liveness, not business readiness; see the maker's platform acceptance matrix before selecting a deployment combination.
 
-### Package after deployment or package existing files
+Deploy container applications with scheme `container` and local Debug hosts with `default`. `.deploy/container/.env` imports `.deploy/default/.env`, overriding only the configured container connections with service names `redis`, `mysql`, `rustfs`, and `etcd`; credentials and other settings remain inherited. Inside an application container, `127.0.0.1` addresses that application. The host-side migration executor uses the default scheme's loopback endpoints through published infrastructure ports.
 
-Run `deploy.cmd` from the target host directory and select the scheme (default `default`), environment, remote debugging, platform, and architecture. Remote debugging defaults to `on`, selecting Debug/Windows; `off` selects Release/Linux, with a subsequent prompt to change the platform. For Linux installation verification, select `off`, `linux`, and the matching architecture. A failed build or deployment stops the sequence. Web deployment also clears the site's `plugins/` directory first.
+### Create an installation package
 
-After deployment, enter `tar`, `deb`, or `rpm` at the format prompt to create an installation package. Enter `exit` or `quit` to skip packaging; this branch currently returns exit code `1` and does not trigger daemon's failure pause. Running `pack.cmd` directly packages existing files only:
+From the hosting root, run deploy.cmd and select source, scheme, environment, network, debug mode, platform, architecture, and framework override. For Linux installation verification choose off, linux, and the matching architecture. Failure stops subsequent stages.
+
+After deployment, run root `pack.cmd` separately. Select the same host, compilation configuration, architecture, scheme, environment, network, and framework, then choose tar, deb, or rpm. This script packages existing files only:
 
 ```powershell
-Set-Location D:/Zongsoft/hosting/web/default
+Set-Location D:/Zongsoft/hosting
 .\pack.cmd
 ```
 
@@ -223,7 +294,10 @@ Set-Location D:/Zongsoft/hosting/web/default
 | Environment | See above; passed as `Environment` and `DOTNET_ENVIRONMENT`, plus `ASPNETCORE_ENVIRONMENT` for Web |
 | Build configuration | `Release`; `Debug` is supported and must match existing output |
 | Architecture | `x64`; `arm64` is supported and must match the application and migration executor |
-| Scheme | Only the standalone Web script asks; defaults to `default`. It packages existing files without reapplying the scheme |
+| Source | Choose a discovered host; `daemon` is selected initially when available, otherwise the first host. `pack.cmd <source>` preselects a directory |
+| Scheme, network | default, internal; match existing deployment, as packaging does not render configuration again |
+| Framework override | Empty uses .env; an explicit value is passed to the tool |
+| Output directory | .packages, relative to selected source |
 | Migration input name or path (`--migration`) | Empty skips integration; for example `zongsoft`. See below |
 
 | Host | Application name / service | Payload and default installation directory |
@@ -234,7 +308,7 @@ Set-Location D:/Zongsoft/hosting/web/default
 
 All scripts exclude `logs/`; Web additionally excludes `*.staticwebassets.*` in the build directory. The `:~` alias places directory contents at the installation root without retaining the original `bin/...` hierarchy. See the [Web README](web/README.md#packaging-the-default-site) for its service and Nginx configuration. Terminal disables systemd services, so `--daemon-environments` does not set process variables for an interactively launched terminal.
 
-Output goes to the selected host's `.packages/`, for example `zongsoft.daemon@1.0.0-x64.deb`; a nonempty Edition is appended to the package name. Tar produces a matching `.tar.gz` archive and `.sh` installation entry; keep both together. Deb/rpm each produce one package file. These scripts do not enable `--overwrite`, so an existing output of the same name causes generation to fail.
+Output defaults to the selected host's `.packages/`, for example `zongsoft.daemon@1.0.0-x64.deb`; a nonempty Edition is appended to the package name. Tar produces a matching `.tar.gz` archive and `.sh` installation entry; keep both together. Deb/rpm each produce one package file. These scripts do not enable `--overwrite`, so an existing output of the same name causes generation to fail.
 
 After successful packaging, an existing source `.edition` and `.version` are both rewritten, creating `.version` if absent. If only `.version` exists, only it is updated; if neither exists, both are created together. The installation payload always contains `.version` for the final identity and excludes the source directory's direct `.edition`. Installing or upgrading an installation package is a separate action; these scripts do not install it.
 
@@ -242,7 +316,7 @@ After successful packaging, an existing source `.edition` and `.version` are bot
 
 Run `migrate.cmd` from the hosting root. Enter the migration name (default `zongsoft`), optional Edition, required version number/version file/directory, platform (default `linux`), architecture (default `x64`), and scheme (default `default`). Empty input at the first path prompt selects `.deploy/${scheme}/migration/${version}/*.migration`; alternatively, supply files one by one and then finish with empty input. A filename without directory separators resolves under that scheme/version directory; relative paths with directories resolve from the hosting root. Bare `*` is rejected; use `*.migration`.
 
-Migration prompts use the same style as `containerize.cmd`: bold cyan headings, cyan fields, gray hints, and green/yellow/red `[OK]`/`[WARN]`/`[ERROR]` markers. Hints appear below each text input, aligned with the field label; type directly after the field name and colon, then press Enter to continue. Consecutive input fields are separated by one blank row. Redirected output remains plain text; `NO_COLOR` disables script colors. On success the script exits normally; on failure it keeps tool diagnostics visible, waits for a key and returns the original exit code.
+Migration prompts share the interaction and execution helpers in `.shared.ps1`: bold cyan headings, cyan fields, gray hints, and green/yellow/red `[OK]`/`[WARN]`/`[ERROR]` markers. Hints appear below each text input, aligned with the field label; type directly after the field name and colon, then press Enter to continue. Consecutive input fields are separated by one blank row. Redirected output remains plain text; `NO_COLOR` disables script colors. Platform and architecture use the same arrow-key menus. File input still accepts `.migration` paths/patterns, without host selection. Success exits normally; interactive failures retain diagnostics, wait for a key, and return the original exit code. Redirected runs do not pause, and exhausted input cancels.
 
 For example, create the default Linux x64 migration package from the hosting root:
 
@@ -254,7 +328,7 @@ This produces `.migration/zongsoft(migrate)@1.0.0_linux-x64.tar.gz` and its matc
 
 The default version directory contains MySQL and Amazon S3 inputs; connection parameters are in `.deploy/default/migration/*.ini`. The archive root contains `migration.json`, `id`, the internal launcher, the native executor, and its dependencies. SQL files are under `.artifacts/mysql/`, without a `.migration` wrapper.
 
-Next, enter `zongsoft` at the migration prompt in the host's `deploy.cmd` or `pack.cmd`. The scripts pass this input to `dotnet-pack` through `--migration`. The packager searches the host source directory and its ancestors, including each direct `.migration/`, for a matching pair using the final Edition, version, and RID. Both files must come from the same location and match completely. An input with a directory checks only that directory, for example `../.migration/zongsoft` from daemon or `../../.migration/zongsoft` from Web. This option does not create migration artifacts.
+Next, enter `zongsoft` at the migration prompt in root `pack.cmd`. The scripts pass this input to `dotnet-pack` through `--migration`. The packager searches the host source directory and its ancestors, including each direct `.migration/`, for a matching pair using the final Edition, version, and RID. Both files must come from the same location and match completely. An input with a directory checks only that directory, for example `../.migration/zongsoft` from daemon or `../../.migration/zongsoft` from Web. This option does not create migration artifacts.
 
 The installation package carries the archive and external launcher unchanged under its installation root's `.migration/`. At execution, the launcher extracts to a separate temporary directory, with the plan and executor at its root, and cleans it afterward. Installation runs `apply` with state under `/var/lib/<package-name>/packager`; a failed migration prevents service startup. Before starting, systemd runs `check` against the local completion marker. Terminal also runs an integrated migration at installation despite disabling daemon support. SQL scripts themselves must make repeated execution safe.
 
@@ -264,7 +338,7 @@ The current hosting scripts have no separate prompts for homepage, manufacturer,
 
 Deb/rpm share the `--dependencies` syntax `name[:range]`, for example `--dependencies:"aspnetcore-runtime-10.0:[10.0,11.0)"` or `--dependencies:"aspnetcore-runtime-10.0:[10.0)"`. Commas/semicolons outside a range mean all groups are required; `|` means alternatives. The packager converts this to Debian `Depends` and RPM `Requires` without mapping distribution package names. RPM alternatives require 4.13+, and bounded ranges require 4.14+. See the packager's bilingual README for complete rules.
 
-`upgrade.pack.cmd` / `upgrade.publish.cmd` use `dotnet-upgrade` to create and publish automatic-upgrade artifacts, independently of Linux installation and migration packages. Upgrade packaging still prompts for framework; the framework prompt convention for `deploy.cmd` / `pack.cmd` does not apply to it.
+`upgrade.pack.cmd` / `upgrade.publish.cmd` use `dotnet-upgrade` for automatic-upgrade artifacts, independently of Linux installation and migration packages.
 
 ## Containerization
 

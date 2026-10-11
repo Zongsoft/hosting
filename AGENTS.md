@@ -65,9 +65,17 @@
 
 部署工具通过 `.deploy` 文件的指引进行文件复制等操作，更详细的内容参考 `dotnet-deploy` 工具的相关文档和代码。
 
-各宿主项目中的 `deploy.cmd` 是执行部署的脚本文件。注意：它的内部还包含了可选的制作安装包的命令：[`dotnet-pack`](https://github.com/Zongsoft/tools/tree/main/packager)。
-> 提示：执行该脚本时，如果只部署不打包，则传入 `exit` 给其内部的打包命令。
-> 当前 `exit` / `quit` 跳过打包分支返回退出码 `1`，不要将其解释为前面的部署失败，也不会触发 daemon 的失败暂停。
+`daemon/deploy.cmd`、`terminal/deploy.cmd` 和 `web/default/deploy.cmd` 是本地 Debug 快捷入口：调用根目录 `deploy.cmd <source> --local-debug`，固定源目录为自身宿主，跳过调试模式、平台、架构和框架提示，使用 on、windows、x64 及现有框架默认值；方案、环境和网络仍按原有提示和默认值输入。快捷入口使用 `--overwrite:alway` 始终覆盖，普通根目录部署保持 `newest`。
+
+hosting 根目录的 `deploy.cmd`、`pack.cmd`、`containerize.cmd` 和 `migrate.cmd` 通过 `.shared.ps1` 共用交互、菜单与执行逻辑。部署和打包扫描调用时当前目录及子目录中的宿主项目，以分层方向键菜单选择源目录；父目录只显示分组，不可选择，只有宿主叶子项带编号。`deploy.cmd` 进入所选宿主运行 Cake，再用 `--source`/`--output` 调用部署器；只负责构建和部署，成功后返回 0。安装包由根目录 `pack.cmd` 独立制作。
+
+### 部署变量与模板
+
+- 自动继承沿 source 的祖先 `.env`；宿主 `.env` 通过 `#@import ../.deploy/${scheme}/.env`（Web 多一级 `../`）选择方案。方案可以显式导入 `.deploy/.env` 和自己的环境、网络变量文件；工具不固化额外优先级或目录组合。
+- `.deploy` 文件通过 `${scheme}` 选择独有资产，公共配置结构在 `.deploy/.shared/*.template`，用 template 解析器生成最终文件；`.env` 不部署。
+- 一次部署只选一个环境及一种网络；网络独立于 debug。公共模板的路径并不决定变量作用域。
+- 根脚本的 source 自动发现和显式相对路径基于调用时的当前目录；deployer/packager 的本地相对输入输出基于选中的 source。`.deploy` 和 import 内部引用仍基于声明文件。
+- Web 打包身份来自 `web/.env` 的 application 命名空间，入口必须保持 Zongsoft.Hosting.Web，标题 Zongsoft.Web，服务 zongsoft.web；脚本用显式模板参数传给 packager。
 
 ### 手工部署
 
@@ -76,6 +84,8 @@
 ## 容器化
 
 宿主程序及其插件可能依赖数据库、分布式缓存、分布式配置和分布式文件系统。`hosting` 根目录提供两套并列的 Podman 容器化方案，维护时必须保留两种模式，不能以其中一种替换或删除另一种。
+
+`containerize.cmd` 的完整制作/plan 先逐行输入基础服务，再从 hosting 根目录自动发现的分层菜单中多选宿主。Space 勾选、Enter 确认；重定向时用逗号分隔的编号或完整相对路径。允许仅服务或仅宿主，但不能两者均空。make/run 保留文件选择与 Esc 返回；直接参数原样交给工具，制作追加固定 source/output，run 不追加。`migrate.cmd` 只输入升迁文件/模式，平台与架构共用菜单，不增加宿主选择。四个脚本的公共交互代码集中在 `.shared.ps1`；重定向不暂停，输入耗尽即取消。
 
 ### K8s Pod 模式
 
@@ -114,7 +124,7 @@
 
 > 如果是在独立的 Linux 环境中测试宿主程序，最好通过该脚本制作相应格式的安装包进行测试验证。
 
-独立 `pack.cmd` 默认 tar、Release、x64，所有格式均设置 Linux 目标；它只打包已有输出，不执行构建或部署。`deploy.cmd` 中的打包阶段沿用本次编译配置和架构。输出在对应宿主 `.packages/`。工具调用省略 `--framework`，按变量来源查询共享值；显式 null/空字符串与其它变量一样阻止回退，命令描述符默认值仅在普通来源全部未命中后查询；所有宿主的 `deploy.cmd` 调用 Cake 时也省略 `--framework`，使用各宿主 `build.cake` 的默认值。Cake 不读取 `.env`，构建框架须与部署、打包使用的框架一致。daemon 的构建、部署或打包失败时显示失败阶段和退出码，等待按键后退出，并恢复调用者的目录与环境。当前 deploy.cmd 的环境输入仍未赋回 environment，验证时应预设进程 Environment；独立 pack.cmd 已直接接受输入，留空保留进程 `Environment`，未继承已有值时默认为 `development`。
+根目录 `pack.cmd` 从自动发现的宿主菜单中选择源目录，默认 tar、Release、x64 和 Linux，只打包已有输出。打包时选择与部署一致的源目录、编译配置、架构、方案、环境、网络及框架覆盖。输出默认是所选 source 下的 `.packages/`，也可另选。环境直接接受输入；留空保留进程 Environment，未定义时用 development。框架覆盖留空时，工具使用 `.env`，Cake 使用 build.cake 默认值，须保持一致；分别在 deploy.cmd 与 pack.cmd 中输入相同的显式框架覆盖。构建、部署或打包失败显示阶段和原始退出码。交互模式下成功和失败均等待按键，菜单 Esc 取消返回 2；重定向时采用编号菜单、纯文本输出且不暂停，输入耗尽即取消。所有出口保留调用者的目录与环境。
 
 根目录 `migrate.cmd` 调用独立 `dotnet-migrate` 制作配套升迁归档和启动脚本，输出在 `.migration/`；默认输入是 `.deploy/${scheme}/migration/${version}/*.migration`。宿主打包脚本通过 `--migration` 传入升迁名称或路径，仅查找已有产物，不制作升迁；必须匹配最终 Edition、版本与 RID。归档内部不套 `.migration`，安装包仅把配套文件收纳到安装根 `.migration/`，执行时解压到独立临时目录。详细参数和版本回写见 [README](README.zh-Hans.md#安装包与升迁包)。
 

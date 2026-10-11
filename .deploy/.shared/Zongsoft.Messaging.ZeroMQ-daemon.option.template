@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<configuration>
+	<option path="/Externals/Redis">
+		<connectionSettings>
+			<connectionSetting connectionSetting.name="QueueServer" driver="Redis"
+			                   value="${redis:connection#xml}" />
+		</connectionSettings>
+	</option>
+
+	<option path="/Messaging/ZeroMQ">
+		<servers port="${messaging.zeromq:control},${messaging.zeromq:incoming},${messaging.zeromq:outgoing}" />
+	</option>
+</configuration>

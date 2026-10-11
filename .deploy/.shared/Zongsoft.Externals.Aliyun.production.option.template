@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<options>
+	<option path="/Externals/Aliyun">
+		<general name="${aliyun.environment:region#xml}" intranet="${aliyun.environment:intranet#xml}">
+			<certificates default="${aliyun.environment:certificate#xml}">
+				<certificate certificate.name="${aliyun.environment:certificate#xml}" code="${aliyun.environment:code#xml}" secret="${aliyun.environment:secret#xml}" />
+			</certificates>
+		</general>
+
+		<messaging name="${aliyun.environment:account#xml}">
+			<queues region="${aliyun.environment:region#xml}" certificate="">
+				<queue queue.name="${aliyun.environment:queue#xml}" region="${aliyun.environment:region#xml}" certificate="" />
+			</queues>
+
+			<topics region="${aliyun.environment:region#xml}">
+				<topic topic.name="${aliyun.environment:topic#xml}" region="${aliyun.environment:region#xml}" certificate="" />
+			</topics>
+		</messaging>
+	</option>
+</options>

@@ -14,15 +14,19 @@
 - 设备端 (`iot`)
 	> 为物联网设备提供接入相关的功能，为 _非人工_ 站点。
 
-> 本例只定义了 `default` 站点，可根据需要构建相应的站点目录，其内容与 `default` 站点基本一致，但需要调整 *编译脚本* 和 *部署脚本* 文件内 `site` 参数的值。
+> 本例只定义了 `default` 站点，可根据需要构建相应的站点目录，其内容与 `default` 站点基本一致，并调整编译脚本及站点 `.env` 中的 `site`。
+
+## 本地调试部署
+
+运行 [default/deploy.cmd](default/deploy.cmd) 即可为默认站点构建和部署本地 Debug 配置。脚本固定使用该站点作为源目录，启用调试，使用 Windows、x64 和现有框架默认值；仅询问方案、环境和网络，默认值与根目录脚本相同。部署时使用 `--overwrite:alway` 始终覆盖已有文件。
 
 ## 默认站点打包
 
-从 `web/default` 目录运行 `deploy.cmd` 可构建、部署后选择打包；运行 `pack.cmd` 则直接打包已有文件，默认 tar、Release、x64，所有格式均面向 Linux。输出位于 `web/default/.packages/`。部署和打包框架来自 hosting 根目录 `.env` 的 `framework`；Cake 调用省略 `--framework`，使用 `default/build.cake` 的默认值，应保持构建框架与部署、打包使用的框架一致。完整参数、版本回写与升迁包流程见 [hosting README](../README.zh-Hans.md#安装包与升迁包)。
+从 hosting 根目录运行 `deploy.cmd web/default` 构建和部署；单独运行 `pack.cmd web/default` 打包已有文件，默认 tar、Release、x64 和 Linux。输出默认是站点 `.packages/`。框架覆盖留空时工具用 `.env`，Cake 用 build.cake 默认值；显式覆盖须在两个脚本中保持一致。完整说明见 [hosting README](../README.zh-Hans.md#安装包与升迁包)。
 
-应用名必须为 `Zongsoft.Hosting.Web`，使生成的服务启动 `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`；标题和服务标识分别为 `Zongsoft.Web`、`zongsoft.web`。生成服务写入 `Environment`、`DOTNET_ENVIRONMENT`、`ASPNETCORE_ENVIRONMENT`。独立 pack.cmd 已直接接受环境输入；deploy.cmd 的环境提示仍未赋回，应预设进程 Environment。
+应用名必须为 `Zongsoft.Hosting.Web`，使生成的服务启动 `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`；标题和服务标识分别为 `Zongsoft.Web`、`zongsoft.web`。生成服务写入 `Environment`、`DOTNET_ENVIRONMENT`、`ASPNETCORE_ENVIRONMENT`。两个根脚本都直接接受环境输入；服务身份来自 `web/.env` 的 `[application]`。
 
-`default/web.profile` 定义 HTTP 80 与 8080 的 IPv4/IPv6 入口，`server = ~` 使用打包时 `--listen:8069` 对应的应用地址。`deploy.cmd` 和 `pack.cmd` 使用 `--daemon:zongsoft.web --web:nginx` 生成 systemd 服务与 Nginx 配置，不再引用 `.deploy/default/systemd` 或 `.deploy/default/nginx`。
+`default/web.profile` 定义 HTTP 80 与 8080 的 IPv4/IPv6 入口，`server = ~` 使用打包时 listen 变量对应的应用地址（默认 8069）。根目录 `pack.cmd` 使用 `--daemon:${application:daemon} --web:nginx` 生成 systemd 服务与 Nginx 配置，不再引用 `.deploy/default/systemd` 或 `.deploy/default/nginx`。
 
 安装后的真实配置位于 `/opt/zongsoft/web/.web/nginx/zongsoft.web.conf`。默认激活会创建 `/etc/nginx/conf.d/zongsoft.web.conf` 符号链接、校验 Nginx 配置，并在 Nginx 已运行时重载；不会启动原先停止的 Nginx。制作容器镜像时设置 `HOSTER_WEB_ACTIVATION=0`（也接受 `false`，不区分大小写）可仅交付真实配置，镜像构建工具从安装根的 `.web/nginx/` 获取它。此开关只控制 Web 托管器；应用服务仍遵循 daemon 生命周期。
 
@@ -185,7 +189,7 @@
 
 有关部署相关信息请参考上级目录中的 [README](../README.zh-Hans.md) 文件。
 
-`default/deploy.cmd` 向 `dotnet deploy` 传入 `--prerelease:true`，因为 AI 插件引用的 SemanticKernel 连接器包含预发布包。该选项允许未固定版本的包请求选择预发布版本，显式固定的版本不受影响。
+根目录 `deploy.cmd` 向 `dotnet deploy` 传入 `--prerelease:true`，因为 AI 插件引用的 SemanticKernel 连接器包含预发布包。该选项允许未固定版本的包请求选择预发布版本，显式固定的版本不受影响。
 
 ## 其他
 

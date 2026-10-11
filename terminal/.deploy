@@ -1,6 +1,7 @@
-../.deploy/${scheme}/options/app.${environment}.option       = Zongsoft.Hosting.Terminal.option   <!debug:on>
-../.deploy/${scheme}/options/app.${environment}-debug.option = Zongsoft.Hosting.Terminal.option    <debug:on>
+template:../.deploy/.shared/app.option.template = Zongsoft.Hosting.Terminal.option
 ../mime
+
+../.deploy/${scheme}/${host}.deploy
 
 #@import ../packages
 
@@ -17,11 +18,13 @@ nuget:Zongsoft.Plugins/plugins/Terminal.plugin
 ../.deploy/${scheme}/options/Zongsoft.Security.${environment}-debug.option  <debug:on>
 
 [plugins zongsoft externals aliyun]
-../.deploy/${scheme}/options/Zongsoft.Externals.Aliyun.option
-../.deploy/${scheme}/options/Zongsoft.Externals.Aliyun.${environment}.option
-../.deploy/${scheme}/options/Zongsoft.Externals.Aliyun.${environment}-debug.option  <debug:on>
+template:../.deploy/.shared/Zongsoft.Externals.Aliyun.option.template
+template:../.deploy/.shared/Zongsoft.Externals.Aliyun.${aliyun.environment:template}.option.template = Zongsoft.Externals.Aliyun.${environment}.option
 
 [plugins zongsoft externals hangfire]
 ../.deploy/${scheme}/options/Zongsoft.Externals.Hangfire.option
 ../.deploy/${scheme}/options/Zongsoft.Externals.Hangfire.${environment}.option
 ../.deploy/${scheme}/options/Zongsoft.Externals.Hangfire.${environment}-debug.option  <debug:on>
+
+[plugins zongsoft messaging zeromq]
+template:../.deploy/.shared/Zongsoft.Messaging.ZeroMQ.option.template

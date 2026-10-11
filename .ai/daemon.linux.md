@@ -8,8 +8,8 @@
 
 ## 硬性要求
 
-- 必须执行 `daemon/deploy.cmd` 完成编译、部署和打包。
-- 不允许自行拆出或重写 `dotnet cake`、`dotnet deploy`、`dotnet-pack` 命令来绕过 `deploy.cmd`。
+- 必须执行根目录 `deploy.cmd` 完成编译和部署，再单独执行 `pack.cmd` 制作安装包。
+- 不允许自行拆出或重写 `dotnet cake`、`dotnet deploy`、`dotnet-pack` 命令来绕过 `deploy.cmd` 和 `pack.cmd`。
 - 不允许手写 `.service` 文件绕过打包器；systemd 服务文件必须由 `dotnet-pack` 根据脚本参数生成。
 - 如果 `deploy.cmd` 在捕获式 shell 中无法有效运行，应切换真实 Windows 控制台，或报告环境阻塞；不要改走底层命令。
 - 不要为了通过验证而向宿主项目添加临时业务逻辑。
@@ -23,7 +23,8 @@
 - `debug`，如用户说“默认”，按脚本默认输入。
 - `platform`，Linux 发布必须输入 `linux`。
 - `architecture`，通常为 `x64` 或 `arm64`。
-- `framework`：部署和打包工具从 Variables 取得；脚本不向 Cake 传入 `--framework`，沿用 [`daemon/build.cake`](../daemon/build.cake) 的默认值。Cake 不读取 `.env`；构建框架应与 hosting `.env` 中部署、打包使用的框架保持一致。
+- `framework`：框架覆盖留空时工具查询 .env，Cake 使用 build.cake 默认值，须保持一致；两个脚本须输入相同的显式框架覆盖。
+- `network`：internal 或 external，与 debug 独立，按基础服务地址选择。
 - 安装包格式：`.deb`、`.rpm` 或 `.tar.gz`，分别在脚本中输入 `deb`、`rpm`、`tar`。
 - `version`，不能为空。
 - `edition`，可为空。
@@ -32,9 +33,9 @@
 
 ## 执行流程
 
-1. 进入 `<repo-root>\daemon`。
-2. 执行 `.\deploy.cmd`，按已确认参数回答脚本提示。
-   当前编译、部署阶段依次询问 scheme、environment、debug、platform、architecture，共 5 项，不再询问 framework。自动化应分阶段输入，等部署结束并进入安装包格式提示后再输入 format、edition、version、升迁输入名称或路径（传给 `--migration`）；需要升迁时，可先停在格式提示，运行根目录 `migrate.cmd` 生成配套文件后继续。
+1. 进入 hosting 根目录 `<repo-root>`。
+2. 执行 `.\deploy.cmd daemon`，按已确认参数回答脚本提示。
+   依次填写 scheme、environment、network、debug、platform、architecture 和可选 framework；部署结束后单独运行 `.\pack.cmd daemon`，选择与部署一致的参数，再填 format、edition、version、migration 和 output。需要升迁时先用根目录 migrate.cmd 生成匹配产物。
 3. 脚本成功后，按时间、版本、架构和格式定位新安装包。
 4. 将安装包复制到目标 Linux 的 `/opt`。
 5. 按包格式安装：
@@ -58,7 +59,7 @@
 
 ## 故障分流
 
-构建、部署或打包失败时，脚本显示失败阶段和退出码，并等待按键后退出；退出时恢复调用者的目录与环境。输入 `exit` / `quit` 主动跳过打包仍返回 `1`，不触发失败暂停。
+构建、部署或打包失败时，脚本显示失败阶段和退出码，并等待按键后退出；退出时恢复调用者的目录与环境。安装包提示留空跳过并返回 0。
 
 - 编译失败：记录 `deploy.cmd` 中构建阶段的首个有效错误，优先检查 SDK、目标框架、框架源码和 NuGet 包。
 - 部署失败：检查 `.deploy`、`../.deploy/<scheme>/`、插件来源和目标路径。
@@ -74,7 +75,7 @@
 
 本轮通过需要同时满足：
 
-- `deploy.cmd` 完成编译、部署和打包。
+- `deploy.cmd` 完成编译和部署，`pack.cmd` 完成打包。
 - 已记录安装包路径、文件名、版本、格式、架构和目标系统。
 - 安装包已安装到目标 Linux。
 - systemd 服务或等效后台进程处于 `active`/运行中，或状态符合用户指定预期。

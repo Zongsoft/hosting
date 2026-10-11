@@ -3,7 +3,7 @@
 <configuration>
 	<option path="kestrel">
 		<endpoints>
-			<endpoint endpoint.name="http" url="http://*:8069" protocols="Http1" />
+			<endpoint endpoint.name="http" url="${web:url#xml}" protocols="${web:protocols#xml}" />
 		</endpoints>
 	</option>
 </configuration>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<configuration>
+	<option path="/Data">
+		<connectionSettings default="Zongsoft">
+			<connectionSetting connectionSetting.name="Zongsoft" driver="MySql"
+			                   value="${mysql:connection#xml}" />
+
+			<connectionSetting connectionSetting.name="Zongsoft.PostgreSql" driver="PostgreSql"
+			                   value="${postgres:connection#xml}" />
+
+			<connectionSetting connectionSetting.name="Zongsoft.MsSql" driver="MsSql"
+			                   value="${mssql:connection#xml}" />
+
+			<connectionSetting connectionSetting.name="Zongsoft.SQLite" driver="SQLite"
+			                   value="${sqlite:connection#xml}" />
+
+			<connectionSetting connectionSetting.name="Zongsoft.DuckDB" driver="DuckDB"
+			                   value="${duckdb:connection#xml}" />
+
+			<connectionSetting connectionSetting.name="Zongsoft.ClickHouse" driver="ClickHouse"
+			                   value="${clickhouse:connection#xml}" />
+
+			<connectionSetting connectionSetting.name="Zongsoft.TDengine" driver="TDengine"
+			                   value="${tdengine:connection#xml}" />
+
+			<connectionSetting connectionSetting.name="Zongsoft.Influx" driver="Influx"
+			                   value="${influx:connection#xml}" />
+		</connectionSettings>
+	</option>
+
+	<option path="/Externals/Redis">
+		<connectionSettings default="Zongsoft">
+			<connectionSetting connectionSetting.name="Zongsoft" driver="redis"
+			                   value="${redis:connection#xml}" />
+		</connectionSettings>
+	</option>
+
+	<option path="/Externals/Amazon">
+		<connectionSettings default="Zongsoft">
+			<connectionSetting connectionSetting.name="Zongsoft" driver="amazon.s3"
+			                   value="${amazon.s3:connection#xml}" />
+		</connectionSettings>
+	</option>
+
+	<option path="/Externals/Etcd">
+		<connectionSettings default="Zongsoft">
+			<connectionSetting connectionSetting.name="Zongsoft" driver="Etcd"
+			                   value="${etcd:connection#xml}" />
+		</connectionSettings>
+	</option>
+
+	<option path="/Messaging">
+		<connectionSettings>
+			<connectionSetting connectionSetting.name="mqtt" driver="mqtt"
+			                   value="${messaging.mqtt:connection#xml}" />
+
+			<connectionSetting connectionSetting.name="kafka" driver="Kafka"
+			                   value="${messaging.kafka:connection#xml}" />
+
+			<connectionSetting connectionSetting.name="rabbitmq" driver="RabbitMQ"
+			                   value="${messaging.rabbitmq:connection#xml}" />
+
+			<connectionSetting connectionSetting.name="zeromq" driver="ZeroMQ"
+			                   value="${messaging.zeromq:connection#xml}" />
+
+			<connectionSetting connectionSetting.name="redis" driver="redis"
+			                   value="${messaging.redis:connection#xml}" />
+		</connectionSettings>
+	</option>
+</configuration>

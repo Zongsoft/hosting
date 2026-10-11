@@ -10,15 +10,19 @@ Web hosts are normally divided by application site. A SaaS application commonly 
 - `gateway`: non-interactive callbacks and system integration.
 - `iot`: non-interactive device ingress.
 
-This repository currently provides the `default` site. Additional site directories can follow the same structure, but their build and deployment scripts must use the correct `site` parameter.
+This repository currently provides the `default` site. Additional site directories can follow the same structure, but their build scripts and site `.env` must define the correct `site`.
+
+## Local debugging deployment
+
+Run [default/deploy.cmd](default/deploy.cmd) to build and deploy the default site for local debugging. The shortcut fixes the source to this site and uses Debug, Windows, x64, and the existing framework defaults. It only asks for scheme, environment, and network, with the same defaults as the root script. Deployment uses `--overwrite:alway` to always overwrite existing files.
 
 ## Packaging the default site
 
-Run `deploy.cmd` from `web/default` to build and deploy before choosing whether to package, or run `pack.cmd` to package existing files. Standalone defaults are tar, Release, and x64; every format targets Linux. Output goes to `web/default/.packages/`. The deployment and packaging framework comes from the hosting root's `.env` variable `framework`; the Cake call omits `--framework` and uses the default in `default/build.cake`. Keep the build target consistent with the deployment and packaging framework. See the [hosting README](../README.md#installation-and-migration-packages) for parameters, version-file updates, and migration integration.
+From the hosting root, run `deploy.cmd web/default` to build and deploy, then run `pack.cmd web/default` to package existing files. Defaults are tar, Release, x64, and Linux; output defaults to the site’s `.packages/`. An empty framework override uses `.env` for tools and build.cake defaults for Cake; use the same explicit override in both scripts. See the [hosting README](../README.md#installation-and-migration-packages).
 
-The application name must be `Zongsoft.Hosting.Web` so the generated service starts `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`; the title and service identifier are `Zongsoft.Web` and `zongsoft.web`. The generated service receives `Environment`, `DOTNET_ENVIRONMENT`, and `ASPNETCORE_ENVIRONMENT`. Standalone pack.cmd accepts environment directly; deploy.cmd still requires the process Environment variable because its prompt does not assign input back.
+The application name must be `Zongsoft.Hosting.Web` so the generated service starts `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`; the title and service identifier are `Zongsoft.Web` and `zongsoft.web`. The generated service receives `Environment`, `DOTNET_ENVIRONMENT`, and `ASPNETCORE_ENVIRONMENT`. Both root scripts accept environment input directly; service identity comes from `[application]` in `web/.env`.
 
-`default/web.profile` defines IPv4/IPv6 HTTP listeners on ports 80 and 8080. `server = ~` uses the application address supplied by `--listen:8069`. Both `deploy.cmd` and `pack.cmd` use `--daemon:zongsoft.web --web:nginx` to generate the systemd service and Nginx configuration, replacing `.deploy/default/systemd` and `.deploy/default/nginx`.
+`default/web.profile` defines IPv4/IPv6 HTTP listeners on ports 80 and 8080. `server = ~` uses the application address supplied by the listen variable (8069 by default). Root `pack.cmd` uses `--daemon:${application:daemon} --web:nginx` to generate the systemd service and Nginx configuration, replacing `.deploy/default/systemd` and `.deploy/default/nginx`.
 
 The installed configuration is `/opt/zongsoft/web/.web/nginx/zongsoft.web.conf`. Default activation creates the `/etc/nginx/conf.d/zongsoft.web.conf` symlink, validates Nginx configuration, and reloads Nginx if it is running; a stopped Nginx remains stopped. Image builds can set `HOSTER_WEB_ACTIVATION=0` (or case-insensitive `false`) to deliver the configuration without activating it. The image builder reads `.web/nginx/` below the installation root. This switch controls only the Web hoster; the application service follows its daemon lifecycle.
 
@@ -172,7 +176,7 @@ See the [HttpYac documentation](https://httpyac.github.io) for syntax and config
 
 See the parent [hosting deployment guide](../README.md).
 
-`default/deploy.cmd` passes `--prerelease:true` to `dotnet deploy` because the SemanticKernel connectors referenced by the AI plugin include preview packages. This allows prerelease candidates for package requests without a fixed version; explicitly pinned versions remain unchanged.
+Root `deploy.cmd` passes `--prerelease:true` to `dotnet deploy` because the SemanticKernel connectors referenced by the AI plugin include preview packages. This allows prerelease candidates for package requests without a fixed version; explicitly pinned versions remain unchanged.
 
 ## IIS Express Notes
 

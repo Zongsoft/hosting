@@ -8,8 +8,9 @@
 
 ## 说明
 
+- 本目录的 `deploy.cmd` 调用 hosting 根目录部署脚本，固定本宿主、Debug、Windows、x64 和现有框架默认值，仅询问方案、环境和网络，并以 `--overwrite:alway` 始终覆盖，用于本地调试部署。
 - 宿主程序通过插件框架加载 `plugins/` 目录下的 _`*.plugin`_ 文件来构建运行环境。
 - 如果需要部署、打包、升级包等背景说明，请参考 [../AGENTS.md](../AGENTS.md)。
 - 需要执行 daemon 的 Linux 安装验证时，优先参考 [../.ai/daemon.linux.md](../.ai/daemon.linux.md)。
-- 在自动化环境中不要用管道或输入重定向喂给 `deploy.cmd`；如遇 `dotnet-deploy` 或 `dotnet-pack` 抛出 `句柄无效`，切换真实 Windows 控制台运行 `deploy.cmd`，或报告环境阻塞，不要拆底层命令绕过脚本。
+- 在自动化环境中不要用管道或输入重定向喂给 根目录 `deploy.cmd daemon`；如遇 `dotnet-deploy` 或 `dotnet-pack` 抛出 `句柄无效`，切换真实 Windows 控制台运行 根目录 `deploy.cmd daemon`，或报告环境阻塞，不要拆底层命令绕过脚本。
 - 本机 WSL 验证如果 `sudo` 需要密码，可使用 `wsl -d <发行版> -u root -- bash -lc "<命令>"` 完成复制、安装和 systemd 状态检查。

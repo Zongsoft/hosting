@@ -27,22 +27,32 @@
 
 ## 部署
 
-宿主程序只负责初始化运行时环境，作为插件的承载容器其自身并不含有具体的功能实现，我们通过将需要的插件及其相关附属(配置、证书)文件放置在 `plugins` 目录下的相应子目录中，这个行为即为部署。
+宿主程序初始化运行环境，业务功能由 `plugins/` 中的插件及配置、证书等配套文件提供。
 
-在对应宿主目录中运行 Windows 交互脚本 `deploy.cmd`，执行构建及部署文件 _(`*.deploy`)_ 定义的部署内容，再选择是否制作安装包。本仓库提供 `daemon`、`terminal`、`web/default` 三套脚本。
+在 hosting 根目录运行 [`deploy.cmd`](deploy.cmd)，从自动发现的宿主菜单中选择源目录。部署和打包脚本扫描调用时的当前目录及其子目录，将同时包含 `.deploy` 文件和 `Zongsoft.Hosting.Daemon.csproj`、`Zongsoft.Hosting.Terminal.csproj` 或 `Zongsoft.Hosting.Web.csproj` 的目录列为宿主。`daemon`、`terminal`、`web/default` 以及新增站点都会自动列出；跳过隐藏目录、目录链接、`bin`、`obj`、`packages` 和 `node_modules`。也可以运行 `deploy.cmd web/default` 预选源目录，相对路径基于调用时的当前目录，也支持绝对路径。脚本依次询问方案、环境、网络、调试模式、平台、架构和可选框架覆盖，进入所选宿主执行 Cake，再通过 `dotnet deploy --source:<宿主> --output:<目标>` 执行该宿主的 `.deploy`。
 
-> 提示：部署脚本依赖 **Z**ongsoft.**T**ools.**D**eployer 工具进行部署操作，有关该工具的使用说明，请参考其开源项目的相关文档：
-> - 英文：[https://github.com/Zongsoft/tools/blob/main/deployer/README.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.md)
-> - 中文：[https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md](https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md)
+本地 Debug 调试可直接运行 [daemon/deploy.cmd](daemon/deploy.cmd)、[terminal/deploy.cmd](terminal/deploy.cmd) 或 [web/default/deploy.cmd](web/default/deploy.cmd)。这些快捷脚本调用根目录 `deploy.cmd <source> --local-debug`，源目录固定为脚本所在宿主，自动使用 `debug=on`、`platform=windows`、`architecture=x64`，框架沿用现有默认值，不提示这五项，并使用 `--overwrite:alway` 始终覆盖。只保留方案、环境和网络提示及原有默认值；从其他目录调用也不会改变所选宿主。
 
-`web/default`、`daemon` 和 `terminal` 的 `deploy.cmd` 统一使用 `--overwrite:newest`、`--prerelease:true` 和 `--verbosity:quiet`，允许选择仅提供预发布版本的插件依赖；可选文件缺失时跳过并输出警告。编译或部署返回失败时停止后续流程，不进入打包阶段。daemon 的构建、部署或打包失败时会显示失败阶段和退出码，并等待按键后退出。daemon 和 terminal 的插件部署到 `bin/<编译配置>/<目标框架>/plugins`。
+宿主菜单按目录层级显示，只有实际宿主带编号；`web` 等父目录仅作为分组标题，方向键会跳过它们。部署和打包一次选择一个宿主，例如：
 
-各宿主的 `deploy.cmd` 和 `pack.cmd` 均以脚本所在目录为工作目录，也可从其它目录调用。构建、部署、Web 插件清理及打包路径仍基于对应宿主；正常结束、失败或跳过打包时均恢复调用者的目录和环境。
+```text
+1. daemon
+2. terminal
+web
+  3. default
+```
 
-`deploy.cmd` 和 `pack.cmd` 调用部署、打包工具时均省略 `--framework`，由工具从合并后的 Variables 中读取 `framework`。在 hosting 根目录的 `.env` 中定义 `framework`，即可统一各宿主的部署、打包框架。两个脚本均不再询问框架；所有宿主的 `deploy.cmd` 调用 Cake 时也省略 `--framework`，使用各宿主 `build.cake` 的默认值。Cake 不读取 `.env`，应保持构建框架与部署、打包使用的框架一致。具体设置方式见下文“安装包与升迁包”。
+每次部署只使用一个环境和一种网络。网络 `internal`/`external` 与调试模式独立；调试模式只决定默认编译配置及平台：on 为 Debug/Windows，off 为 Release/Linux，平台可另选。deployer 不固化这些组合或输出目录。脚本沿用 daemon/terminal 的 `bin/${edition}/${framework}` 和 Web 的宿主根目录作为输出；直接调用工具时可任意指定 `--output`。部署器只处理 `.deploy` 声明的资产，宿主编译由 Cake 完成。
 
-每个宿主的 `deploy.cmd` 与 `pack.cmd` 使用相同的载荷和服务定义。部署后打包沿用本次构建配置和架构；独立 `pack.cmd` 另行询问这些参数，不执行编译或插件部署。daemon 显式使用 `--daemon:zongsoft.daemon` 由打包器生成服务，terminal 保持 `--daemon:disabled`；两者的应用名称分别保持 `zongsoft.daemon`、`zongsoft.terminal`，与各自 `.version` 和运行时应用名一致。`--title` 分别为 `Zongsoft.Daemon`、`Zongsoft.Terminal`。Web 的 Nginx 配置由 `--web:nginx` 生成。
-各宿主均以所选环境值传入 `Environment` 和 `DOTNET_ENVIRONMENT`，并在 `--daemon-environments` 中声明这两个变量；Web 还传入并声明 `ASPNETCORE_ENVIRONMENT`。daemon 和 Web 生成的服务会写入这些变量。terminal 的独立 `pack.cmd` 也会询问环境，未输入且未继承已有值时默认为 `development`。
+普通部署使用 `--overwrite:newest`，本地 Debug 快捷入口使用 `--overwrite:alway`（部署器的始终覆盖选项）；两者都使用 `--prerelease:true --verbosity:quiet`。构建或部署失败立即停止，显示失败阶段和原始退出码。部署成功后返回 0。制作安装包时单独运行根目录 [`pack.cmd`](pack.cmd)。脚本不改变调用者的目录和环境。
+
+`deploy.cmd`、`pack.cmd`、`containerize.cmd` 和 `migrate.cmd` 通过 Windows PowerShell 共用 [`.shared.ps1`](.shared.ps1) 的标题、提示、菜单和执行结果输出。界面使用青色分区标题、输入框下方的灰色提示、菜单选中行高亮以及执行摘要。使用上下方向键或 Home/End 选择，Enter 确认，菜单中按 Esc 取消（退出码 2）。输入或输出被重定向时使用编号菜单，留空选择默认项，输入耗尽则在执行前取消。输出重定向时不含颜色控制符，设置 `NO_COLOR` 可关闭控制台颜色。部署和打包在交互模式下成功和失败均等待按键，重定向模式不暂停。
+
+框架覆盖留空时，部署和打包从 `.env` 查询 framework，Cake 使用各宿主 build.cake 的默认值；Cake 不读取 `.env`，应保持两者一致。填写覆盖值时，deploy.cmd 将其传给构建和部署，pack.cmd 须另行输入同一 framework。脚本不自行解析或导出 `.env`。
+
+打包身份放在宿主 `.env` 的 `[application]` 中；脚本显式传入 `${application:name}`、`${application:title}`、`${application:daemon}`。daemon 为 `zongsoft.daemon`，terminal 为 `zongsoft.terminal` 并禁用服务；Web 的入口名为 `Zongsoft.Hosting.Web`、标题为 `Zongsoft.Web`、服务名为 `zongsoft.web`。服务接收 Environment 和 DOTNET_ENVIRONMENT，Web 另接收 ASPNETCORE_ENVIRONMENT。
+
+部署工具的语法、模板、计划和锁定说明见 [deployer 中文文档](https://github.com/Zongsoft/tools/blob/main/deployer/README.zh-Hans.md)。
 
 ### 本地插件验证与常见启动问题
 
@@ -63,44 +73,99 @@
 
 ### 部署文件
 
-通常配置文件与特定的 **产品**、**项目**、**部署平台** _（如：单机、内网、私有云、公有云）_ 及 **环境** _（如：开发、测试、生产）_ 等相关，所以应该将这些特定相关性的文件单独存放在 `/hosting/.deploy` 目录下，以便于统一管理与维护。
+`hosting/daemon/.deploy`、`hosting/terminal/.deploy`、`hosting/web/default/.deploy` 定义需要部署的文件。方案目录由其中的 `${scheme}` 引用选择，工具不认识 `.deploy/` 目录的特殊含义。
 
-> 提示：更多部署项的用法请参考宿主程序目录中的 `.deploy` 部署文件。
+### 配置复用
 
-#### 配置文件
+```text
+hosting/
+  .env                         # 各工具继承的通用变量
+  deploy.cmd
+  pack.cmd
+  .deploy/
+    .env                       # 方案显式导入的公共连接表达式
+    .shared/                   # app、Web、Aliyun 的 *.template
+    default/
+      .env                     # 方案值及显式导入
+      environment.development.env
+      environment.test.env
+      environment.production.env
+      network.internal.env
+      network.external.env
+      migration/               # 升迁输入
+  daemon/
+    .env                       # 导入方案，然后声明宿主值
+    .deploy
+  terminal/
+    .env
+    .deploy
+  web/
+    .env                       # Web 公共变量
+    default/
+      .env
+      .deploy
+```
 
-应该根据配置内容的环境相关性来定义配置文件，相应的环境名作为配置文件名的尾部。下面以 **Zongsoft.Security** 插件的配置文件为例进行说明：
+自动继承仅沿 source 的祖先目录读取 `.env`。
 
-- `Zongsoft.Security.option`
-	> 表示环境无关的配置文件，其配置作为其他环境有关性配置的缺省值；
------
-- `Zongsoft.Security.test.option`
-	> 表示**测试环境**有关的配置文件，譬如该配置文件内的数据库连接字符串指向的是**测试数据库**并且使用的是**内网地址**等。
-- `Zongsoft.Security.production.option`
-	> 表示**生产环境**有关的配置文件，譬如该配置文件内的数据库连接字符串指向的是**生产数据库**并且使用的是**内网地址**等。
-- `Zongsoft.Security.development.option`
-	> 表示**开发环境**有关的配置文件，譬如该配置文件内的数据库连接字符串指向的是**开发数据库**并且使用的是**内网地址**等。
------
-- `Zongsoft.Security.test-debug.option`
-	> 表示**测试环境**有关的配置文件，譬如该配置文件内的数据库连接字符串指向的是**测试数据库**并且使用的是**外网地址**等。
-- `Zongsoft.Security.production-debug.option`
-	> 表示**生产环境**有关的配置文件，譬如该配置文件内的数据库连接字符串指向的是**生产数据库**并且使用的是**外网地址**等。
-- `Zongsoft.Security.development-debug.option`
-	> 表示**开发环境**有关的配置文件，譬如该配置文件内的数据库连接字符串指向的是**开发数据库**并且使用的是**外网地址**等。
+HTTP 的 `listen=8069` 定义在 `hosting/web/.env`，由各 Web 站点共享，不放在 `hosting/.env`。Packager 会根据继承到的值生成 `--urls` 和 HTTP 监听元数据，daemon 和 terminal 宿主不应获得这项配置。
 
-### 目录结构
+例如 `hosting/daemon/.env`：
 
-位于 `hosting` 目录下的 `.deploy` 目录即为存放部署相关的各种资源的‘根’目录，其下级结构如下：
+```ini
+#@import ../.deploy/${scheme}/.env
 
-- `certificates` 证书文件目录（可选）
-	> 注：部署平台无关的证书文件。
+host=daemon
+site=daemon
 
-- `{scheme}` 部署方案
-	- `options` 配置文件目录
-	- `migration` 升迁输入目录
-		> `<版本>/*.migration` 引用 SQL 或声明 Amazon S3 桶；同目录或父目录的 `.ini` 提供升迁连接参数。
+[application]
+name=zongsoft.daemon
+title=Zongsoft.Daemon
+daemon=zongsoft.daemon
+```
 
-`certificates` 为按需添加的证书目录；当前默认方案包含 `options/` 和 `migration/`。hosting 根目录的 `.env` 为工具提供共享变量，`.migration/` 存放制作完成的升迁归档与启动脚本，各宿主的 `.packages/` 存放安装包。
+`hosting/.deploy/default/.env` 显式导入 `../.env`，定义方案值后再导入 `environment.${environment}.env` 和 `network.${network}.env`。这些导入文件不自动搜索自己的祖先 `.env`。同一 Profile 中后面的同名声明覆盖前面的声明；项目可以在导入后覆盖方案值，也可以将导入放在后面，让方案覆盖项目值。工具不规定项目与方案的固定顺序。
+
+公共模板保留配置结构，变量保留配置值。例如 `.deploy/.shared/app.option.template` 使用 `${mysql:connection#xml}`，连接表达式定义在 `.deploy/.env`，服务地址等值定义在方案中。`#xml` 处理 XML 特殊字符；变量仍由 Core 递归求值。`.env` 不部署，模板输出移除 `.template` 后缀或使用 `.deploy` 指定的名称。
+
+数据库连接覆盖 `Zongsoft.Data/drivers` 的全部八种驱动。`.deploy/.env` 保存连接表达式，`.deploy/default/.env` 保存方案值，`app.option.template` 写入 `/Data/connectionSettings`。默认连接仍为 MySQL 的 `Zongsoft`，其余连接名为 `Zongsoft.<driver>`；使用相应连接时须在宿主 `.deploy` 中部署对应驱动插件。
+
+| 变量命名空间 | driver | 连接设置依据与差异 |
+| --- | --- | --- |
+| `mysql` | `MySql` | [MySqlConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/mysql/src/Configuration/MySqlConnectionSettings.cs) |
+| `postgres` | `PostgreSql` | [PostgreSqlConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/postgres/src/Configuration/PostgreSqlConnectionSettings.cs)：独立 `Port`，默认 5432 |
+| `mssql` | `MsSql` | [MsSqlConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/mssql/src/Configuration/MsSqlConnectionSettings.cs)：完整端点放在 `Server`，没有独立 `Port` 设置 |
+| `sqlite` | `SQLite` | [SQLiteConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/sqlite/src/Configuration/SQLiteConnectionSettings.cs)：`Database` 为文件路径，示例 `ReadWriteCreate` 允许创建缺失文件 |
+| `duckdb` | `DuckDB` | [DuckDBConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/duckdb/src/Configuration/DuckDBConnectionSettings.cs)：只定义 `Database`，映射到提供程序的 `DataSource` |
+| `clickhouse` | `ClickHouse` | [ClickHouseConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/clickhouse/src/Configuration/ClickHouseConnectionSettings.cs) |
+| `tdengine` | `TDengine` | [TDengineConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/tdengine/src/Configuration/TDengineConnectionSettings.cs) |
+| `influx` | `Influx` | [InfluxConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/influx/src/Configuration/InfluxConnectionSettings.cs)：InfluxDB 3 的完整 URL、`Token`、`Organization`、`Precision` |
+
+新增服务器数据库的密码和 Influx Token 留空，由方案填写。SQLite、DuckDB 的相对文件路径由运行时数据库提供程序解释，不相对于部署源目录；它们不需要服务器或账号。环境和网络文件只需声明实际不同的值，其余通过已有导入复用。
+
+S3 文件系统使用 `[amazon.s3]` 和 `${amazon.s3:connection}`，模板写入 `/Externals/Amazon/connectionSettings`，驱动名为 `amazon.s3`。字段以 [S3ConnectionSettings](https://github.com/Zongsoft/framework/blob/main/externals/amazon/src/IO/Configuration/S3ConnectionSettings.cs) 为准：`Server`、`Region`、`AccessKey`、`SecretKey`、`AccountId`、`Client`、`Timeout`。默认方案指向网络地址的 9000 端口，并复用 hosting 根 `.env` 的 `${rustfs:access_key}`、`${rustfs:secret_key}`。AWS S3 方案可将 server 留空，配置 region 和凭据；自定义 server 会由驱动自动启用路径式寻址。Bucket 属于 `zfs.s3:/<bucket>/<key>` 路径，不是连接参数。
+
+Etcd 使用 `[etcd]` 和 `${etcd:connection}`，模板写入 `/Externals/Etcd/connectionSettings`，驱动名为 `Etcd`。连接字段按 [EtcdConnectionSettings](https://github.com/Zongsoft/framework/blob/main/externals/etcd/src/Configuration/EtcdConnectionSettings.cs) 及客户端创建流程提供 `Server`、`Port`、`UserName`、`Password`；默认端口 2379，账号密码留空。server 可覆盖为逗号分隔的端点列表。键命名空间仍由应用设置 `EtcdService.Namespace`，连接名不充当键前缀。
+
+消息队列连接统一使用 `messaging.mqtt`、`messaging.kafka`、`messaging.rabbitmq`、`messaging.zeromq` 和 `messaging.redis` 命名空间。`.deploy/.env` 定义连接表达式，方案 `.env` 提供具体值，`app.option.template` 将它们写入 `/Messaging/connectionSettings`。默认方案为新消息队列提供本地示例：Kafka 使用 9092 端口及 Plaintext，RabbitMQ 使用 5672 端口、`/` 虚拟主机和默认 guest 账号，ZeroMQ 使用 7969 发现端口；按实际方案覆盖。
+
+三个宿主都渲染 `.deploy/.shared/Zongsoft.Messaging.ZeroMQ.option.template` 作为插件客户端配置，替换包内会将宿主连接覆盖为回环地址的示例。`daemon` 宿主运行独立 ZeroMQ 服务端，并额外渲染 `Zongsoft.Messaging.ZeroMQ-daemon.option.template`，通过相应的 `messaging.zeromq` 变量固定控制、输入、输出端口，并配置名为 `QueueServer` 的 Redis 存储连接。默认端口分别为 32100、32101、32102，客户端通过 7969 端口发现它们；需要发布全部四个 TCP 端口，让可靠消息也能访问存储控制端点。普通的 `Zongsoft` Redis 连接不能替代服务端按名称查找的存储连接。daemon 进程环境应设置稳定的 `ZONGSOFT_MESSAGING_STORAGE_IDENTIFIER`，让重建 daemon 后仍使用相同的 Redis 存储分区。
+
+`container` 方案继承 `default`，将 Redis、MySQL、RustFS 和 Etcd 地址覆盖为容器服务名。该方案的 ZeroMQ 客户端使用 `zongsoft.daemon`；`daemon/.env` 将自身客户端地址覆盖为 `127.0.0.1`，因为服务端就在当前进程中。容器 Web 和本地 Debug Web 可以共用这个 daemon：容器客户端使用服务名，默认本地方案通过回环地址访问发布的 TCP 端口。制作包含 daemon 的交付物前，先完成它的部署和打包。
+
+Aliyun 部署公共配置及本次选中的环境配置；环境差异保留在 `environment.development.env` 等文件，网络文件控制 intranet。默认方案保留本地示例服务地址；实际方案应按网络设置各服务地址。调试模式不再承担网络选择。普通的安全、Hangfire 等可选配置仍可按 `.deploy` 中路径提供。
+
+新增方案时，在 `.deploy/<scheme>/` 放置它的 `.env`、环境/网络变量文件，以及证书、插件或其它独有资产；复用 `.shared` 模板。必要时提供 `${host}.deploy`、Web 的 `${site}.deploy` 扩展文件。共享证书也可以放在 `.shared/certificates/`，由 `.deploy` 明确引用。环境和网络不是额外的强制目录层级。
+
+直接部署示例（只部署声明的资产）：
+
+```powershell
+dotnet deploy --source:daemon --output:'bin/${edition}/${framework}' --scheme:default --environment:production --network:internal --edition:Release --platform:linux --architecture:x64 --prerelease:true
+```
+
+`--source` 相对于调用目录；本地相对输入和 `--output` 相对于 source，`.deploy` 内部及 import 路径相对于声明文件。可加 `--dry-run --report:plan.json` 先查看计划；报告路径也基于 source。
+
+共享应用模板的默认数据库连接为 `Zongsoft`（MySQL）；其他数据库使用 `Zongsoft.PostgreSql`、`Zongsoft.MsSql` 等独立名称，按需由应用选用。不要用 `Zongsoft#...` 表示备选数据库，`#` 表示同一数据源组，会将这些连接一并加入默认查询。
 
 ### 部署工具
 
@@ -154,11 +219,11 @@ framework=net10.0
 
 ```powershell
 $env:Environment = 'development'
-Set-Location D:/Zongsoft/hosting/daemon
+Set-Location D:/Zongsoft/hosting
 .\deploy.cmd
 ```
 
-当前三个 deploy.cmd 的环境提示仍暂存到 value，应在启动前设置进程 Environment；独立 pack.cmd 已直接接受环境输入，留空保留进程 `Environment`，未继承已有值时默认为 `development`。
+根目录脚本直接接受环境输入；留空保留进程 Environment，未定义时默认 development。
 
 ### 容器交付
 
@@ -182,13 +247,17 @@ containerize.cmd make .containerized\zongsoft@1.0-x64.container --version:1.1
 
 最后两行是制作新发行版的两种替代方式。子命令后提供输入及选项时直接执行，跳过新建提示；单独传入 `.container` 仍作为 make 简写。交互 make 按文件名排序列出 `.containerized` 目录中的全部 `*.container` 文件（不递归子目录），最后一项为手动输入路径；只有选择末项才询问路径，没有找到文件时仅显示该项。选定清单后，可输入新的发行版本。直接运行 `containerize.cmd make` 且未提供路径时也显示此菜单。沿用清单保存的选择；交互脚本只允许版本和引擎选择覆盖清单。source 固定为 hosting 目录，output 固定为 `.containerized`；脚本退出时恢复调用者目录及环境。
 
-完整制作、plan 或 make 执行结束后，脚本显式显示成功提示，或失败提示及工具原始退出码，并保留工具的具体诊断输出。成功与失败均等待按键后结束，命令窗口会保留，便于检查结果。
+完整制作、plan 或 make 执行结束后，脚本显式显示成功提示，或失败提示及工具原始退出码，并保留工具的具体诊断输出。交互模式下成功与失败均等待按键后结束，便于检查结果；输入或输出重定向时不暂停，输入耗尽则在执行前取消。
 
 脚本按操作选择、交付设置、输入与执行结果分区显示。标题使用加粗青色，辅助说明与按键提示使用灰色，菜单选中行带背景高亮；成功、告警、错误分别使用绿、黄、红色并带明确状态标记。默认值/按键说明显示在文本输入项下方，并与字段名左侧对齐，光标紧跟字段名和冒号后的空格（例如 `Application name: `）；按 Enter 进入下一项，连续输入项之间保留一个空行。重定向输出保持纯文本，控制台中可设置 `NO_COLOR` 禁用脚本颜色。方向键、Esc 返回、字面路径、直接传参及工具退出码沿用既有行为。
 
 新建交付物时，升迁目录菜单提供三个选项：无升迁（默认）、hosting 目录下的 `.migration`、手动输入。手动输入留空或仅输入空白也表示不启用升迁；输入时按 Esc 返回该菜单。
 
-新建默认应用名 `zongsoft`、Debian 13、x64、自动引擎以及离线 bootstrap/镜像。发行版本留空使用日期版本；已有交付包不覆盖。事先用 deploy.cmd/pack.cmd 准备安装包，以 migrate.cmd 准备升迁；脚本不编译宿主，也不制作升迁。组件可输入 redis 等模板标识、安装包文件，以及 daemon、web/default 等目录。
+新建默认应用名 `zongsoft`、Debian 13、x64、自动引擎以及离线 bootstrap/镜像。发行版本留空使用日期版本；已有交付包不覆盖。事先用 deploy.cmd/pack.cmd 准备安装包，以 migrate.cmd 准备升迁；脚本不编译宿主，也不制作升迁。容器交付时将 `pack.cmd` 的 Migration 留空，在 `containerize.cmd` 中选择 `.migration`，由 Containerizer 在基础服务就绪后执行升迁；Packager 集成升迁用于直接安装应用包。
+
+随后先逐行输入基础服务（如 redis、mysql、rustfs 或服务模板路径），留空结束；再从自动发现的分层宿主菜单中选择应用。Space 勾选/取消宿主，Enter 确认；可选多个宿主，也可不选以仅制作基础服务。重定向时输入逗号分隔的宿主编号（如 `1,3`）或完整相对路径，留空表示不选宿主。基础服务和宿主至少选择一项；`web` 等分组不能选择。
+
+宿主菜单与部署/打包共用发现规则，传给工具的仍是 `web/default` 等完整相对路径。显式安装包或其它目录可通过 `containerize.cmd plan <输入> ...` 等直接命令传入；已有 `.container` 从 make 菜单选择。
 
 镜像交付方式使用 `--imaging:online|offline`，对应 `.container` 根部及服务段落的 `imaging`；`bootstrap` 仍独立控制引擎依赖。
 
@@ -202,14 +271,16 @@ Web 安装包的 Nginx 监听来自包内 `.web/nginx/.bindings`。未填写端�
 
 制作分支不执行现场安装或服务管理；run 分支在可清理的本机验证容器内安装。健康检查只证明进程/监听存活，不代表业务就绪；部署组合的验收范围见制作工具说明。
 
-### 部署后打包或独立打包
+容器应用部署选择 `container` 方案，本地 Debug 部署选择 `default`。`.deploy/container/.env` 导入 `.deploy/default/.env`，仅将已配套容器的连接地址覆盖为 `redis`、`mysql`、`rustfs`、`etcd` 服务名，凭据及其他配置继续继承。容器中的 `127.0.0.1` 指向应用自身；本机升迁执行器仍使用 `default` 方案的回环地址，通过基础服务发布端口连接。
 
-从目标宿主目录运行 `deploy.cmd`，依次选择方案（默认 `default`）、环境、远程调试、平台和架构。远程调试默认 `on`，对应 Debug/Windows；`off` 对应 Release/Linux，可在后续平台提示中调整。用于 Linux 安装验证时选择 `off`、`linux` 及匹配的架构。构建或部署失败会停止后续流程。Web 部署还会先清理站点的 `plugins/`。
+### 安装包制作
 
-部署成功后，在格式提示中输入 `tar`、`deb` 或 `rpm` 制作安装包；输入 `exit` 或 `quit` 跳过打包，此分支当前返回退出码 `1`，不会触发 daemon 的失败暂停。直接运行 `pack.cmd` 则只打包已有文件：
+从 hosting 根目录运行 `deploy.cmd` 并选择源目录、方案、环境、网络、调试模式、平台、架构和框架覆盖。Linux 安装验证选择 off、linux 及匹配架构。失败停止后续流程。
+
+部署成功后，单独运行根目录 `pack.cmd`，选择相同宿主、编译配置、架构、方案、环境、网络及框架，再选择 tar、deb 或 rpm。它只打包已有文件：
 
 ```powershell
-Set-Location D:/Zongsoft/hosting/web/default
+Set-Location D:/Zongsoft/hosting
 .\pack.cmd
 ```
 
@@ -220,7 +291,10 @@ Set-Location D:/Zongsoft/hosting/web/default
 | 环境 | 见上文；写入 `Environment`、`DOTNET_ENVIRONMENT`，Web 另有 `ASPNETCORE_ENVIRONMENT` |
 | 编译配置 | `Release`；可选 `Debug`，必须对应现有输出 |
 | 架构 | `x64`；可选 `arm64`，必须与程序和升迁执行器匹配 |
-| 方案 | 仅 Web 的独立脚本询问，默认 `default`；该脚本只打包现有部署文件，不重新应用方案 |
+| 源目录 | 从自动发现的宿主中选择；存在 daemon 时默认选中，否则选中首项。`pack.cmd <source>` 可预选目录 |
+| 方案、网络 | default、internal；应与已有部署一致，打包不重新渲染配置 |
+| 框架覆盖 | 留空使用 .env；填写时显式传给工具 |
+| 输出目录 | .packages；相对于所选源目录 |
 | 升迁输入名称或路径（`--migration`） | 留空跳过；如 `zongsoft`，详见下文 |
 
 | 宿主 | 应用名 / 服务 | 载荷与默认安装目录 |
@@ -231,7 +305,7 @@ Set-Location D:/Zongsoft/hosting/web/default
 
 所有脚本排除 `logs/`；Web 还排除构建目录中的 `*.staticwebassets.*`。`:~` 表示把所选目录的内容展平到安装根，不保留原来的 `bin/...` 层级。Web 的服务与 Nginx 配置详见 [Web README](web/README.zh-Hans.md#默认站点打包)。terminal 禁用 systemd 服务，因此 `--daemon-environments` 不会给交互式运行的终端设置进程环境。
 
-输出位于所选宿主的 `.packages/`，如 `zongsoft.daemon@1.0.0-x64.deb`；Edition 非空时追加到包名。tar 生成同名 `.tar.gz` 和 `.sh` 安装入口，须配套保留；deb/rpm 各生成一个包文件。脚本未启用 `--overwrite`，同名产物已存在时制包失败。
+输出默认位于所选宿主的 `.packages/`，如 `zongsoft.daemon@1.0.0-x64.deb`；Edition 非空时追加到包名。tar 生成同名 `.tar.gz` 和 `.sh` 安装入口，须配套保留；deb/rpm 各生成一个包文件。脚本未启用 `--overwrite`，同名产物已存在时制包失败。
 
 制包成功后，源目录存在 `.edition` 时同时回写 `.edition` 和 `.version`（缺失则创建），只有 `.version` 时只更新它，两者均无时成组创建。安装包内始终包含最终身份的 `.version`，不交付源目录直属 `.edition`。安装和升级安装包是另外的操作，脚本不会自动安装。
 
@@ -239,7 +313,7 @@ Set-Location D:/Zongsoft/hosting/web/default
 
 在 hosting 根目录运行 `migrate.cmd`，依次填写升迁名称（默认 `zongsoft`）、可选 Edition、必填版本号/版本文件/目录、平台（默认 `linux`）、架构（默认 `x64`）和方案（默认 `default`）。首次输入路径时留空会使用 `.deploy/${scheme}/migration/${version}/*.migration`；也可连续指定文件，之后留空结束。无目录分隔符的文件名基于该方案和版本目录定位，带目录的相对路径基于 hosting 根目录。裸 `*` 不接受，须用 `*.migration`。
 
-升迁脚本与 `containerize.cmd` 使用一致的样式：标题加粗青色，字段标签青色，辅助提示灰色；成功、告警、错误分别使用绿、黄、红色的 `[OK]`、`[WARN]`、`[ERROR]` 标记。辅助提示显示在文本输入项下方，并与字段名左侧对齐，光标紧跟字段名和冒号后的空格，按 Enter 进入下一项；连续输入项之间保留一个空行。重定向输出保持纯文本，可设置 `NO_COLOR` 禁用脚本颜色。成功后正常结束；失败时保留工具诊断、等待按键并返回原始退出码。
+升迁脚本共用 `.shared.ps1` 的交互与执行逻辑：标题加粗青色，字段标签青色，辅助提示灰色；成功、告警、错误分别使用绿、黄、红色的 `[OK]`、`[WARN]`、`[ERROR]` 标记。辅助提示显示在文本输入项下方，并与字段名左侧对齐，光标紧跟字段名和冒号后的空格，按 Enter 进入下一项；连续输入项之间保留一个空行。重定向输出保持纯文本，可设置 `NO_COLOR` 禁用脚本颜色。平台、架构使用同一方向键菜单；文件输入仍接受 `.migration` 路径/通配符，不增加宿主选择。成功后正常结束；交互失败时保留工具诊断、等待按键并返回原始退出码，重定向时不暂停，输入耗尽则取消。
 
 例如在 hosting 根目录制作默认输入的 Linux x64 升迁包：
 
@@ -251,7 +325,7 @@ dotnet-migrate --name:zongsoft --version:1.0.0 --platform:linux --architecture:x
 
 默认版本目录包含 MySQL 与 Amazon S3 输入，连接参数位于 `.deploy/default/migration/*.ini`。升迁包根部直接包含 `migration.json`、`id`、内部启动入口、原生执行器和依赖，SQL 位于 `.artifacts/mysql/`，不套 `.migration` 目录。
 
-随后在宿主 `deploy.cmd` 或 `pack.cmd` 的升迁提示中填写 `zongsoft`，脚本通过 `--migration` 将此输入传给 `dotnet-pack`。打包器从宿主源目录逐级查找父目录及各层直属 `.migration/`，按最终 Edition、版本和 RID 查找配套文件；两者必须来自同一位置并完整匹配。带目录的输入只定位指定目录，如 daemon 下的 `../.migration/zongsoft` 或 Web 下的 `../../.migration/zongsoft`。该选项不会自动制作升迁包。
+随后在根目录 `pack.cmd` 的升迁提示中填写 `zongsoft`，脚本通过 `--migration` 将此输入传给 `dotnet-pack`。打包器从宿主源目录逐级查找父目录及各层直属 `.migration/`，按最终 Edition、版本和 RID 查找配套文件；两者必须来自同一位置并完整匹配。带目录的输入只定位指定目录，如 daemon 下的 `../.migration/zongsoft` 或 Web 下的 `../../.migration/zongsoft`。该选项不会自动制作升迁包。
 
 安装包把归档和外部启动脚本原样放入安装根 `.migration/`；执行时脚本解压到独立临时目录，计划和执行器直接位于临时目录根部，执行结束后清理。安装时运行 `apply`，状态保存在 `/var/lib/<包名>/packager`，升迁失败阻止服务启动；systemd 启动前运行 `check` 比较本地成功标记。terminal 即使禁用 daemon，也会在安装时执行所集成的升迁。SQL 的重复执行由脚本自身保证幂等。
 
@@ -261,7 +335,7 @@ dotnet-migrate --name:zongsoft --version:1.0.0 --platform:linux --architecture:x
 
 deb/rpm 的 `--dependencies` 统一采用 `name[:range]`，例如 `--dependencies:"aspnetcore-runtime-10.0:[10.0,11.0)"` 或 `--dependencies:"aspnetcore-runtime-10.0:[10.0)"`。区间外的逗号/分号表示同时依赖，`|` 表示任选一个；打包器分别转换为 Debian `Depends` 和 RPM `Requires`，不自动映射发行版包名。RPM 的替代依赖要求 4.13+，双边范围要求 4.14+。具体规则见 packager 的双语 README。
 
-`upgrade.pack.cmd` / `upgrade.publish.cmd` 使用 `dotnet-upgrade` 制作和发布自动升级产物，与上述 Linux 安装包、升迁包流程独立；升级打包脚本仍询问 framework，不适用 `deploy.cmd` / `pack.cmd` 的框架提示约定。
+`upgrade.pack.cmd` / `upgrade.publish.cmd` 使用 `dotnet-upgrade` 制作和发布自动升级产物，与上述 Linux 安装包、升迁包流程独立。
 
 ## 容器化
 
