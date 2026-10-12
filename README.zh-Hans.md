@@ -46,7 +46,9 @@ web
 
 普通部署使用 `--overwrite:newest`，本地 Debug 快捷入口使用 `--overwrite:alway`（部署器的始终覆盖选项）；两者都使用 `--prerelease:true --verbosity:quiet`。构建或部署失败立即停止，显示失败阶段和原始退出码。部署成功后返回 0。制作安装包时单独运行根目录 [`pack.cmd`](pack.cmd)。脚本不改变调用者的目录和环境。
 
-`deploy.cmd`、`pack.cmd`、`containerize.cmd` 和 `migrate.cmd` 通过 Windows PowerShell 共用 [`.shared.ps1`](.shared.ps1) 的标题、提示、菜单和执行结果输出。界面使用青色分区标题、输入框下方的灰色提示、菜单选中行高亮以及执行摘要。使用上下方向键或 Home/End 选择，Enter 确认，菜单中按 Esc 取消（退出码 2）。输入或输出被重定向时使用编号菜单，留空选择默认项，输入耗尽则在执行前取消。输出重定向时不含颜色控制符，设置 `NO_COLOR` 可关闭控制台颜色。部署和打包在交互模式下成功和失败均等待按键，重定向模式不暂停。
+`deploy.cmd`、`pack.cmd`、`containerize.cmd` 和 `migrate.cmd` 分别通过 Windows PowerShell 调用同名的 [`deploy.ps1`](deploy.ps1)、[`pack.ps1`](pack.ps1)、[`containerize.ps1`](containerize.ps1) 和 [`migrate.ps1`](migrate.ps1)。各 PowerShell 入口负责对应工具的流程与参数，通过点加载 [`.shared.ps1`](.shared.ps1) 共用标题、提示、菜单、宿主发现、工具执行和错误处理；共享脚本不分发工具操作，加载时不启动任何工具流程。
+
+界面使用青色分区标题、输入框下方的灰色提示、菜单选中行高亮以及执行摘要。使用上下方向键或 Home/End 选择，Enter 确认，菜单中按 Esc 取消（退出码 2）。输入或输出被重定向时使用编号菜单，留空选择默认项，输入耗尽则在执行前取消。输出重定向时不含颜色控制符，设置 `NO_COLOR` 可关闭控制台颜色。部署和打包在交互模式下成功和失败均等待按键，重定向模式不暂停。
 
 框架覆盖留空时，部署和打包从 `.env` 查询 framework，Cake 使用各宿主 build.cake 的默认值；Cake 不读取 `.env`，应保持两者一致。填写覆盖值时，deploy.cmd 将其传给构建和部署，pack.cmd 须另行输入同一 framework。脚本不自行解析或导出 `.env`。
 
@@ -245,7 +247,7 @@ containerize.cmd make .containerized\zongsoft@1.0-x64.container --version:1.1
 使用 `containerize.cmd --refresh` 进入原菜单，可在本次完整制作或 make 中重新准备公共运行环境；plan/run 不刷新，无参数仍默认复用。也可直接执行 `containerize.cmd make FILE.container --version:1.1 --refresh`。选项不写入 `.container`，不修改基础服务固定摘要；应用安装包仍每次重新制作镜像。
 
 
-最后两行是制作新发行版的两种替代方式。子命令后提供输入及选项时直接执行，跳过新建提示；单独传入 `.container` 仍作为 make 简写。交互 make 按文件名排序列出 `.containerized` 目录中的全部 `*.container` 文件（不递归子目录），最后一项为手动输入路径；只有选择末项才询问路径，没有找到文件时仅显示该项。选定清单后，可输入新的发行版本。直接运行 `containerize.cmd make` 且未提供路径时也显示此菜单。沿用清单保存的选择；交互脚本只允许版本和引擎选择覆盖清单。source 固定为 hosting 目录，output 固定为 `.containerized`；脚本退出时恢复调用者目录及环境。
+最后两行是制作新发行版的两种替代方式。子命令后提供输入及选项时直接执行，跳过新建提示；单独传入 `.container` 仍作为 make 简写。交互 make 按文件名排序列出 `.containerized` 目录中的全部 `*.container` 文件（不递归子目录），最后一项为手动输入路径；只有选择末项才询问路径，没有找到文件时仅显示该项。选定清单后，可输入新的发行版本。直接运行 `containerize.cmd make` 且未提供路径时也显示此菜单。沿用清单保存的选择；交互复用清单只询问新发行版本；引擎覆盖可使用直接参数。source 固定为 hosting 目录，output 固定为 `.containerized`；脚本退出时恢复调用者目录及环境。
 
 完整制作、plan 或 make 执行结束后，脚本显式显示成功提示，或失败提示及工具原始退出码，并保留工具的具体诊断输出。交互模式下成功与失败均等待按键后结束，便于检查结果；输入或输出重定向时不暂停，输入耗尽则在执行前取消。
 

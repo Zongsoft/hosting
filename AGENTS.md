@@ -67,7 +67,7 @@
 
 `daemon/deploy.cmd`、`terminal/deploy.cmd` 和 `web/default/deploy.cmd` 是本地 Debug 快捷入口：调用根目录 `deploy.cmd <source> --local-debug`，固定源目录为自身宿主，跳过调试模式、平台、架构和框架提示，使用 on、windows、x64 及现有框架默认值；方案、环境和网络仍按原有提示和默认值输入。快捷入口使用 `--overwrite:alway` 始终覆盖，普通根目录部署保持 `newest`。
 
-hosting 根目录的 `deploy.cmd`、`pack.cmd`、`containerize.cmd` 和 `migrate.cmd` 通过 `.shared.ps1` 共用交互、菜单与执行逻辑。部署和打包扫描调用时当前目录及子目录中的宿主项目，以分层方向键菜单选择源目录；父目录只显示分组，不可选择，只有宿主叶子项带编号。`deploy.cmd` 进入所选宿主运行 Cake，再用 `--source`/`--output` 调用部署器；只负责构建和部署，成功后返回 0。安装包由根目录 `pack.cmd` 独立制作。
+hosting 根目录的 `deploy.cmd`、`pack.cmd`、`containerize.cmd` 和 `migrate.cmd` 分别调用同名 `.ps1` 脚本，各自负责对应工具的流程与参数。四个 PowerShell 入口点加载 `.shared.ps1`，共用交互、菜单、宿主发现、工具执行和错误处理；共享脚本不分发工具操作，加载时不启动任何工具流程。部署和打包扫描调用时当前目录及子目录中的宿主项目，以分层方向键菜单选择源目录；父目录只显示分组，不可选择，只有宿主叶子项带编号。`deploy.cmd` 进入所选宿主运行 Cake，再用 `--source`/`--output` 调用部署器；只负责构建和部署，成功后返回 0。安装包由根目录 `pack.cmd` 独立制作。
 
 ### 部署变量与模板
 
