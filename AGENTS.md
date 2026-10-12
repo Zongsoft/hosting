@@ -71,7 +71,7 @@ hosting 根目录的 `deploy.cmd`、`pack.cmd`、`containerize.cmd` 和 `migrate
 
 ### 部署变量与模板
 
-- 自动继承沿 source 的祖先 `.env`；宿主 `.env` 通过 `#@import ../.deploy/${scheme}/.env`（Web 多一级 `../`）选择方案。方案可以显式导入 `.deploy/.env` 和自己的环境、网络变量文件；工具不固化额外优先级或目录组合。
+- 工具只加载 source 直属 `.env`（migrator 为工作目录）。宿主先导入 `../.env`，Web 站点经 `web/.env` 导入 hosting 根配置，再通过 `#@import ../.deploy/${scheme}/.env`（Web 多一级 `../`）选择方案。`.deploy/.env` 也显式导入 hosting 根配置，为方案的环境、网络指令提供默认值；方案再导入自己的变量文件，工具不固化额外优先级或目录组合。
 - `.deploy` 文件通过 `${scheme}` 选择独有资产，公共配置结构在 `.deploy/.shared/*.template`，用 template 解析器生成最终文件；`.env` 不部署。
 - 一次部署只选一个环境及一种网络；网络独立于 debug。公共模板的路径并不决定变量作用域。
 - 根脚本的 source 自动发现和显式相对路径基于调用时的当前目录；deployer/packager 的本地相对输入输出基于选中的 source。`.deploy` 和 import 内部引用仍基于声明文件。

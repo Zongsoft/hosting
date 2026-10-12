@@ -81,7 +81,7 @@ web
 
 ```text
 hosting/
-  .env                         # 各工具继承的通用变量
+  .env                         # 供显式导入的通用变量
   deploy.cmd
   pack.cmd
   .deploy/
@@ -96,7 +96,7 @@ hosting/
       network.external.env
       migration/               # 升迁输入
   daemon/
-    .env                       # 导入方案，然后声明宿主值
+    .env                       # 导入公共变量和方案，再声明宿主值
     .deploy
   terminal/
     .env
@@ -108,13 +108,14 @@ hosting/
       .deploy
 ```
 
-自动继承仅沿 source 的祖先目录读取 `.env`。
+工具只读取所选 source 目录直属的 `.env`（migrator 使用工作目录）。各宿主先通过 `#@import ../.env` 导入公共配置：daemon、terminal 直接导入 hosting 根配置，Web 站点先导入 `web/.env`，再由它导入 hosting 根配置；随后宿主导入所选方案并声明自己的值。
 
-HTTP 的 `listen=8069` 定义在 `hosting/web/.env`，由各 Web 站点共享，不放在 `hosting/.env`。Packager 会根据继承到的值生成 `--urls` 和 HTTP 监听元数据，daemon 和 terminal 宿主不应获得这项配置。
+HTTP 的 `listen=8069` 定义在 `hosting/web/.env`，由各 Web 站点共享，不放在 `hosting/.env`。Packager 会根据显式导入的值生成 `--urls` 和 HTTP 监听元数据，daemon 和 terminal 宿主不应获得这项配置。
 
 例如 `hosting/daemon/.env`：
 
 ```ini
+#@import ../.env
 #@import ../.deploy/${scheme}/.env
 
 host=daemon
@@ -126,7 +127,7 @@ title=Zongsoft.Daemon
 daemon=zongsoft.daemon
 ```
 
-`hosting/.deploy/default/.env` 显式导入 `../.env`，定义方案值后再导入 `environment.${environment}.env` 和 `network.${network}.env`。这些导入文件不自动搜索自己的祖先 `.env`。同一 Profile 中后面的同名声明覆盖前面的声明；项目可以在导入后覆盖方案值，也可以将导入放在后面，让方案覆盖项目值。工具不规定项目与方案的固定顺序。
+`hosting/.deploy/.env` 先显式导入 hosting 根目录的 `../.env`，再声明公共连接表达式，使方案指令能够解析默认的环境、网络值。`hosting/.deploy/default/.env` 导入该公共文件，定义方案值后再导入 `environment.${environment}.env` 和 `network.${network}.env`。这些导入文件不自动搜索自己的祖先 `.env`。同一 Profile 中后面的同名声明覆盖前面的声明；项目可以在导入后覆盖方案值，也可以将导入放在后面，让方案覆盖项目值。工具不规定项目与方案的固定顺序。
 
 公共模板保留配置结构，变量保留配置值。例如 `.deploy/.shared/app.option.template` 使用 `${mysql:connection#xml}`，连接表达式定义在 `.deploy/.env`，服务地址等值定义在方案中。`#xml` 处理 XML 特殊字符；变量仍由 Core 递归求值。`.env` 不部署，模板输出移除 `.template` 后缀或使用 `.deploy` 指定的名称。
 
@@ -213,7 +214,7 @@ dotnet tool install -g Zongsoft.Tools.Migrator
 framework=net10.0
 ```
 
-工具按显式命令选项、从源目录至文件系统根目录的各级 `.env`（migrator 为工作目录）、进程环境变量的优先级查询；deployer 还在命令选项之后查询目标应用的 appsettings。仅当普通来源全部未命中时，Core 才查询描述符默认值。所有变量（包括 `framework`）的显式 null 或空字符串都表示查询成功并阻止回退，必要值由使用它的业务操作校验。`.env` 通过 Core `Profile.ToVariables()` 提供原始变量：`[mysql] root_password` 用 `${mysql:root_password}` 引用；多级章节以点号连接为命名空间，条目名的点号和连字符转换为下划线。工具明确启用变量回退；具名引用先查询当前命名空间的全部来源，再逐级进入父命名空间及全局。同一命名空间内按上述来源顺序首次命中即生效，包括 null；只有全局普通查询也全部失败后，才使用已声明的命令默认值。
+工具按显式命令选项、源目录直属的 `.env` 及其显式导入（migrator 为工作目录）、进程环境变量的优先级查询；deployer 还在命令选项之后查询目标应用的 appsettings。仅当普通来源全部未命中时，Core 才查询描述符默认值。所有变量（包括 `framework`）的显式 null 或空字符串都表示查询成功并阻止回退，必要值由使用它的业务操作校验。`.env` 通过 Core `Profile.ToVariables()` 提供原始变量：`[mysql] root_password` 用 `${mysql:root_password}` 引用；多级章节以点号连接为命名空间，条目名的点号和连字符转换为下划线。工具明确启用变量回退；具名引用先查询当前命名空间的全部来源，再逐级进入父命名空间及全局。同一命名空间内按上述来源顺序首次命中即生效，包括 null；只有全局普通查询也全部失败后，才使用已声明的命令默认值。
 
 模板统一使用 Core `${name}` / `${namespace:name}` 语法和转义规则。路径优先相对路径，绝对路径使用 `/`。`#@import ../.shared/${product}.env` 在读取到该指令时求值，每条指令导入一个完整路径；可引用显式命令选项、当前文件此前读入的条目及已完成的导入，不能引用后续声明。Profile 本身保留原始值。
 

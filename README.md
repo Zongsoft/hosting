@@ -81,7 +81,7 @@ For a minimal HTTP check, follow the [decoupled Web plugin example](https://gith
 
 ```text
 hosting/
-  .env                         # Common inherited tool variables
+  .env                         # Common variables for explicit imports
   deploy.cmd
   pack.cmd
   .deploy/
@@ -96,7 +96,7 @@ hosting/
       network.external.env
       migration/               # Migration inputs
   daemon/
-    .env                       # Import scheme, then define host values
+    .env                       # Import common and scheme variables, then host values
     .deploy
   terminal/
     .env
@@ -108,13 +108,14 @@ hosting/
       .deploy
 ```
 
-Automatic inheritance reads `.env` only along source's ancestor chain.
+Tools load only the selected source directory's `.env` (the working directory for migrator). Each host first imports `../.env`: daemon and terminal read the hosting root, while Web sites read `web/.env`, which in turn imports the hosting root. Hosts then import the selected scheme and declare their own values.
 
-HTTP `listen=8069` belongs in `hosting/web/.env`, shared by Web sites. Keep it out of `hosting/.env`: Packager uses the inherited value to generate `--urls` and HTTP listening metadata, which should not be assigned to daemon or terminal hosts.
+HTTP `listen=8069` belongs in `hosting/web/.env`, shared by Web sites. Keep it out of `hosting/.env`: Packager uses the explicitly imported value to generate `--urls` and HTTP listening metadata, which should not be assigned to daemon or terminal hosts.
 
 For example, `hosting/daemon/.env` contains:
 
 ```ini
+#@import ../.env
 #@import ../.deploy/${scheme}/.env
 
 host=daemon
@@ -126,7 +127,7 @@ title=Zongsoft.Daemon
 daemon=zongsoft.daemon
 ```
 
-`hosting/.deploy/default/.env` explicitly imports `../.env`, defines scheme values, then imports `environment.${environment}.env` and `network.${network}.env`. Imported files do not trigger their own ancestor search. Later same-key declarations within a Profile override earlier ones: project values after an import can override the scheme, or a later import can override project values. The tool does not prescribe project/scheme precedence.
+`hosting/.deploy/.env` explicitly imports the hosting root's `../.env` before declaring shared connection expressions, so scheme directives can resolve default environment/network values. `hosting/.deploy/default/.env` imports that shared file, defines scheme values, then imports `environment.${environment}.env` and `network.${network}.env`. Imported files do not trigger their own ancestor search. Later same-key declarations within a Profile override earlier ones: project values after an import can override the scheme, or a later import can override project values. The tool does not prescribe project/scheme precedence.
 
 Shared templates hold structure and variables hold values. For example, `.deploy/.shared/app.option.template` references `${mysql:connection#xml}`; `.deploy/.env` composes the connection expression and scheme files supply service addresses and other values. `#xml` escapes XML characters; Core performs recursive evaluation. `.env` is never deployed. Template output drops `.template` or uses the explicit destination name from `.deploy`.
 
@@ -216,7 +217,7 @@ Set `framework` at the root level of the hosting root's `.env`, for example:
 framework=net10.0
 ```
 
-Tools query explicit command options, `.env` files from the source directory up to the filesystem root (working directory for migrator), then process environment variables. Deployer also checks destination appsettings immediately after command options. Core queries descriptor defaults only after all ordinary sources miss. Every variable, including `framework`, treats explicit null or empty values as a successful lookup that stops fallback; operations validate the values they require. Profile sections are variable namespaces: `[mysql] root_password` is referenced as `${mysql:root_password}`; nested sections use dots and entry dots/hyphens become underscores. Tools explicitly enable variable fallback. Named references query every source at the current namespace before moving through parents to global. Source priority applies within each namespace and any success, including null, stops lookup. Declared option defaults apply only after all ordinary global queries also miss.
+Tools query explicit command options, the source directory's `.env` and its explicit imports (working directory for migrator), then process environment variables. Deployer also checks destination appsettings immediately after command options. Core queries descriptor defaults only after all ordinary sources miss. Every variable, including `framework`, treats explicit null or empty values as a successful lookup that stops fallback; operations validate the values they require. Profile sections are variable namespaces: `[mysql] root_password` is referenced as `${mysql:root_password}`; nested sections use dots and entry dots/hyphens become underscores. Tools explicitly enable variable fallback. Named references query every source at the current namespace before moving through parents to global. Source priority applies within each namespace and any success, including null, stops lookup. Declared option defaults apply only after all ordinary global queries also miss.
 
 Templates follow Core `${name}` / `${namespace:name}` syntax and escaping. Prefer relative paths; use `/` for absolute paths. `#@import ../.shared/${product}.env` is evaluated when encountered and imports one complete path. It can use explicit command options, earlier entries and completed imports, but not later declarations. Profile itself retains raw values.
 
