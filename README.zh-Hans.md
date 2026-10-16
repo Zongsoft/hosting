@@ -35,7 +35,7 @@
 
 部署清单仅复制本次选中的环境和网络片段，同一部署目录只保留一套环境和网络配置。配置更新遵循部署工具的覆盖策略，无需先用 `delete:` 删除目标文件；部署清单不承担历史配置清理。普通入口可声明多个可选环境导入，仅加载部署目录中实际存在的片段。新增配置时应同步维护导入和对应部署项。`app.option.template` 按入口程序集名生成宿主配置，Web 对应 `Zongsoft.Hosting.Web.option`；`web.option.template` 生成独立的 `web.option`，声明本站点的 Web 配置，无需导入公共宿主配置。清单只列出有实际资产或模板生成来源的配置，不为不存在的文件预留复制、导入或删除项。
 
-daemon 宿主引用诊断插件所需的 ASP.NET Core 共享框架，目标机器需安装 ASP.NET Core 运行时；Containerizer 根据宿主的运行时配置为镜像准备该依赖。
+daemon 部署的 `Zongsoft.Diagnostics` 插件使用独立 Kestrel 服务器提供 Prometheus 指标接口，因此宿主声明 `Microsoft.AspNetCore.App` 框架引用。目标机器需安装对应的 ASP.NET Core 运行时；Containerizer 根据宿主的运行时配置为镜像准备该依赖。该引用不启用 Web 宿主或 MVC，也无需在 `.deploy` 中逐项复制共享框架程序集。
 
 daemon 和 Web 部署通过公共诊断模板生成 `Zongsoft.Diagnostics.option`。Prometheus 监听由 `[diagnostics.prometheus]` 的 `server`、`port` 配置：default 方案监听 `127.0.0.1`，container 方案监听 `0.0.0.0` 以供容器网络访问。daemon 使用 9464，`web/default` 使用 9465，两个宿主可在同一台机器运行。Web 通过生成的 Nginx 路由提供 `/metrics`。
 
