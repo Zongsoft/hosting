@@ -20,11 +20,11 @@
 
 - `scheme`，默认通常为 `default`。
 - `environment`，通常为 `development`、`test` 或 `production`。
-- `debug`，如用户说“默认”，按脚本默认输入。
+- `compilation`：Debug 或 Release；正式 Linux 发布通常使用 Release。
 - `platform`，Linux 发布必须输入 `linux`。
 - `architecture`，通常为 `x64` 或 `arm64`。
 - `framework`：框架覆盖留空时工具查询 .env，Cake 使用 build.cake 默认值，须保持一致；两个脚本须输入相同的显式框架覆盖。
-- `network`：internal 或 external，与 debug 独立，按基础服务地址选择。
+- `network`：internal 或 external，与编译配置独立，按基础服务地址选择。
 - 安装包格式：`.deb`、`.rpm` 或 `.tar.gz`，分别在脚本中输入 `deb`、`rpm`、`tar`。
 - `version`，不能为空。
 - `edition`，可为空。
@@ -35,7 +35,7 @@
 
 1. 进入 hosting 根目录 `<repo-root>`。
 2. 执行 `.\deploy.cmd daemon`，按已确认参数回答脚本提示。
-   依次填写 scheme、environment、network、debug、platform、architecture 和可选 framework；部署结束后单独运行 `.\pack.cmd daemon`，选择与部署一致的参数，再填 format、edition、version、migration 和 output。需要升迁时先用根目录 migrate.cmd 生成匹配产物。
+   依次填写 scheme、environment、network、compilation、platform、architecture 和可选 framework；部署结束后单独运行 `.\pack.cmd daemon`，选择与部署一致的参数，再填 format、edition、version、migration 和 output。需要升迁时先用根目录 migrate.cmd 生成匹配产物。
 3. 脚本成功后，按时间、版本、架构和格式定位新安装包。
 4. 将安装包复制到目标 Linux 的 `/opt`。
 5. 按包格式安装：
@@ -59,7 +59,7 @@
 
 ## 故障分流
 
-构建、部署或打包失败时，脚本显示失败阶段和退出码，并等待按键后退出；退出时恢复调用者的目录与环境。安装包提示留空跳过并返回 0。
+构建、部署或打包失败时，脚本显示失败阶段和退出码；交互模式等待按键后退出，重定向模式不暂停。退出时恢复调用者的目录与环境。部署成功后返回 0，打包由独立的 pack.cmd 执行。
 
 - 编译失败：记录 `deploy.cmd` 中构建阶段的首个有效错误，优先检查 SDK、目标框架、框架源码和 NuGet 包。
 - 部署失败：检查 `.deploy`、`../.deploy/<scheme>/`、插件来源和目标路径。
@@ -85,7 +85,7 @@
 
 ```text
 daemon Linux 发布验证：
-- 参数：scheme=<...>, environment=<...>, platform=linux, architecture=<...>, framework=<...>, format=<...>, version=<...>, debug=<...>
+- 参数：scheme=<...>, environment=<...>, platform=linux, architecture=<...>, framework=<...>, format=<...>, version=<...>, compilation=<...>
 - 安装包：<path>
 - 目标系统：<distro/host>
 - 发布位置：/opt/<package>

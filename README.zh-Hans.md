@@ -27,11 +27,25 @@
 
 ## 部署
 
+宿主项目将 Main.plugin（Terminal 另含 Terminal.plugin）复制到构建及发布输出。本地框架引用从框架源码取清单，包引用从匹配版本的 Zongsoft.Plugins 包取清单。Web 部署从构建输出复制 Main.plugin 到站点插件目录；Daemon 和 Terminal 随构建目录交付基础清单，不再单独通过 NuGet 提取清单。
+
+插件只查找一个配置入口：先使用与 `.plugin` 文件同名的 `.option`，不存在时才尝试 `<plugin name="…">.option`；两者都不存在则不加载配置。不会合并两个入口，也不会扫描后缀文件；已找到的入口解析失败时直接报错。daemon、terminal 和 Web 宿主均通过无参 `LoadConfiguration()` 先加载应用名对应的 `.option`；入口程序集名不同时再追加加载其同名 `.option`。Web 随后加载 `web.option`，后加载的文件覆盖前面同名键。运行时 environment、host、site 不参与文件选择。
+
+配置片段通过入口中的 `<?import path="…" required="false"?>` 显式导入，路径相对于声明文件。放在文件末尾的导入覆盖前面同名键；`required="false"` 只允许文件缺失，不忽略格式错误。插件环境片段命名为 `Name-${environment}.option`，网络片段命名为 `Name-${environment}-${network}.option`；主入口导入环境片段，环境片段再导入网络片段。普通 XML 导入路径不解析部署变量；模板须在部署时生成具体路径。
+
+部署清单仅复制本次选中的环境和网络片段，同一部署目录只保留一套环境和网络配置。配置更新遵循部署工具的覆盖策略，无需先用 `delete:` 删除目标文件；部署清单不承担历史配置清理。普通入口可声明多个可选环境导入，仅加载部署目录中实际存在的片段。新增配置时应同步维护导入和对应部署项。`app.option.template` 按入口程序集名生成宿主配置，Web 对应 `Zongsoft.Hosting.Web.option`；`web.option.template` 生成独立的 `web.option`，声明本站点的 Web 配置，无需导入公共宿主配置。清单只列出有实际资产或模板生成来源的配置，不为不存在的文件预留复制、导入或删除项。
+
+daemon 宿主引用诊断插件所需的 ASP.NET Core 共享框架，目标机器需安装 ASP.NET Core 运行时；Containerizer 根据宿主的运行时配置为镜像准备该依赖。
+
+daemon 和 Web 部署通过公共诊断模板生成 `Zongsoft.Diagnostics.option`。Prometheus 监听由 `[diagnostics.prometheus]` 的 `server`、`port` 配置：default 方案监听 `127.0.0.1`，container 方案监听 `0.0.0.0` 以供容器网络访问。daemon 使用 9464，`web/default` 使用 9465，两个宿主可在同一台机器运行。Web 通过生成的 Nginx 路由提供 `/metrics`。
+
+Aliyun 使用唯一的公共模板 `Zongsoft.Externals.Aliyun.option.template`，部署时生成完整的 `Zongsoft.Externals.Aliyun.option`。方案 `.env` 的 `[aliyun]` 定义全量默认设置，选中的 `<environment>-<network>.env` 在同一 `[aliyun]` 节中覆盖凭据、内外网访问和资源差异，未覆盖的设置沿用默认值。变量合并后再渲染模板，最终配置只包含当前组合选中的 OSS 桶、消息队列和主题；不再生成或导入 Aliyun 环境配置片段。
+
 宿主程序初始化运行环境，业务功能由 `plugins/` 中的插件及配置、证书等配套文件提供。
 
-在 hosting 根目录运行 [`deploy.cmd`](deploy.cmd)，从自动发现的宿主菜单中选择源目录。部署和打包脚本扫描调用时的当前目录及其子目录，将同时包含 `.deploy` 文件和 `Zongsoft.Hosting.Daemon.csproj`、`Zongsoft.Hosting.Terminal.csproj` 或 `Zongsoft.Hosting.Web.csproj` 的目录列为宿主。`daemon`、`terminal`、`web/default` 以及新增站点都会自动列出；跳过隐藏目录、目录链接、`bin`、`obj`、`packages` 和 `node_modules`。也可以运行 `deploy.cmd web/default` 预选源目录，相对路径基于调用时的当前目录，也支持绝对路径。脚本依次询问方案、环境、网络、调试模式、平台、架构和可选框架覆盖，进入所选宿主执行 Cake，再通过 `dotnet deploy --source:<宿主> --output:<目标>` 执行该宿主的 `.deploy`。
+在 hosting 根目录运行 [`deploy.cmd`](deploy.cmd)，从自动发现的宿主菜单中选择源目录。部署和打包脚本扫描调用时的当前目录及其子目录，将同时包含 `.deploy` 文件和 `Zongsoft.Hosting.Daemon.csproj`、`Zongsoft.Hosting.Terminal.csproj` 或 `Zongsoft.Hosting.Web.csproj` 的目录列为宿主。`daemon`、`terminal`、`web/default` 以及新增站点都会自动列出；跳过隐藏目录、目录链接、`bin`、`obj`、`packages` 和 `node_modules`。也可以运行 `deploy.cmd web/default` 预选源目录，相对路径基于调用时的当前目录，也支持绝对路径。脚本依次询问方案、环境、网络、编译配置、平台、架构和可选框架覆盖，进入所选宿主执行 Cake，再通过 `dotnet deploy --source:<宿主> --output:<目标>` 执行该宿主的 `.deploy`。
 
-本地 Debug 调试可直接运行 [daemon/deploy.cmd](daemon/deploy.cmd)、[terminal/deploy.cmd](terminal/deploy.cmd) 或 [web/default/deploy.cmd](web/default/deploy.cmd)。这些快捷脚本调用根目录 `deploy.cmd <source> --local-debug`，源目录固定为脚本所在宿主，自动使用 `debug=on`、`platform=windows`、`architecture=x64`，框架沿用现有默认值，不提示这五项，并使用 `--overwrite:alway` 始终覆盖。只保留方案、环境和网络提示及原有默认值；从其他目录调用也不会改变所选宿主。
+本地 Debug 调试可直接运行 [daemon/deploy.cmd](daemon/deploy.cmd)、[terminal/deploy.cmd](terminal/deploy.cmd) 或 [web/default/deploy.cmd](web/default/deploy.cmd)。这些快捷脚本调用根目录 `deploy.cmd <source> --local`，源目录固定为脚本所在宿主，自动使用 `configuration=Debug`、`platform=windows`、`architecture=x64`，框架沿用现有默认值，不再提示这些项，并使用 `--overwrite:alway` 始终覆盖。只保留方案、环境和网络提示及原有默认值；从其他目录调用也不会改变所选宿主。
 
 宿主菜单按目录层级显示，只有实际宿主带编号；`web` 等父目录仅作为分组标题，方向键会跳过它们。部署和打包一次选择一个宿主，例如：
 
@@ -42,7 +56,7 @@ web
   3. default
 ```
 
-每次部署只使用一个环境和一种网络。网络 `internal`/`external` 与调试模式独立；调试模式只决定默认编译配置及平台：on 为 Debug/Windows，off 为 Release/Linux，平台可另选。deployer 不固化这些组合或输出目录。脚本沿用 daemon/terminal 的 `bin/${edition}/${framework}` 和 Web 的宿主根目录作为输出；直接调用工具时可任意指定 `--output`。部署器只处理 `.deploy` 声明的资产，宿主编译由 Cake 完成。
+每次部署只使用一个环境和一种网络。网络 `internal`/`external` 决定服务连接方式；编译配置（Debug/Release）和目标平台分别选择，普通根入口默认 Debug 和 Windows。deployer 不固化这些组合或输出目录。脚本沿用 daemon/terminal 的 `bin/${edition}/${framework}` 和 Web 的宿主根目录作为输出；直接调用工具时可任意指定 `--output`。部署器只处理 `.deploy` 声明的资产，宿主编译由 Cake 完成。
 
 普通部署使用 `--overwrite:newest`，本地 Debug 快捷入口使用 `--overwrite:alway`（部署器的始终覆盖选项）；两者都使用 `--prerelease:true --verbosity:quiet`。构建或部署失败立即停止，显示失败阶段和原始退出码。部署成功后返回 0。制作安装包时单独运行根目录 [`pack.cmd`](pack.cmd)。脚本不改变调用者的目录和环境。
 
@@ -69,7 +83,7 @@ web
 
 🚨 插件加载成功不等于运行依赖齐全。宿主 Core 过旧可能在服务扫描时报程序集找不到；缺少 `runtimes` 会导致平台依赖加载失败；共享 SDK 被传递依赖覆盖则可能在第一次调用时报缺少方法。保留第一条错误，核对**最终部署文件**而不是只看项目引用或构建成功。
 
-终端启动代码附加 `host=terminal`、`site=daemon`。这些值参与运行时选项选择；部署器的 `--site` 与宿主启动参数属于不同阶段。
+终端启动代码附加 `host=terminal`、`site=daemon`。这些值仍用于应用上下文，但不再参与选项文件筛选；部署器的 `--site` 与宿主启动参数属于不同阶段。
 
 最小 HTTP 验证见[解耦 Web 插件示例](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Plugins.Web/README.zh-Hans.md)。控制器发现不会补出缺失的路由模板：默认宿主使用 `MapControllers()`，应检查实际响应而不仅是插件列表。手工部署原生插件时，保留 `runtimes/` 可能是必要条件，却不一定足够；还要核对原生搜索布局。Windows x64 SQLite 探针需要让匹配架构的 `e_sqlite3.dll` 位于 SQLite 托管组件旁。
 
@@ -86,15 +100,18 @@ hosting/
   pack.cmd
   .deploy/
     .env                       # 方案显式导入的公共连接表达式
-    .shared/                   # app、Web、Aliyun 的 *.template
+    .shared/                   # app、Web、诊断、Aliyun 的 *.template
     default/
       .env                     # 方案值及显式导入
-      environment.development.env
-      environment.test.env
-      environment.production.env
-      network.internal.env
-      network.external.env
+      development-internal.env
+      development-external.env
+      production-internal.env
+      production-external.env
+      test-internal.env
+      test-external.env
       migration/               # 升迁输入
+    container/
+      .env                     # 继承默认组合并覆盖容器服务地址
   daemon/
     .env                       # 导入公共变量和方案，再声明宿主值
     .deploy
@@ -110,7 +127,7 @@ hosting/
 
 工具只读取所选 source 目录直属的 `.env`（migrator 使用工作目录）。各宿主先通过 `#@import ../.env` 导入公共配置：daemon、terminal 直接导入 hosting 根配置，Web 站点先导入 `web/.env`，再由它导入 hosting 根配置；随后宿主导入所选方案并声明自己的值。
 
-HTTP 的 `listen=8069` 定义在 `hosting/web/.env`，由各 Web 站点共享，不放在 `hosting/.env`。Packager 会根据显式导入的值生成 `--urls` 和 HTTP 监听元数据，daemon 和 terminal 宿主不应获得这项配置。
+`hosting/web/.env` 的 `[web]` 节提供 `url=http://*:8069/` 和 `protocols=http1`。部署将这些值和 zongsoft.tools.binding 处理指令写入 `web.option`；Packager 与宿主读取同一配置，不再添加 `--urls`。开发备用文件 `web-default.option` 具有相同声明，部署包使用生成的 `web.option`。
 
 例如 `hosting/daemon/.env`：
 
@@ -127,7 +144,9 @@ title=Zongsoft.Daemon
 daemon=zongsoft.daemon
 ```
 
-`hosting/.deploy/.env` 先显式导入 hosting 根目录的 `../.env`，再声明公共连接表达式，使方案指令能够解析默认的环境、网络值。`hosting/.deploy/default/.env` 导入该公共文件，定义方案值后再导入 `environment.${environment}.env` 和 `network.${network}.env`。这些导入文件不自动搜索自己的祖先 `.env`。同一 Profile 中后面的同名声明覆盖前面的声明；项目可以在导入后覆盖方案值，也可以将导入放在后面，让方案覆盖项目值。工具不规定项目与方案的固定顺序。
+`hosting/.deploy/.env` 先显式导入 hosting 根目录的 `../.env`，再声明公共连接表达式，使方案指令能够解析默认的环境、网络值。`hosting/.deploy/default/.env` 导入该公共文件，定义方案值后通过 `#@import ${environment}-${network}.env` 选择唯一组合。这些导入文件不自动搜索自己的祖先 `.env`。同一 Profile 中后面的同名声明覆盖前面的声明；项目可以在导入后覆盖方案值，也可以将导入放在后面，让方案覆盖项目值。工具不规定项目与方案的固定顺序。
+
+default 方案的 `.env` 提供公共服务连接表达式所需的完整基础设置，包括本地 `network:server` 和 Aliyun `intranet` 默认值。每个 `<environment>-<network>.env` 完整列出所有远程基础服务的地址、受支持的端口、用户名、密码、令牌或访问密钥，即使与默认值相同也显式列出；字符集、超时、压缩等通用设置保留在 `.env`。六个文件覆盖 development、test、production 与 internal、external 的组合。每个组合文件在 `[network]` 中定义公共主机 `server`，共用该主机的服务通过 `${network:server}` 引用它，并保留各自的 URL 协议、端口和路径；独立主机服务保留自己的地址。container 方案继承 default 选中的组合，再覆盖容器服务地址。补充服务默认项不会启用相应插件或启动服务；使用前应配置其地址和凭据。
 
 公共模板保留配置结构，变量保留配置值。例如 `.deploy/.shared/app.option.template` 使用 `${mysql:connection#xml}`，连接表达式定义在 `.deploy/.env`，服务地址等值定义在方案中。`#xml` 处理 XML 特殊字符；变量仍由 Core 递归求值。`.env` 不部署，模板输出移除 `.template` 后缀或使用 `.deploy` 指定的名称。
 
@@ -144,21 +163,21 @@ daemon=zongsoft.daemon
 | `tdengine` | `TDengine` | [TDengineConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/tdengine/src/Configuration/TDengineConnectionSettings.cs) |
 | `influx` | `Influx` | [InfluxConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/influx/src/Configuration/InfluxConnectionSettings.cs)：InfluxDB 3 的完整 URL、`Token`、`Organization`、`Precision` |
 
-新增服务器数据库的密码和 Influx Token 留空，由方案填写。SQLite、DuckDB 的相对文件路径由运行时数据库提供程序解释，不相对于部署源目录；它们不需要服务器或账号。环境和网络文件只需声明实际不同的值，其余通过已有导入复用。
+新增服务器数据库的密码和 Influx Token 留空，由方案填写。SQLite、DuckDB 的相对文件路径由运行时数据库提供程序解释，不相对于部署源目录；它们不需要服务器或账号。这两种本地数据库无需在组合文件中增加条目。MySQL、PostgreSQL、ClickHouse 和原生 TDengine 使用独立端口，默认分别为 3306、5432、8123 和 6030；公共连接表达式包含这些端口变量。
 
 S3 文件系统使用 `[amazon.s3]` 和 `${amazon.s3:connection}`，模板写入 `/Externals/Amazon/connectionSettings`，驱动名为 `amazon.s3`。字段以 [S3ConnectionSettings](https://github.com/Zongsoft/framework/blob/main/externals/amazon/src/IO/Configuration/S3ConnectionSettings.cs) 为准：`Server`、`Region`、`AccessKey`、`SecretKey`、`AccountId`、`Client`、`Timeout`。默认方案指向网络地址的 9000 端口，并复用 hosting 根 `.env` 的 `${rustfs:access_key}`、`${rustfs:secret_key}`。AWS S3 方案可将 server 留空，配置 region 和凭据；自定义 server 会由驱动自动启用路径式寻址。Bucket 属于 `zfs.s3:/<bucket>/<key>` 路径，不是连接参数。
 
 Etcd 使用 `[etcd]` 和 `${etcd:connection}`，模板写入 `/Externals/Etcd/connectionSettings`，驱动名为 `Etcd`。连接字段按 [EtcdConnectionSettings](https://github.com/Zongsoft/framework/blob/main/externals/etcd/src/Configuration/EtcdConnectionSettings.cs) 及客户端创建流程提供 `Server`、`Port`、`UserName`、`Password`；默认端口 2379，账号密码留空。server 可覆盖为逗号分隔的端点列表。键命名空间仍由应用设置 `EtcdService.Namespace`，连接名不充当键前缀。
 
-消息队列连接统一使用 `messaging.mqtt`、`messaging.kafka`、`messaging.rabbitmq`、`messaging.zeromq` 和 `messaging.redis` 命名空间。`.deploy/.env` 定义连接表达式，方案 `.env` 提供具体值，`app.option.template` 将它们写入 `/Messaging/connectionSettings`。默认方案为新消息队列提供本地示例：Kafka 使用 9092 端口及 Plaintext，RabbitMQ 使用 5672 端口、`/` 虚拟主机和默认 guest 账号，ZeroMQ 使用 7969 发现端口；按实际方案覆盖。
+消息队列连接统一使用 `messaging.mqtt`、`messaging.kafka`、`messaging.rabbitmq`、`messaging.zeromq` 和 `messaging.redis` 命名空间。`.deploy/.env` 定义连接表达式，方案 `.env` 提供具体值，`app.option.template` 将它们写入 `/Messaging/connectionSettings`。默认方案为新消息队列提供本地示例：Kafka 使用 9092 端口及 Plaintext，RabbitMQ 使用 5672 端口、`/` 虚拟主机和默认 guest 账号，ZeroMQ 使用 7969 发现端口；按实际方案覆盖。 Redis 缓存和消息连接均提供可选用户名。Redis、MQTT、Kafka 将端口写入 `server`；SQL Server 的 `server` 保存完整端点，S3、Influx 使用 URL；RabbitMQ、Etcd、ZeroMQ 使用独立端口字段。ZeroMQ 的发现、控制、入站和出站端口均在各组合文件中列出。
 
-三个宿主都渲染 `.deploy/.shared/Zongsoft.Messaging.ZeroMQ.option.template` 作为插件客户端配置，替换包内会将宿主连接覆盖为回环地址的示例。`daemon` 宿主运行独立 ZeroMQ 服务端，并额外渲染 `Zongsoft.Messaging.ZeroMQ-daemon.option.template`，通过相应的 `messaging.zeromq` 变量固定控制、输入、输出端口，并配置名为 `QueueServer` 的 Redis 存储连接。默认端口分别为 32100、32101、32102，客户端通过 7969 端口发现它们；需要发布全部四个 TCP 端口，让可靠消息也能访问存储控制端点。普通的 `Zongsoft` Redis 连接不能替代服务端按名称查找的存储连接。daemon 进程环境应设置稳定的 `ZONGSOFT_MESSAGING_STORAGE_IDENTIFIER`，让重建 daemon 后仍使用相同的 Redis 存储分区。
+三个宿主都渲染 `.deploy/.shared/Zongsoft.Messaging.ZeroMQ.option.template` 作为插件客户端配置，替换包内会将宿主连接覆盖为回环地址的示例。`daemon` 宿主运行独立 ZeroMQ 服务端，并额外渲染 `Zongsoft.Messaging.ZeroMQ-daemon.option.template`。daemon 模板在 `/Messaging/ZeroMQ/Server` 声明单个服务端，设置 `name="QueueServer"`、`enabled="true"` 和 `storage="QueueServer"`。Control、Incoming、Outgoing、Discovery 使用完整的 `tcp://0.0.0.0:<port>` 地址，端口分别来自 `messaging.zeromq:control`、`incoming`、`outgoing`、`port`（默认 32100、32101、32102、7969）。四条 `zongsoft.tools.binding` 指令读取同一组服务端设置，并以 `enabled:true` 筛选；部署模板中的 `\${option.*}` 使用转义，使生成的 option 保留 `${option.*}` 供绑定求值。Control 与 Storage 必须同时配置，存储工厂须能解析名为 `QueueServer` 的 Redis 连接。客户端对四种角色使用发现服务的主机地址，因此应按原端口号发布全部四个 TCP 端口。普通的 `Zongsoft` Redis 连接不能替代服务端按名称查找的存储连接。daemon 进程环境应设置稳定的 `ZONGSOFT_MESSAGING_STORAGE_IDENTIFIER`，让重建 daemon 后仍使用相同的 Redis 存储分区。
 
-`container` 方案继承 `default`，将 Redis、MySQL、RustFS 和 Etcd 地址覆盖为容器服务名。该方案的 ZeroMQ 客户端使用 `zongsoft.daemon`；`daemon/.env` 将自身客户端地址覆盖为 `127.0.0.1`，因为服务端就在当前进程中。容器 Web 和本地 Debug Web 可以共用这个 daemon：容器客户端使用服务名，默认本地方案通过回环地址访问发布的 TCP 端口。制作包含 daemon 的交付物前，先完成它的部署和打包。
+`container` 方案仅保留 `.deploy/container/.env`，先导入 `default` 的完整设置及选中的 `<environment>-<network>.env`，再将 Redis、MySQL、RustFS 和 Etcd 地址覆盖为容器服务名。共享模板使用合并后的变量生成宿主及基础服务配置；端口、凭据以及部署在其它主机上的服务端点继续继承所选组合。该方案的 ZeroMQ 客户端使用 `zongsoft.daemon`；`daemon/.env` 将自身客户端地址覆盖为 `127.0.0.1`，因为服务端就在当前进程中。容器 Web 和本地 Debug Web 可以共用这个 daemon：容器客户端使用服务名，默认本地方案通过回环地址访问发布的 TCP 端口。制作包含 daemon 的交付物前，先完成它的部署和打包。
 
-Aliyun 部署公共配置及本次选中的环境配置；环境差异保留在 `environment.development.env` 等文件，网络文件控制 intranet。默认方案保留本地示例服务地址；实际方案应按网络设置各服务地址。调试模式不再承担网络选择。普通的安全、Hangfire 等可选配置仍可按 `.deploy` 中路径提供。
+Aliyun 部署一份完整配置；选中的 `<environment>-<network>.env` 在 `[aliyun]` 节中提供凭据、桶、账号、队列、主题及 `aliyun:intranet`。这些值在模板渲染前覆盖方案默认值，未覆盖的设置沿用默认值。默认方案保留本地示例服务地址；实际方案应按网络设置各服务地址。编译配置不再承担网络选择。普通的安全、Hangfire 等可选配置仍可按 `.deploy` 中路径提供。
 
-新增方案时，在 `.deploy/<scheme>/` 放置它的 `.env`、环境/网络变量文件，以及证书、插件或其它独有资产；复用 `.shared` 模板。必要时提供 `${host}.deploy`、Web 的 `${site}.deploy` 扩展文件。共享证书也可以放在 `.shared/certificates/`，由 `.deploy` 明确引用。环境和网络不是额外的强制目录层级。
+新增方案时，在 `.deploy/<scheme>/` 放置它的 `.env`、`<environment>-<network>.env` 组合文件，以及证书、插件或其它独有资产；复用 `.shared` 模板。必要时提供 `${host}.deploy`、Web 的 `${site}.deploy` 扩展文件。共享证书也可以放在 `.shared/certificates/`，由 `.deploy` 明确引用。环境和网络不是额外的强制目录层级。
 
 直接部署示例（只部署声明的资产）：
 
@@ -266,7 +285,7 @@ containerize.cmd make .containerized\zongsoft@1.0-x64.container --version:1.1
 
 `.containerized/.settings` 保存基础服务的默认配置。保留已有镜像 tag，Redis、MySQL 和 RustFS 密码引用根 `.env` 的变量。Redis 默认持久存储及 RDB/AOF 双持久化；某次测试可在 plan 清单中改用 `storage=temporary;persistence=none`。共享配置不复制密码值；选用其他服务时仍需填写它们的必填参数。
 
-Web 安装包的 Nginx 监听来自包内 `.web/nginx/.bindings`。未填写端口覆盖时发布所有受支持的监听，包内声明 80 与 8080 时两者都会发布。Nginx 使用 `settings=port=80:18080,443:none`：容器 80 优先映射到宿主 18080，443 仅保留内部监听。已有 `.container` 必须直接采用此语法，Nginx 不接受 `port=127.0.0.1:80`。修改 `.settings` 不会改变已保存的清单。
+Web 安装包的 Nginx 监听及路由引用来自包根 `.bindings` JSON，三种包格式均以普通文件承载同一文档。经 Nginx 代理的应用绑定默认仅内部访问，其余绑定默认在宿主回环地址同号发布。应用组件可用 `publish!<binding-id-or-alias>=auto|none|transport://IP:port` 覆盖；`none` 不删除代理路由。健康检查默认验证进程存活，可显式配置 JSON `health` 命令。同号 TCP/UDP 分开发布，QUIC 不执行 TCP 探测。未填写端口覆盖时发布所有受支持的监听，包内声明 80 与 8080 时两者都会发布。Nginx 使用 `settings=port=80:18080,443:none`：容器 80 优先映射到宿主 18080，443 仅保留内部监听。已有 `.container` 必须直接采用此语法，Nginx 不接受 `port=127.0.0.1:80`。修改 `.settings` 不会改变已保存的清单。
 
 `plan` 只生成 `name[-tag]@version-architecture.container`，不访问引擎、不解析镜像摘要。缺少必填参数时以紫红色告警并正常保存草稿，make 前补齐。`make` 不重新读取公共 `.settings`，在制作时展开变量；成功后才发布完整清单及 `.tar.gz`，失败保留编辑后的草稿。包内包含中英文 README 和相同完整清单。共享设置可纳入版本管理，生成归档继续忽略。
 
@@ -278,7 +297,7 @@ Web 安装包的 Nginx 监听来自包内 `.web/nginx/.bindings`。未填写端�
 
 ### 安装包制作
 
-从 hosting 根目录运行 `deploy.cmd` 并选择源目录、方案、环境、网络、调试模式、平台、架构和框架覆盖。Linux 安装验证选择 off、linux 及匹配架构。失败停止后续流程。
+从 hosting 根目录运行 `deploy.cmd` 并选择源目录、方案、环境、网络、编译配置、平台、架构和框架覆盖。Linux 安装验证选择 off、linux 及匹配架构。失败停止后续流程。
 
 部署成功后，单独运行根目录 `pack.cmd`，选择相同宿主、编译配置、架构、方案、环境、网络及框架，再选择 tar、deb 或 rpm。它只打包已有文件：
 
@@ -304,9 +323,9 @@ Set-Location D:/Zongsoft/hosting
 | --- | --- | --- |
 | daemon | `zongsoft.daemon` / `zongsoft.daemon.service` | 展平 `bin/${compilation}/${framework}`；安装到 `/opt/zongsoft/daemon` |
 | terminal | `zongsoft.terminal` / 禁用服务 | 展平同样的构建目录；安装到 `/opt/zongsoft/terminal` |
-| web/default | `Zongsoft.Hosting.Web` / `zongsoft.web.service` | MIME、配置、wwwroot、plugins 及展平的构建目录；安装到 `/opt/zongsoft/web`，应用监听 `127.0.0.1:8069` |
+| web/default | `Zongsoft.Hosting.Web` / `zongsoft.web.service` | MIME、配置、wwwroot、plugins 及展平的构建目录；安装到 `/opt/zongsoft/web`，应用监听 `http://*:8069/` |
 
-所有脚本排除 `logs/`；Web 还排除构建目录中的 `*.staticwebassets.*`。`:~` 表示把所选目录的内容展平到安装根，不保留原来的 `bin/...` 层级。Web 的服务与 Nginx 配置详见 [Web README](web/README.zh-Hans.md#默认站点打包)。terminal 禁用 systemd 服务，因此 `--daemon-environments` 不会给交互式运行的终端设置进程环境。
+所有脚本排除 `logs/`；Web 还排除构建目录中的 `*.staticwebassets.*` 和 `plugins/**`，插件载荷统一来自部署后的站点插件目录。Web 显式包含生成的 `web.option` 与 `${application:name}.option`，不带入未使用的开发备用文件 `web-default.option`，避免部署更改 Web URL 后额外提取无效监听声明。`:~` 表示把所选目录的内容展平到安装根，不保留原来的 `bin/...` 层级。Web 的服务与 Nginx 配置详见 [Web README](web/README.zh-Hans.md#默认站点打包)。terminal 禁用 systemd 服务，因此 `--daemon-environments` 不会给交互式运行的终端设置进程环境。
 
 输出默认位于所选宿主的 `.packages/`，如 `zongsoft.daemon@1.0.0-x64.deb`；Edition 非空时追加到包名。tar 生成同名 `.tar.gz` 和 `.sh` 安装入口，须配套保留；deb/rpm 各生成一个包文件。脚本未启用 `--overwrite`，同名产物已存在时制包失败。
 
@@ -768,7 +787,7 @@ zongsoft.compose(stop).cmd "*" --clean
 
 MySQL 与 PostgreSQL 在该模式下使用不同的服务名和网络别名，可以同时启动。
 
-ClickHouse 首次初始化会创建 `zongsoft` 数据库和 `program` 账号；应用数据表需另行创建。TDengine 默认使用 `root` 账号，不会自动创建 `web/default/web.option` 配置的 `zongsoft` 数据库及 `program` 账号；使用该连接前应先建库、建账号。Windows 上使用 6030 端口的 TDengine 原生客户端时，`tdengine` 必须能解析到容器端点；6041 端口的 HTTP/WebSocket 接口不需要原生客户端的端点解析。
+ClickHouse 首次初始化会创建 `zongsoft` 数据库和 `program` 账号；应用数据表需另行创建。TDengine 默认使用 `root` 账号，不会自动创建 `web/default/Zongsoft.Hosting.Web.option` 配置的 `zongsoft` 数据库及 `program` 账号；使用该连接前应先建库、建账号。Windows 上使用 6030 端口的 TDengine 原生客户端时，`tdengine` 必须能解析到容器端点；6041 端口的 HTTP/WebSocket 接口不需要原生客户端的端点解析。
 
 容器访问 Windows 宿主机时使用 `host.containers.internal`。例如 Windows 服务监听 `8080` 端口，容器内使用：
 

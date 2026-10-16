@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
+<?zongsoft.tools.binding
+	name="web"
+	path="Kestrel/Endpoints/http"
+	template="\${option.Url}"
+	protocols="\${option.Protocols}"
+	required="true"?>
+
 <configuration>
 	<option path="kestrel">
 		<endpoints>

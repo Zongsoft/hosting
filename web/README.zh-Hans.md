@@ -26,13 +26,13 @@
 
 应用名必须为 `Zongsoft.Hosting.Web`，使生成的服务启动 `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`；标题和服务标识分别为 `Zongsoft.Web`、`zongsoft.web`。生成服务写入 `Environment`、`DOTNET_ENVIRONMENT`、`ASPNETCORE_ENVIRONMENT`。两个根脚本都直接接受环境输入；服务身份来自 `web/.env` 的 `[application]`。
 
-`default/web.profile` 定义 HTTP 80 与 8080 的 IPv4/IPv6 入口，`server = ~` 使用打包时 listen 变量对应的应用地址（默认 8069）。根目录 `pack.cmd` 使用 `--daemon:${application:daemon} --web:nginx` 生成 systemd 服务与 Nginx 配置，不再引用 `.deploy/default/systemd` 或 `.deploy/default/nginx`。
+`default/web.profile` 定义 HTTP 80 与 8080 的 IPv4/IPv6 入口。省略 `server` 后按协议和基路径选择应用绑定路由。生成的 `web.option` 默认声明 `http://*:8069/` 与 `http1`，值来自 `web/.env` 的 `[web]` 节；zongsoft.tools.binding PI 读取同一端点字段，不生成监听命令行参数。根目录 `pack.cmd` 使用 `--daemon:${application:daemon} --web:nginx` 生成 systemd 服务与 Nginx 配置，不再引用 `.deploy/default/systemd` 或 `.deploy/default/nginx`。
 
 安装后的真实配置位于 `/opt/zongsoft/web/.web/nginx/zongsoft.web.conf`。默认激活会创建 `/etc/nginx/conf.d/zongsoft.web.conf` 符号链接、校验 Nginx 配置，并在 Nginx 已运行时重载；不会启动原先停止的 Nginx。制作容器镜像时设置 `HOSTER_WEB_ACTIVATION=0`（也接受 `false`，不区分大小写）可仅交付真实配置，镜像构建工具从安装根的 `.web/nginx/` 获取它。此开关只控制 Web 托管器；应用服务仍遵循 daemon 生命周期。
 
 `--web` 不改变输入文件的收录规则；当前脚本显式选择载荷，没有选择 `web.profile`，因此包内只包含生成后的 Nginx 配置。需要交付原始 Profile 时可添加位置参数；排除时使用 `--exclude:*.profile`。
 
-当前载荷包括 hosting 根目录的 `mime/`、站点配置、`wwwroot/`、`plugins/` 和展平到安装根的 `bin/${compilation}/${framework}`。排除 `logs/` 及构建目录中的 `*.staticwebassets.*`。独立 `pack.cmd` 的 scheme 提示不会重新部署方案文件；如需切换部署配置，应先运行 `deploy.cmd`。
+当前载荷包括 hosting 根目录的 `mime/`、站点配置、`wwwroot/`、`plugins/` 和展平到安装根的 `bin/${compilation}/${framework}`。排除 `logs/`、构建目录中的 `*.staticwebassets.*` 和 `plugins/**`。配置显式选择生成的 `web.option` 与 `${application:name}.option`，不包含未使用的开发备用文件 `web-default.option`，避免包绑定中混入未生效端点。独立 `pack.cmd` 的 scheme 提示不会重新部署方案文件；如需切换部署配置，应先运行 `deploy.cmd`。
 
 升迁提示可填写 `zongsoft`，收录预先在 hosting `.migration/` 中制作的归档和外部脚本；两者的 Edition、版本、RID 必须与安装包匹配。安装时执行升迁，归档解压到独立临时目录；安装根 `.migration/` 只收纳配套产物，不产生 `.migration/.migration/` 的内容嵌套。
 

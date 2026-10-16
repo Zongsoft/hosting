@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+<Project Sdk="Microsoft.NET.Sdk.Worker">
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<EnableDefaultRunWorkingDirectory>false</EnableDefaultRunWorkingDirectory>
@@ -7,6 +7,10 @@
 	<PropertyGroup Condition="'$(DefineConstants.Contains(&quot;WINDOWS&quot;))' == 'true'">
 		<ApplicationManifest>app.manifest</ApplicationManifest>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Http" />
@@ -39,7 +43,7 @@
 		<Otherwise>
 			<ItemGroup>
 				<PackageReference Include="Zongsoft.Core" />
-				<PackageReference Include="Zongsoft.Plugins" />
+				<PackageReference Include="Zongsoft.Plugins" GeneratePathProperty="true" />
 			</ItemGroup>
 		</Otherwise>
 	</Choose>
@@ -48,5 +52,11 @@
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+	</ItemGroup>
+	<ItemGroup Condition="$(ZongsoftFrameworkPathReferenced) And Exists('$(ZongsoftFrameworkPath)')">
+		<None Include="$(ZongsoftFrameworkPath)/Zongsoft.Plugins/plugins/Main.plugin" Link="plugins/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+	</ItemGroup>
+	<ItemGroup Condition="!$(ZongsoftFrameworkPathReferenced) Or !Exists('$(ZongsoftFrameworkPath)')">
+		<None Include="$(PkgZongsoft_Plugins)/plugins/Main.plugin" Link="plugins/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
 	</ItemGroup>
 </Project>

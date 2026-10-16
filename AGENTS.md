@@ -50,6 +50,14 @@
 
 ## 部署
 
+插件只查找一个配置入口：先使用与 `.plugin` 文件同名的 `.option`，不存在时才尝试 `<plugin name="…">.option`；两者都不存在则不加载配置。不会合并两个入口，也不会扫描后缀文件；已找到的入口解析失败时直接报错。daemon、terminal 和 Web 宿主均通过无参 `LoadConfiguration()` 先加载应用名对应的 `.option`；入口程序集名不同时再追加加载其同名 `.option`。Web 随后加载 `web.option`，后加载的文件覆盖前面同名键。运行时 environment、host、site 不参与文件选择。
+
+配置片段通过入口中的 `<?import path="…" required="false"?>` 显式导入，路径相对于声明文件。放在文件末尾的导入覆盖前面同名键；`required="false"` 只允许文件缺失，不忽略格式错误。插件环境片段命名为 `Name-${environment}.option`，网络片段命名为 `Name-${environment}-${network}.option`；主入口导入环境片段，环境片段再导入网络片段。普通 XML 导入路径不解析部署变量；模板须在部署时生成具体路径。
+
+部署清单仅复制本次选中的环境和网络片段，同一部署目录只保留一套环境和网络配置。配置更新遵循部署工具的覆盖策略，无需先用 `delete:` 删除目标文件；部署清单不承担历史配置清理。普通入口可声明多个可选环境导入，仅加载部署目录中实际存在的片段。新增配置时应同步维护导入和对应部署项。`app.option.template` 按入口程序集名生成宿主配置，Web 对应 `Zongsoft.Hosting.Web.option`；`web.option.template` 生成独立的 `web.option`，声明本站点的 Web 配置及 zongsoft.tools.binding PI，无需导入公共宿主配置。PI 模板中的 option 表达式使用反斜杠转义，部署后保留给 Packager 求值。开发备用 `web-default.option` 由源码 `web.option` 显式导入；部署生成的入口不导入它，pack.ps1 因此只包含生成的 web.option 和应用程序集同名 option。基础 Main.plugin（Terminal 另有 Terminal.plugin）由项目从当前框架源码或 Zongsoft.Plugins 包复制到构建及发布输出，部署清单从输出获取，不再单独 nuget 提取基础清单。清单只列出有实际资产或模板生成来源的配置，不为不存在的文件预留复制、导入或删除项。
+
+Aliyun 使用唯一的公共模板 `Zongsoft.Externals.Aliyun.option.template`，部署时生成完整的 `Zongsoft.Externals.Aliyun.option`。方案 `.env` 的 `[aliyun]` 定义全量默认设置，选中的 `<environment>-<network>.env` 在同一 `[aliyun]` 节中覆盖凭据、内外网访问和资源差异，未覆盖的设置沿用默认值。变量合并后再渲染模板，最终配置只包含当前组合选中的 OSS 桶、消息队列和主题；不再生成或导入 Aliyun 环境配置片段。
+
 部署就是将需要的插件拷贝到宿主程序插件目录中的相应位置。插件通常包括但不限于：
 
 - 插件文件 `*.plugin` _(必须)_
@@ -65,7 +73,7 @@
 
 部署工具通过 `.deploy` 文件的指引进行文件复制等操作，更详细的内容参考 `dotnet-deploy` 工具的相关文档和代码。
 
-`daemon/deploy.cmd`、`terminal/deploy.cmd` 和 `web/default/deploy.cmd` 是本地 Debug 快捷入口：调用根目录 `deploy.cmd <source> --local-debug`，固定源目录为自身宿主，跳过调试模式、平台、架构和框架提示，使用 on、windows、x64 及现有框架默认值；方案、环境和网络仍按原有提示和默认值输入。快捷入口使用 `--overwrite:alway` 始终覆盖，普通根目录部署保持 `newest`。
+`daemon/deploy.cmd`、`terminal/deploy.cmd` 和 `web/default/deploy.cmd` 是本地 Debug 快捷入口：调用根目录 `deploy.cmd <source> --local`，固定源目录为自身宿主，跳过编译配置、平台、架构和框架提示，使用 Debug、windows、x64 及现有框架默认值；方案、环境和网络仍按原有提示和默认值输入。快捷入口使用 `--overwrite:alway` 始终覆盖，普通根目录部署保持 `newest`。
 
 hosting 根目录的 `deploy.cmd`、`pack.cmd`、`containerize.cmd` 和 `migrate.cmd` 分别调用同名 `.ps1` 脚本，各自负责对应工具的流程与参数。四个 PowerShell 入口点加载 `.shared.ps1`，共用交互、菜单、宿主发现、工具执行和错误处理；共享脚本不分发工具操作，加载时不启动任何工具流程。部署和打包扫描调用时当前目录及子目录中的宿主项目，以分层方向键菜单选择源目录；父目录只显示分组，不可选择，只有宿主叶子项带编号。`deploy.cmd` 进入所选宿主运行 Cake，再用 `--source`/`--output` 调用部署器；只负责构建和部署，成功后返回 0。安装包由根目录 `pack.cmd` 独立制作。
 
@@ -73,7 +81,8 @@ hosting 根目录的 `deploy.cmd`、`pack.cmd`、`containerize.cmd` 和 `migrate
 
 - 工具只加载 source 直属 `.env`（migrator 为工作目录）。宿主先导入 `../.env`，Web 站点经 `web/.env` 导入 hosting 根配置，再通过 `#@import ../.deploy/${scheme}/.env`（Web 多一级 `../`）选择方案。`.deploy/.env` 也显式导入 hosting 根配置，为方案的环境、网络指令提供默认值；方案再导入自己的变量文件，工具不固化额外优先级或目录组合。
 - `.deploy` 文件通过 `${scheme}` 选择独有资产，公共配置结构在 `.deploy/.shared/*.template`，用 template 解析器生成最终文件；`.env` 不部署。
-- 一次部署只选一个环境及一种网络；网络独立于 debug。公共模板的路径并不决定变量作用域。
+- 一次部署只选一个环境及一种网络；网络独立于编译配置。公共模板的路径并不决定变量作用域。
+- default 方案的 `.env` 提供公共服务连接表达式所需的完整基础设置，包括 `network:server` 和 Aliyun `intranet` 默认值；在默认项之后通过 `#@import ${environment}-${network}.env` 选择唯一组合文件（development、test、production 各有 internal、external 两份）。每个组合文件完整列出所有远程基础服务的地址、受支持的端口、用户名、密码或令牌/密钥，即使与默认值相同也显式列出；字符集、超时、压缩等通用设置保留在方案 `.env`。每个组合文件在 `[network]` 中定义自己的 `server`；共用该主机的基础服务通过 `${network:server}` 引用它，并保留各自的 URL 协议、端口和路径，独立主机服务则保留自己的地址。既有 Aliyun 环境资源差异也保留在组合文件，各服务使用统一的 `server`、`username`、`password` 等字段。container 方案通过 `.env` 继承 default 选中的组合，再覆盖容器服务地址；宿主及基础服务配置继续由 `.shared` 模板生成。新增连接表达式时同步补齐方案默认项；默认项不负责启用插件或启动服务。
 - 根脚本的 source 自动发现和显式相对路径基于调用时的当前目录；deployer/packager 的本地相对输入输出基于选中的 source。`.deploy` 和 import 内部引用仍基于声明文件。
 - Web 打包身份来自 `web/.env` 的 application 命名空间，入口必须保持 Zongsoft.Hosting.Web，标题 Zongsoft.Web，服务 zongsoft.web；脚本用显式模板参数传给 packager。
 

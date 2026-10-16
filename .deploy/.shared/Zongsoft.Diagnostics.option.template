@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<?zongsoft.tools.binding name="prometheus"
+	path="Diagnostics/Diagnostor/Meters/Exporters/*"
+	filter="driver:prometheus"
+	template="\${option.Settings['urls']}"
+	protocols="http1"?>
+
+<options>
+	<option path="/Diagnostics">
+		<diagnostor>
+			<meters>
+				<filter>*</filter>
+
+				<exporters>
+					<exporter exporter.name="telemetry" driver="telemetry"
+					          settings="server=http://localhost:4317/opentelemetry;protocol=grpc;processorType=batch;timeout=30s;interval=15s;" />
+
+					<exporter exporter.name="prometheus" driver="prometheus"
+					          settings="urls=http://${diagnostics.prometheus:server#xml}:${diagnostics.prometheus:port#xml}/metrics;totalSuffix=true;cacheDuration=300ms;" />
+				</exporters>
+			</meters>
+
+			<traces>
+				<filter>*</filter>
+
+				<exporters>
+					<exporter exporter.name="telemetry" driver="telemetry"
+					          settings="server=http://localhost:4317/opentelemetry;protocol=grpc;processorType=batch;timeout=30s;interval=15s;" />
+				</exporters>
+			</traces>
+		</diagnostor>
+	</option>
+</options>

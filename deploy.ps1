@@ -3,7 +3,7 @@
 #region 执行流程
 function Invoke-Deployment
 {
-	$localDebug = $env:ZONGSOFT_HOSTING_LOCAL_DEBUG -eq '1'
+	$local = $env:ZONGSOFT_HOSTING_LOCAL -eq '1'
 	$root = (Get-Location).ProviderPath
 
 	Write-Heading 'HOST DEPLOYMENT'
@@ -12,9 +12,8 @@ function Invoke-Deployment
 	$source = $selectedHost.Directory.Replace('\', '/')
 	$settings = Read-DeploymentSettings
 
-	if($localDebug)
+	if($local)
 	{
-		$debug = 'on'
 		$compilation = 'Debug'
 		$platform = 'windows'
 		$architecture = 'x64'
@@ -26,16 +25,14 @@ function Invoke-Deployment
 	{
 		Write-Heading '3. Build settings'
 
-		$debug = Read-Choice 'Debug mode' @('on', 'off') 'on' 'On: Debug / Windows. Off: Release / Linux.'
-		$compilation = if($debug -eq 'on') { 'Debug' } else { 'Release' }
-		$defaultPlatform = if($debug -eq 'on') { 'windows' } else { 'linux' }
-		$platform = Read-Choice 'Platform' @('windows', 'linux', 'mac') $defaultPlatform "Default: $defaultPlatform."
+		$compilation = Read-Choice 'Configuration' @('Debug', 'Release') 'Debug' 'Default: Debug.'
+		$platform = Read-Choice 'Platform' @('windows', 'linux', 'mac') 'windows' 'Default: windows.'
 		$architecture = Read-Choice 'Architecture' @('x64', 'arm64') 'x64' 'Default: x64.'
 		$framework = Read-Setting 'Framework' '' 'Enter: Cake default and .env.'
 	}
 
 	$output = if($selectedHost.Type -eq 'Web') { '.' } else { 'bin/${edition}/${framework}' }
-	$overwrite = if($localDebug) { 'alway' } else { 'newest' }
+	$overwrite = if($local) { 'alway' } else { 'newest' }
 
 	Write-Heading 'Execution'
 	Write-Detail 'Source' $source
@@ -80,7 +77,6 @@ function Invoke-Deployment
 		"--scheme:$($settings.Scheme)",
 		"--environment:$($settings.Environment)",
 		"--network:$($settings.Network)",
-		"--debug:$debug",
 		"--edition:$compilation",
 		"--platform:$platform",
 		"--architecture:$architecture",

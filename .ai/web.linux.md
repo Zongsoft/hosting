@@ -20,11 +20,11 @@
 
 - `scheme`，默认通常为 `default`。
 - `environment`，通常为 `development`、`test` 或 `production`。
-- `debug`，通常正式 Linux 发布为 `off`；如用户说“默认”，按脚本默认输入。
+- `compilation`：Debug 或 Release；正式 Linux 发布通常使用 Release。
 - `platform`，Linux 发布必须输入 `linux`。
 - `architecture`，通常为 `x64` 或 `arm64`。
 - `framework`：框架覆盖留空时工具查询 .env，Cake 使用 build.cake 默认值，须保持一致；两个脚本须输入相同的显式框架覆盖。
-- `network`：internal 或 external，与 debug 独立，按基础服务地址选择。
+- `network`：internal 或 external，与编译配置独立，按基础服务地址选择。
 - 安装包格式：`.deb`、`.rpm` 或 `.tar.gz`，分别在脚本中输入 `deb`、`rpm`、`tar`。
 - `version`，不能为空。
 - `edition`，可为空。
@@ -51,13 +51,13 @@
 
 - `deploy.cmd` 和 `pack.cmd` 分别调用根目录 `deploy.ps1` 和 `pack.ps1`，由它们点加载 `.shared.ps1` 共用交互与执行辅助函数。未预选源目录时，先扫描当前目录中的宿主并显示菜单；交互模式使用方向键和 Enter，菜单 Esc 取消。输入或输出重定向时使用编号菜单，也可输入列出的值，输出为纯文本，输入耗尽则取消。交互模式的成功或失败结果等待按键；重定向模式不暂停。
 - `.cmd`、各工具的 `.ps1` 与共享 PowerShell 脚本保持 CRLF 换行。
-- 部署依次选择或填写 scheme、environment、network、debug、platform、architecture、framework。部署完成后单独执行 `pack.cmd web/default`，依次选择或填写 scheme、environment、network、compilation、architecture、framework、format、edition、version、migration 和 output；两个脚本的相关值应保持一致。需要升迁时先用 migrate.cmd 准备配套文件。容器交付时，pack.cmd 的 migration 留空，containerize.cmd 选择升迁目录，在基础服务就绪后统一执行；直接安装应用包时才在 pack.cmd 中集成升迁。
+- 部署依次选择或填写 scheme、environment、network、compilation、platform、architecture、framework。部署完成后单独执行 `pack.cmd web/default`，依次选择或填写 scheme、environment、network、compilation、architecture、framework、format、edition、version、migration 和 output；两个脚本的相关值应保持一致。需要升迁时先用 migrate.cmd 准备配套文件。容器交付时，pack.cmd 的 migration 留空，containerize.cmd 选择升迁目录，在基础服务就绪后统一执行；直接安装应用包时才在 pack.cmd 中集成升迁。
 - 自动化输入必须覆盖全部提示，空行采用默认值；菜单接受编号或列出的值。可将 stdout/stderr 重定向到日志文件，检查脚本退出码及工具诊断。
 - 根目录 `pack.cmd` 用 web/.env 的 application 变量显式传入名称 Zongsoft.Hosting.Web、标题 Zongsoft.Web、服务 zongsoft.web：Debian 包名为 `zongsoft.web`，systemd 服务仍为 `zongsoft.web.service`。
 - `dotnet-pack` 生成 service 时按 `--name` 定位宿主 DLL；如果改回 `--name:Zongsoft.Web`，会生成 `ExecStart=dotnet /opt/zongsoft/web/Zongsoft.Web.dll ...`，这是类库入口，会启动失败。
 - 对 `.deb` 验证优先先用 `dpkg-deb -I <package>.deb` 确认实际 `Package` 名称。当前根目录 `pack.cmd` 生成的 Debian 包名是 `zongsoft.web`；干净安装时先 `apt remove -y zongsoft.hosting.web zongsoft.web`，必要时 `dpkg --purge zongsoft.hosting.web zongsoft.web` 清理旧包残留，再 `apt install -y /opt/<package>.deb`。不要用同版本重装或直接升级路径判断包是否可用，因为旧包脚本可能在升级过程中删除 `/opt/zongsoft/web`。
 - 脚本通过 `--web:nginx` 转换 `web.profile`；真实配置安装到 `/opt/zongsoft/web/.web/nginx/zongsoft.web.conf`，默认激活创建系统加载链接并校验/按需重载。容器镜像构建可设置 `HOSTER_WEB_ACTIVATION=0` 跳过 Web 激活。
-- 默认 Nginx 配置中 `8080` 的 `server_name` 是 `_`，`80` 的域名入口是 `api.zongsoft.com`；验证 `80` 时使用 `curl -H "Host: api.zongsoft.com" http://127.0.0.1/`。
+- 默认 Nginx 配置中 `8080` 的 `server_name` 为空（未限制域名），`80` 的域名入口是 `api.zongsoft.com`；验证 `80` 时使用 `curl -H "Host: api.zongsoft.com" http://127.0.0.1/`。
 
 ## 验证清单
 
@@ -103,7 +103,7 @@
 
 ```text
 web/default Linux 发布验证：
-- 参数：scheme=<...>, environment=<...>, platform=linux, architecture=<...>, framework=<...>, format=<...>, version=<...>, debug=<...>
+- 参数：scheme=<...>, environment=<...>, platform=linux, architecture=<...>, framework=<...>, format=<...>, version=<...>, compilation=<...>
 - 安装包：<path>
 - 目标系统：<distro/host>
 - 发布位置：/opt/<package>

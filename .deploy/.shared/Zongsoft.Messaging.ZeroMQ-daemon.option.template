@@ -1,6 +1,27 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<configuration>
+<?zongsoft.tools.binding name="zeromq/control"
+	path="Messaging/ZeroMQ/Server"
+	filter="enabled:true"
+	template="\${option.control}"
+	protocols="tcp"?>
+<?zongsoft.tools.binding name="zeromq/incoming"
+	path="Messaging/ZeroMQ/Server"
+	filter="enabled:true"
+	template="\${option.incoming}"
+	protocols="tcp"?>
+<?zongsoft.tools.binding name="zeromq/outgoing"
+	path="Messaging/ZeroMQ/Server"
+	filter="enabled:true"
+	template="\${option.outgoing}"
+	protocols="tcp"?>
+<?zongsoft.tools.binding name="zeromq/discovery"
+	path="Messaging/ZeroMQ/Server"
+	filter="enabled:true"
+	template="\${option.discovery}"
+	protocols="tcp"?>
+
+<options>
 	<option path="/Externals/Redis">
 		<connectionSettings>
 			<connectionSetting connectionSetting.name="QueueServer" driver="Redis"
@@ -9,6 +30,11 @@
 	</option>
 
 	<option path="/Messaging/ZeroMQ">
-		<servers port="${messaging.zeromq:control},${messaging.zeromq:incoming},${messaging.zeromq:outgoing}" />
+		<server name="QueueServer" enabled="true"
+		        storage="QueueServer"
+		        control="tcp://0.0.0.0:${messaging.zeromq:control#xml}"
+		        incoming="tcp://0.0.0.0:${messaging.zeromq:incoming#xml}"
+		        outgoing="tcp://0.0.0.0:${messaging.zeromq:outgoing#xml}"
+		        discovery="tcp://0.0.0.0:${messaging.zeromq:port#xml}" />
 	</option>
-</configuration>
+</options>
