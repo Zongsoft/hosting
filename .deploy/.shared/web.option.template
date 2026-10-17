@@ -3,8 +3,8 @@
 <?zongsoft.tools.binding
 	name="web"
 	path="Kestrel/Endpoints/http"
-	template="\${option.Url}"
-	protocols="\${option.Protocols}"
+	template="\${this.Url}"
+	protocols="\${this.Protocols}"
 	required="true"?>
 
 <configuration>

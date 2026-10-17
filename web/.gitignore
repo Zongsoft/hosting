@@ -1,7 +1,6 @@
 .config/
 .deploy/
 [Pp]lugins/
-[Ww]eb.option
 addresses*.json
-*/web-*.option
-!default/web-default.option
+[Ww]eb.option
+[Ww]eb-*.option

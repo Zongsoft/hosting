@@ -1,5 +1,5 @@
 [plugins zongsoft diagnostics]
-nuget:Zongsoft.Diagnostics@1.11.0
+nuget:Zongsoft.Diagnostics@1.12.0
 
 [plugins zongsoft hardwares]
 nuget:Zongsoft.Hardwares@0.3.1
@@ -70,7 +70,7 @@ nuget:Zongsoft.Externals.Hangfire@2.10.0
 nuget:Zongsoft.Externals.Hangfire.Storages.Redis@3.2.0
 
 [plugins zongsoft messaging mqtt]
-nuget:Zongsoft.Messaging.Mqtt@7.5.0
+nuget:Zongsoft.Messaging.Mqtt@7.6.0
 
 [plugins zongsoft messaging kafka]
 nuget:Zongsoft.Messaging.Kafka@7.5.0
@@ -79,4 +79,4 @@ nuget:Zongsoft.Messaging.Kafka@7.5.0
 nuget:Zongsoft.Messaging.RabbitMQ@1.4.0
 
 [plugins zongsoft messaging zeromq]
-nuget:Zongsoft.Messaging.ZeroMQ@2.4.2
+nuget:Zongsoft.Messaging.ZeroMQ@2.5.0

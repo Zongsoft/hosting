@@ -127,7 +127,7 @@ hosting/
 
 工具只读取所选 source 目录直属的 `.env`（migrator 使用工作目录）。各宿主先通过 `#@import ../.env` 导入公共配置：daemon、terminal 直接导入 hosting 根配置，Web 站点先导入 `web/.env`，再由它导入 hosting 根配置；随后宿主导入所选方案并声明自己的值。
 
-`hosting/web/.env` 的 `[web]` 节提供 `url=http://*:8069/` 和 `protocols=http1`。部署将这些值和 zongsoft.tools.binding 处理指令写入 `web.option`；Packager 与宿主读取同一配置，不再添加 `--urls`。开发备用文件 `web-default.option` 具有相同声明，部署包使用生成的 `web.option`。
+`hosting/web/.env` 的 `[web]` 节提供 `url=http://*:8069/` 和 `protocols=http1`。部署将这些值和 zongsoft.tools.binding 处理指令写入 `web.option`；Packager 与宿主读取同一配置，不再添加 `--urls`。该文件由 `.deploy/.shared/web.option.template` 在每次部署时生成，并由 `web/.gitignore` 忽略。
 
 例如 `hosting/daemon/.env`：
 
@@ -171,7 +171,7 @@ Etcd 使用 `[etcd]` 和 `${etcd:connection}`，模板写入 `/Externals/Etcd/co
 
 消息队列连接统一使用 `messaging.mqtt`、`messaging.kafka`、`messaging.rabbitmq`、`messaging.zeromq` 和 `messaging.redis` 命名空间。`.deploy/.env` 定义连接表达式，方案 `.env` 提供具体值，`app.option.template` 将它们写入 `/Messaging/connectionSettings`。默认方案为新消息队列提供本地示例：Kafka 使用 9092 端口及 Plaintext，RabbitMQ 使用 5672 端口、`/` 虚拟主机和默认 guest 账号，ZeroMQ 使用 7969 发现端口；按实际方案覆盖。 Redis 缓存和消息连接均提供可选用户名。Redis、MQTT、Kafka 将端口写入 `server`；SQL Server 的 `server` 保存完整端点，S3、Influx 使用 URL；RabbitMQ、Etcd、ZeroMQ 使用独立端口字段。ZeroMQ 的发现、控制、入站和出站端口均在各组合文件中列出。
 
-三个宿主都渲染 `.deploy/.shared/Zongsoft.Messaging.ZeroMQ.option.template` 作为插件客户端配置，替换包内会将宿主连接覆盖为回环地址的示例。`daemon` 宿主运行独立 ZeroMQ 服务端，并额外渲染 `Zongsoft.Messaging.ZeroMQ-daemon.option.template`。daemon 模板在 `/Messaging/ZeroMQ/Server` 声明单个服务端，设置 `name="QueueServer"`、`enabled="true"` 和 `storage="QueueServer"`。Control、Incoming、Outgoing、Discovery 使用完整的 `tcp://0.0.0.0:<port>` 地址，端口分别来自 `messaging.zeromq:control`、`incoming`、`outgoing`、`port`（默认 32100、32101、32102、7969）。四条 `zongsoft.tools.binding` 指令读取同一组服务端设置，并以 `enabled:true` 筛选；部署模板中的 `\${option.*}` 使用转义，使生成的 option 保留 `${option.*}` 供绑定求值。Control 与 Storage 必须同时配置，存储工厂须能解析名为 `QueueServer` 的 Redis 连接。客户端对四种角色使用发现服务的主机地址，因此应按原端口号发布全部四个 TCP 端口。普通的 `Zongsoft` Redis 连接不能替代服务端按名称查找的存储连接。daemon 进程环境应设置稳定的 `ZONGSOFT_MESSAGING_STORAGE_IDENTIFIER`，让重建 daemon 后仍使用相同的 Redis 存储分区。
+三个宿主都渲染 `.deploy/.shared/Zongsoft.Messaging.ZeroMQ.option.template` 作为插件客户端配置，替换包内会将宿主连接覆盖为回环地址的示例。`daemon` 宿主运行独立 ZeroMQ 服务端，并额外渲染 `Zongsoft.Messaging.ZeroMQ-daemon.option.template`。daemon 模板在 `/Messaging/ZeroMQ/Server` 声明单个服务端，设置 `name="QueueServer"`、`enabled="true"` 和 `storage="QueueServer"`。Control、Incoming、Outgoing、Discovery 使用完整的 `tcp://0.0.0.0:<port>` 地址，端口分别来自 `messaging.zeromq:control`、`incoming`、`outgoing`、`port`（默认 32100、32101、32102、7969）。四条 `zongsoft.tools.binding` 指令读取同一组服务端设置，并以 `enabled:true` 筛选；部署模板中的 `\${this.*}` 使用转义，使生成的 option 保留 `${this.*}` 供绑定求值。Control 与 Storage 必须同时配置，存储工厂须能解析名为 `QueueServer` 的 Redis 连接。客户端对四种角色使用发现服务的主机地址，因此应按原端口号发布全部四个 TCP 端口。普通的 `Zongsoft` Redis 连接不能替代服务端按名称查找的存储连接。daemon 进程环境应设置稳定的 `ZONGSOFT_MESSAGING_STORAGE_IDENTIFIER`，让重建 daemon 后仍使用相同的 Redis 存储分区。
 
 `container` 方案仅保留 `.deploy/container/.env`，先导入 `default` 的完整设置及选中的 `<environment>-<network>.env`，再将 Redis、MySQL、RustFS 和 Etcd 地址覆盖为容器服务名。共享模板使用合并后的变量生成宿主及基础服务配置；端口、凭据以及部署在其它主机上的服务端点继续继承所选组合。该方案的 ZeroMQ 客户端使用 `zongsoft.daemon`；`daemon/.env` 将自身客户端地址覆盖为 `127.0.0.1`，因为服务端就在当前进程中。容器 Web 和本地 Debug Web 可以共用这个 daemon：容器客户端使用服务名，默认本地方案通过回环地址访问发布的 TCP 端口。制作包含 daemon 的交付物前，先完成它的部署和打包。
 
@@ -325,7 +325,7 @@ Set-Location D:/Zongsoft/hosting
 | terminal | `zongsoft.terminal` / 禁用服务 | 展平同样的构建目录；安装到 `/opt/zongsoft/terminal` |
 | web/default | `Zongsoft.Hosting.Web` / `zongsoft.web.service` | MIME、配置、wwwroot、plugins 及展平的构建目录；安装到 `/opt/zongsoft/web`，应用监听 `http://*:8069/` |
 
-所有脚本排除 `logs/`；Web 还排除构建目录中的 `*.staticwebassets.*` 和 `plugins/**`，插件载荷统一来自部署后的站点插件目录。Web 显式包含生成的 `web.option` 与 `${application:name}.option`，不带入未使用的开发备用文件 `web-default.option`，避免部署更改 Web URL 后额外提取无效监听声明。`:~` 表示把所选目录的内容展平到安装根，不保留原来的 `bin/...` 层级。Web 的服务与 Nginx 配置详见 [Web README](web/README.zh-Hans.md#默认站点打包)。terminal 禁用 systemd 服务，因此 `--daemon-environments` 不会给交互式运行的终端设置进程环境。
+所有脚本排除 `logs/`；Web 还排除构建目录中的 `*.staticwebassets.*` 和 `plugins/**`，插件载荷统一来自部署后的站点插件目录。Web 显式包含生成的 `web.option` 与 `${application:name}.option`。`:~` 表示把所选目录的内容展平到安装根，不保留原来的 `bin/...` 层级。Web 的服务与 Nginx 配置详见 [Web README](web/README.zh-Hans.md#默认站点打包)。terminal 禁用 systemd 服务，因此 `--daemon-environments` 不会给交互式运行的终端设置进程环境。
 
 输出默认位于所选宿主的 `.packages/`，如 `zongsoft.daemon@1.0.0-x64.deb`；Edition 非空时追加到包名。tar 生成同名 `.tar.gz` 和 `.sh` 安装入口，须配套保留；deb/rpm 各生成一个包文件。脚本未启用 `--overwrite`，同名产物已存在时制包失败。
 
