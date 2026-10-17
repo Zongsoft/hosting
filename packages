@@ -79,4 +79,4 @@ nuget:Zongsoft.Messaging.Kafka@7.5.0
 nuget:Zongsoft.Messaging.RabbitMQ@1.4.0
 
 [plugins zongsoft messaging zeromq]
-nuget:Zongsoft.Messaging.ZeroMQ@2.4.1
+nuget:Zongsoft.Messaging.ZeroMQ@2.4.2
