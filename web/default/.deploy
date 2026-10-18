@@ -13,6 +13,9 @@ bin/${edition}/${framework}/plugins/Main.plugin
 [plugins zongsoft diagnostics]
 template:../../.deploy/.shared/Zongsoft.Diagnostics.option.template
 
+[plugins zongsoft diagnostics web]
+template:../../.deploy/.shared/Zongsoft.Diagnostics.Web.option.template
+
 [plugins zongsoft externals aliyun]
 template:../../.deploy/.shared/Zongsoft.Externals.Aliyun.option.template
 

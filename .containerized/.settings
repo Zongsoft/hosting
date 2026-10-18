@@ -1,5 +1,6 @@
 # Infrastructure image tags selected on 2026-10-01.
 # Shared defaults. Passwords reference the source `.env` file.
+# For Collector/Prometheus YAML mounts, use diagnostics.container and templates/; see README.md.
 # OTel 0.162.0 currently has architecture-specific tags; this selection is for x64.
 
 # Databases

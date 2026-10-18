@@ -1,0 +1,11 @@
+# Configuration for services on the same container network.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: zongsoft-collector
+    honor_labels: true
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["otel:9464"]

@@ -9,6 +9,9 @@ nuget:Zongsoft.Intelligences.Web@0.7.1
 [plugins zongsoft openapi]
 nuget:Zongsoft.Web.OpenApi@0.7.0
 
+[plugins zongsoft diagnostics web]
+nuget:Zongsoft.Diagnostics.Web@1.0.0
+
 [plugins zongsoft diagnostics server]
 nuget:Zongsoft.Diagnostics.Protocols.Server@1.5.0
 

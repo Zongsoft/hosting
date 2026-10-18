@@ -420,3 +420,9 @@ FodyWeavers.xsd
 .containerized/*
 !.containerized/.mirrors
 !.containerized/.settings
+
+# Maintained diagnostics configuration assets
+!.containerized/templates/
+!.containerized/diagnostics.container
+!.containerized/README.md
+!.containerized/README.zh-Hans.md

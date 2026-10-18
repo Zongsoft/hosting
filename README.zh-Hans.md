@@ -35,9 +35,13 @@
 
 部署清单仅复制本次选中的环境和网络片段，同一部署目录只保留一套环境和网络配置。配置更新遵循部署工具的覆盖策略，无需先用 `delete:` 删除目标文件；部署清单不承担历史配置清理。普通入口可声明多个可选环境导入，仅加载部署目录中实际存在的片段。新增配置时应同步维护导入和对应部署项。`app.option.template` 按入口程序集名生成宿主配置，Web 对应 `Zongsoft.Hosting.Web.option`；`web.option.template` 生成独立的 `web.option`，声明本站点的 Web 配置，无需导入公共宿主配置。清单只列出有实际资产或模板生成来源的配置，不为不存在的文件预留复制、导入或删除项。
 
-daemon 部署的 `Zongsoft.Diagnostics` 插件使用独立 Kestrel 服务器提供 Prometheus 指标接口，因此宿主声明 `Microsoft.AspNetCore.App` 框架引用。目标机器需安装对应的 ASP.NET Core 运行时；Containerizer 根据宿主的运行时配置为镜像准备该依赖。该引用不启用 Web 宿主或 MVC，也无需在 `.deploy` 中逐项复制共享框架程序集。
+daemon、terminal 仅使用 `Microsoft.NETCore.App`，部署通用 `Zongsoft.Diagnostics`，通过 OTLP → Collector → Prometheus 导出指标。`Zongsoft.Diagnostics.Web` 及其 Kestrel 依赖只部署到 Web 宿主。此次版本为 Diagnostics 1.13.0、Diagnostics.Web 1.0.0；正式部署前先提供相应构建包。
 
-daemon 和 Web 部署通过公共诊断模板生成 `Zongsoft.Diagnostics.option`。Prometheus 监听由 `[diagnostics.prometheus]` 的 `server`、`port` 配置：default 方案监听 `127.0.0.1`，container 方案监听 `0.0.0.0` 以供容器网络访问。daemon 使用 9464，`web/default` 使用 9465，两个宿主可在同一台机器运行。Web 通过生成的 Nginx 路由提供 `/metrics`。
+所有宿主统一渲染 `Zongsoft.Diagnostics.option.template`。方案 `.env` 默认 `[diagnostics.telemetry] enabled=true`；各 Web 站点 `.env` 在导入方案后设为 `enabled=false`，运行时不执行禁用的 OTLP 导出器，再由 `Zongsoft.Diagnostics.Web.option.template` 添加 Prometheus 导出器。公共模板的 `server` 设置 Collector：default 为 `http://127.0.0.1:4317`，container 为 `http://otel:4317`。Web 的 `[diagnostics.prometheus] server/port` 默认 `127.0.0.1:9465`，container 监听 `0.0.0.0`，可经 Nginx 暴露 `/metrics`。这组宿主模板只启用指标，追踪须另配后端。Collector/Prometheus 的 YAML、自定义模板及清单用法见 [.containerized 配置说明](.containerized/README.zh-Hans.md)。
+
+公共 Diagnostics 模板现使用 `driver="opentelemetry"`；Console 导出器使用 `driver="opentelemetry.console"`。设置由插件内部强类型解析；旧驱动名 `telemetry`、`OpenTelemetry`、`Console` 仍兼容。`exporter.name`、`diagnostics.telemetry` 和 `diagnostics.logging` 变量名称保持不变。无效类型、超范围时间及非法批量参数会在导出器配置时失败；参数和默认值见 [Diagnostics 设置说明](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Diagnostics/README.zh-Hans.md#强类型导出设置)。新配置须与包含此次改造的 Diagnostics 插件一起部署。
+
+日志使用独立的 `[diagnostics.logging] enabled/server/protocol`，默认关闭；server 默认引用最终 `diagnostics.telemetry:server`，protocol 默认 grpc。启用后公共模板生成的 `<logs>` 自动导出 Microsoft `ILogger` 日志，级别沿用宿主 `Logging:LogLevel`。Web 关闭 OTLP 指标不影响日志开关。接收端须支持 OTLP 日志；现有 Collector YAML 仍只配置指标，使用它接收日志前须增加 logs 管线及日志后端。Zongsoft 自有日志尚未接入。修改后重新部署配置并重启宿主。
 
 Aliyun 使用唯一的公共模板 `Zongsoft.Externals.Aliyun.option.template`，部署时生成完整的 `Zongsoft.Externals.Aliyun.option`。方案 `.env` 的 `[aliyun]` 定义全量默认设置，选中的 `<environment>-<network>.env` 在同一 `[aliyun]` 节中覆盖凭据、内外网访问和资源差异，未覆盖的设置沿用默认值。变量合并后再渲染模板，最终配置只包含当前组合选中的 OSS 桶、消息队列和主题；不再生成或导入 Aliyun 环境配置片段。
 

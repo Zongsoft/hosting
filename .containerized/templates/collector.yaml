@@ -1,0 +1,24 @@
+# Configuration for services on the same container network.
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  batch:
+    timeout: 1s
+
+exporters:
+  prometheus:
+    endpoint: 0.0.0.0:9464
+    translation_strategy: UnderscoreEscapingWithSuffixes
+    metric_expiration: 2m
+    send_timestamps: false
+
+service:
+  pipelines:
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus]

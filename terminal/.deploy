@@ -5,6 +5,9 @@ template:../.deploy/.shared/app.option.template = Zongsoft.Hosting.Terminal.opti
 
 #@import ../packages
 
+[plugins zongsoft diagnostics]
+template:../.deploy/.shared/Zongsoft.Diagnostics.option.template
+
 [plugins zongsoft externals aliyun]
 template:../.deploy/.shared/Zongsoft.Externals.Aliyun.option.template
 

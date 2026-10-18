@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<?zongsoft.tools.binding name="prometheus"
-	path="Diagnostics/Diagnostor/Meters/Exporters/*"
-	filter="driver:prometheus"
-	template="\${this.Settings['urls']}"
-	protocols="http1"?>
-
+<!-- 配置示例：作为最终 Zongsoft.Diagnostics.option；指标与日志使用独立开关，日志默认关闭。 -->
 <options>
 	<option path="/Diagnostics">
 		<diagnostor>
@@ -13,22 +8,19 @@
 				<filter>*</filter>
 
 				<exporters>
-					<exporter exporter.name="telemetry" driver="telemetry"
-					          settings="server=http://localhost:4317/opentelemetry;protocol=grpc;processorType=batch;timeout=30s;interval=15s;" />
-
-					<exporter exporter.name="prometheus" driver="prometheus"
-					          settings="urls=http://${diagnostics.prometheus:server#xml}:${diagnostics.prometheus:port#xml}/metrics;totalSuffix=true;cacheDuration=300ms;" />
+					<exporter exporter.name="telemetry" driver="opentelemetry"
+					          enabled="${diagnostics.telemetry:enabled#xml}"
+					          settings="server=${diagnostics.telemetry:server#xml};protocol=grpc;timeout=30s;interval=15s;" />
 				</exporters>
 			</meters>
 
-			<traces>
-				<filter>*</filter>
-
+			<logs includeScopes="true" includeFormattedMessage="true">
 				<exporters>
-					<exporter exporter.name="telemetry" driver="telemetry"
-					          settings="server=http://localhost:4317/opentelemetry;protocol=grpc;processorType=batch;timeout=30s;interval=15s;" />
+					<exporter exporter.name="telemetry" driver="opentelemetry"
+					          enabled="${diagnostics.logging:enabled#xml}"
+					          settings="server=${diagnostics.logging:server#xml};protocol=${diagnostics.logging:protocol#xml};processorType=batch;timeout=30s;interval=5s;" />
 				</exporters>
-			</traces>
+			</logs>
 		</diagnostor>
 	</option>
 </options>
