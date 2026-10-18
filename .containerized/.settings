@@ -1,6 +1,6 @@
 # Infrastructure image tags selected on 2026-10-01.
 # Shared defaults. Passwords reference the source `.env` file.
-# For Collector/Prometheus YAML mounts, use diagnostics.container and templates/; see README.md.
+# Collector/Prometheus template entries select the YAML mounts; see README.md.
 # OTel 0.162.0 currently has architecture-specific tags; this selection is for x64.
 
 # Databases
@@ -122,6 +122,7 @@ settings=storage=persistent
 [prometheus]
 tag=v3.15.0-busybox
 settings=storage=persistent
+template=.containerized/templates/prometheus.template
 
 [grafana]
 tag=13.2.3
@@ -133,4 +134,4 @@ settings=storage=persistent
 
 [otel]
 tag=0.162.0-amd64
-
+template=.containerized/templates/otel.template

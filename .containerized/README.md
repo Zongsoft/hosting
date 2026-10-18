@@ -2,31 +2,42 @@
 
 [English](README.md) | [简体中文](README.zh-Hans.md)
 
-Containerizer uses these assets when making an infrastructure bundle. OpenTelemetry Collector reads `collector.yaml`; Prometheus reads `prometheus.yaml`. Neither file is read by a daemon or terminal plugin.
+Containerizer uses these assets when a bundle includes otel and prometheus. OpenTelemetry Collector reads `collector.yaml`; Prometheus reads `prometheus.yaml`. Neither file is read by a daemon or terminal plugin.
 
 ## Configuration assets
 
 | File | Purpose |
 | --- | --- |
-| [diagnostics.container](diagnostics.container) | Infrastructure-only manifest selecting otel and prometheus, pinned x64 images and custom templates |
 | [otel.template](templates/otel.template) | Read-only collector.yaml mount at /etc/otelcol-contrib/config.yaml |
 | [collector.yaml](templates/collector.yaml) | Receive OTLP gRPC on :4317 and expose metrics on :9464/metrics |
 | [prometheus.template](templates/prometheus.template) | Read-only prometheus.yaml mount at /etc/prometheus/prometheus.yml; persistent /prometheus data |
 | [prometheus.yaml](templates/prometheus.yaml) | Scrape otel:9464 and preserve exported job/instance labels |
 
-`.settings` supplies only tag, repository and settings defaults. It neither selects services nor accepts a template field. Adding otel/prometheus there is insufficient. Handwritten manifests and manifest replay do not merge `.settings`, so this manifest explicitly pins versions. Check both locations when changing an image version.
+[.settings](.settings) supplies tag, repository, template and settings defaults without selecting services. Its otel/prometheus sections already point to the custom templates above. Keep the reviewed image tags and Prometheus storage setting there.
 
 ## Use the existing containerization tool
 
-Plan from the hosting root without creating or starting containers:
+Run `containerize.cmd` from the hosting root, choose a complete build or `plan`, and enter `otel` and `prometheus` along with the other required services. Select application hosts in the next menu. Containerizer reads `.containerized/.settings` and records the custom template paths in the generated `.container` automatically.
+
+To plan only these two services without creating or starting containers:
 
 ```powershell
-dotnet containerize plan .containerized/diagnostics.container --source:. --output:.containerized
+dotnet containerize plan otel prometheus --name:zongsoft --distribution:debian@13 --architecture:x64 --source:. --output:.containerized
 ```
 
-This generates `.containerized/zongsoft-diagnostics@1.0-x64.container`. Use it with `dotnet containerize make` when ready to make a delivery bundle. Making a bundle may fetch images and execute builds; it is outside this source change's validation scope.
+To include application packages in the same plan, add host directories such as `daemon` to the component list after preparing their packages. The generated `.containerized/zongsoft@<version>-x64.container` can then be passed to `dotnet containerize make`.
 
-For an existing application manifest, merge the `[otel]` and `[prometheus]` sections from [diagnostics.container](diagnostics.container), retaining its application sections, root fields and service names. Then plan and make that manifest. Alternatively, generate an interactive plan selecting otel/prometheus and add these template paths to the two sections. The built-in templates with the same names do not reference these custom YAML files.
+Saved or handwritten manifests do not merge `.settings`. Regenerate an old plan or edit its existing service sections to add the following entries, retaining the reviewed tags and settings:
+
+```ini
+[otel]
+template=.containerized/templates/otel.template
+
+[prometheus]
+template=.containerized/templates/prometheus.template
+```
+
+These entries select templates; they do not replace the sections' other fields. The built-in templates with the same service names do not reference these custom YAML files.
 
 Containerizer checks `[configuration]` input paths, copies the files into the bundle's `config/` directory and creates read-only mounts. YAML paths are relative to the template directory; template paths are relative to the final source. YAML contents are copied unchanged, without `${...}` expansion.
 

@@ -283,13 +283,15 @@ containerize.cmd make .containerized\zongsoft@1.0-x64.container --version:1.1
 
 新建默认应用名 `zongsoft`、Debian 13、x64、自动引擎以及离线 bootstrap/镜像。发行版本留空使用日期版本；已有交付包不覆盖。事先用 deploy.cmd/pack.cmd 准备安装包，以 migrate.cmd 准备升迁；脚本不编译宿主，也不制作升迁。容器交付时将 `pack.cmd` 的 Migration 留空，在 `containerize.cmd` 中选择 `.migration`，由 Containerizer 在基础服务就绪后执行升迁；Packager 集成升迁用于直接安装应用包。
 
-随后先逐行输入基础服务（如 redis、mysql、rustfs 或服务模板路径），留空结束；再从自动发现的分层宿主菜单中选择应用。Space 勾选/取消宿主，Enter 确认；可选多个宿主，也可不选以仅制作基础服务。重定向时输入逗号分隔的宿主编号（如 `1,3`）或完整相对路径，留空表示不选宿主。基础服务和宿主至少选择一项；`web` 等分组不能选择。
+随后先逐行输入基础服务（如 redis、mysql、rustfs、otel 或 prometheus），留空结束；再从自动发现的分层宿主菜单中选择应用。Space 勾选/取消宿主，Enter 确认；可选多个宿主，也可不选以仅制作基础服务。重定向时输入逗号分隔的宿主编号（如 `1,3`）或完整相对路径，留空表示不选宿主。基础服务和宿主至少选择一项；`web` 等分组不能选择。
 
 宿主菜单与部署/打包共用发现规则，传给工具的仍是 `web/default` 等完整相对路径。显式安装包或其它目录可通过 `containerize.cmd plan <输入> ...` 等直接命令传入；已有 `.container` 从 make 菜单选择。
 
 镜像交付方式使用 `--imaging:online|offline`，对应 `.container` 根部及服务段落的 `imaging`；`bootstrap` 仍独立控制引擎依赖。
 
 `.containerized/.settings` 保存基础服务的默认配置。保留已有镜像 tag，Redis、MySQL 和 RustFS 密码引用根 `.env` 的变量。Redis 默认持久存储及 RDB/AOF 双持久化；某次测试可在 plan 清单中改用 `storage=temporary;persistence=none`。共享配置不复制密码值；选用其他服务时仍需填写它们的必填参数。
+
+`otel`、`prometheus` 段落还配置了 `template=.containerized/templates/<服务名>.template`。新建计划或完整制作时输入这两个服务 ID，即自动采用对应的项目模板。模板路径相对于 hosting 源目录，配套 YAML 相对于模板目录。已有清单保留原选择，需要编辑或重新生成才能采用这些默认值；详情见[配置说明](.containerized/README.zh-Hans.md)。
 
 Web 安装包的 Nginx 监听及路由引用来自包根 `.bindings` JSON，三种包格式均以普通文件承载同一文档。经 Nginx 代理的应用绑定默认仅内部访问，其余绑定默认在宿主回环地址同号发布。应用组件可用 `publish!<binding-id-or-alias>=auto|none|transport://IP:port` 覆盖；`none` 不删除代理路由。健康检查默认验证进程存活，可显式配置 JSON `health` 命令。同号 TCP/UDP 分开发布，QUIC 不执行 TCP 探测。未填写端口覆盖时发布所有受支持的监听，包内声明 80 与 8080 时两者都会发布。Nginx 使用 `settings=port=80:18080,443:none`：容器 80 优先映射到宿主 18080，443 仅保留内部监听。已有 `.container` 必须直接采用此语法，Nginx 不接受 `port=127.0.0.1:80`。修改 `.settings` 不会改变已保存的清单。
 

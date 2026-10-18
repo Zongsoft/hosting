@@ -136,7 +136,7 @@ function Read-ContainerInputs([string]$Root)
 
 		while($true)
 		{
-			$service = Read-Setting "Service $($services.Count + 1)" '' 'Service ID or service template path. Enter: continue to hosts.'
+			$service = Read-Setting "Service $($services.Count + 1)" '' 'Service ID; configure templates in .containerized/.settings. Enter: continue to hosts.'
 
 			if($service.Length -eq 0)
 			{
