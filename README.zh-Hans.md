@@ -47,9 +47,9 @@ Aliyun 使用唯一的公共模板 `Zongsoft.Externals.Aliyun.option.template`�
 
 宿主程序初始化运行环境，业务功能由 `plugins/` 中的插件及配置、证书等配套文件提供。
 
-在 hosting 根目录运行 [`deploy.cmd`](deploy.cmd)，从自动发现的宿主菜单中选择源目录。部署和打包脚本扫描调用时的当前目录及其子目录，将同时包含 `.deploy` 文件和 `Zongsoft.Hosting.Daemon.csproj`、`Zongsoft.Hosting.Terminal.csproj` 或 `Zongsoft.Hosting.Web.csproj` 的目录列为宿主。`daemon`、`terminal`、`web/default` 以及新增站点都会自动列出；跳过隐藏目录、目录链接、`bin`、`obj`、`packages` 和 `node_modules`。也可以运行 `deploy.cmd web/default` 预选源目录，相对路径基于调用时的当前目录，也支持绝对路径。脚本依次询问方案、环境、网络、编译配置、平台、架构和可选框架覆盖，进入所选宿主执行 Cake，再通过 `dotnet deploy --source:<宿主> --output:<目标>` 执行该宿主的 `.deploy`。
+在 hosting 根目录运行 [`deploy.cmd`](deploy.cmd)，从自动发现的宿主菜单中选择源目录。部署和打包脚本扫描调用时的当前目录及其子目录，将同时包含 `.deploy` 文件和 `Zongsoft.Hosting.Daemon.csproj`、`Zongsoft.Hosting.Terminal.csproj` 或 `Zongsoft.Hosting.Web.csproj` 的目录列为宿主。`daemon`、`terminal`、`web/default` 以及新增站点都会自动列出；跳过隐藏目录、目录链接、`bin`、`obj`、`packages` 和 `node_modules`。也可以运行 `deploy.cmd web/default` 预选源目录，相对路径基于调用时的当前目录，也支持绝对路径。脚本依次询问方案、环境、网络、编译配置、平台和架构，进入所选宿主执行 Cake，再通过 `dotnet deploy --source:<宿主> --output:<目标>` 执行该宿主的 `.deploy`。
 
-本地 Debug 调试可直接运行 [daemon/deploy.cmd](daemon/deploy.cmd)、[terminal/deploy.cmd](terminal/deploy.cmd) 或 [web/default/deploy.cmd](web/default/deploy.cmd)。这些快捷脚本调用根目录 `deploy.cmd <source> --local`，源目录固定为脚本所在宿主，自动使用 `configuration=Debug`、`platform=windows`、`architecture=x64`，框架沿用现有默认值，不再提示这些项，并使用 `--overwrite:alway` 始终覆盖。只保留方案、环境和网络提示及原有默认值；从其他目录调用也不会改变所选宿主。
+本地 Debug 调试可直接运行 [daemon/deploy.cmd](daemon/deploy.cmd)、[terminal/deploy.cmd](terminal/deploy.cmd) 或 [web/default/deploy.cmd](web/default/deploy.cmd)。这些快捷脚本调用根目录 `deploy.cmd <source> --local`，源目录固定为脚本所在宿主，自动使用 `configuration=Debug`、`platform=windows`、`architecture=x64`，框架沿用现有默认值，不再提示这些项，并使用 `--overwrite=alway` 始终覆盖。只保留方案、环境和网络提示及原有默认值；从其他目录调用也不会改变所选宿主。
 
 宿主菜单按目录层级显示，只有实际宿主带编号；`web` 等父目录仅作为分组标题，方向键会跳过它们。部署和打包一次选择一个宿主，例如：
 
@@ -60,15 +60,17 @@ web
   3. default
 ```
 
-每次部署只使用一个环境和一种网络。网络 `internal`/`external` 决定服务连接方式；编译配置（Debug/Release）和目标平台分别选择，普通根入口默认 Debug 和 Windows。deployer 不固化这些组合或输出目录。脚本沿用 daemon/terminal 的 `bin/${edition}/${framework}` 和 Web 的宿主根目录作为输出；直接调用工具时可任意指定 `--output`。部署器只处理 `.deploy` 声明的资产，宿主编译由 Cake 完成。
+每次部署只使用一个环境和一种网络。网络 `internal`/`external` 决定服务连接方式；编译配置（Debug/Release）和目标平台分别选择，普通根入口默认 Release 和 Linux。deployer 不固化这些组合或输出目录。脚本沿用 daemon/terminal 的 `bin/${edition}/${framework}` 和 Web 的宿主根目录作为输出；直接调用工具时可任意指定 `--output`。部署器只处理 `.deploy` 声明的资产，宿主编译由 Cake 完成。
 
-普通部署使用 `--overwrite:newest`，本地 Debug 快捷入口使用 `--overwrite:alway`（部署器的始终覆盖选项）；两者都使用 `--prerelease:true --verbosity:quiet`。构建或部署失败立即停止，显示失败阶段和原始退出码。部署成功后返回 0。制作安装包时单独运行根目录 [`pack.cmd`](pack.cmd)。脚本不改变调用者的目录和环境。
+根目录部署和本地 Debug 快捷入口都使用 `--overwrite=alway`（部署器的始终覆盖枚举，不接受 `true`）；两者都使用 `--prerelease:true --verbosity:quiet`。构建或部署失败立即停止，显示失败阶段和原始退出码。部署成功后返回 0。制作安装包时单独运行根目录 [`pack.cmd`](pack.cmd)。脚本不改变调用者的目录和环境。
 
 `deploy.cmd`、`pack.cmd`、`containerize.cmd` 和 `migrate.cmd` 分别通过 Windows PowerShell 调用同名的 [`deploy.ps1`](deploy.ps1)、[`pack.ps1`](pack.ps1)、[`containerize.ps1`](containerize.ps1) 和 [`migrate.ps1`](migrate.ps1)。各 PowerShell 入口负责对应工具的流程与参数，通过点加载 [`.shared.ps1`](.shared.ps1) 共用标题、提示、菜单、宿主发现、工具执行和错误处理；共享脚本不分发工具操作，加载时不启动任何工具流程。
 
 界面使用青色分区标题、输入框下方的灰色提示、菜单选中行高亮以及执行摘要。使用上下方向键或 Home/End 选择，Enter 确认，菜单中按 Esc 取消（退出码 2）。输入或输出被重定向时使用编号菜单，留空选择默认项，输入耗尽则在执行前取消。输出重定向时不含颜色控制符，设置 `NO_COLOR` 可关闭控制台颜色。部署和打包在交互模式下成功和失败均等待按键，重定向模式不暂停。
 
-框架覆盖留空时，部署和打包从 `.env` 查询 framework，Cake 使用各宿主 build.cake 的默认值；Cake 不读取 `.env`，应保持两者一致。填写覆盖值时，deploy.cmd 将其传给构建和部署，pack.cmd 须另行输入同一 framework。脚本不自行解析或导出 `.env`。
+不再询问 Framework。脚本读取 hosting 根目录 `.env` 顶层 `framework` 的字面值，并统一传给 Cake、部署器和打包器，本地 Debug 快捷入口也使用该值。此项应填写目标框架名，不使用模板表达式。其余 `.env` 变量和导入仍由工具处理，脚本不会将整份文件导出为进程环境变量。
+
+部署和打包的 Scheme 菜单列出 hosting/.deploy 直属、名称不以 `.` 开头的目录；存在 `default` 时默认选中它，否则选中按名称排序后的首项。升迁脚本复用相同的 Scheme 菜单。Environment 提供 Development、Test、Production，传给工具及配置路径的值保持小写；进程 `Environment` 匹配选项时预选该项，否则预选 Development。Network 默认 internal。
 
 打包身份放在宿主 `.env` 的 `[application]` 中；脚本显式传入 `${application:name}`、`${application:title}`、`${application:daemon}`。daemon 为 `zongsoft.daemon`，terminal 为 `zongsoft.terminal` 并禁用服务；Web 的入口名为 `Zongsoft.Hosting.Web`、标题为 `Zongsoft.Web`、服务名为 `zongsoft.web`。服务接收 Environment 和 DOTNET_ENVIRONMENT，Web 另接收 ASPNETCORE_ENVIRONMENT。
 
@@ -249,7 +251,7 @@ Set-Location D:/Zongsoft/hosting
 .\deploy.cmd
 ```
 
-根目录脚本直接接受环境输入；留空保留进程 Environment，未定义时默认 development。
+根目录脚本从 Development、Test、Production 中选择环境。进程 Environment 匹配选项时预选该项，否则默认 Development；传给工具的值为小写。
 
 ### 容器交付
 
@@ -301,9 +303,9 @@ Web 安装包的 Nginx 监听及路由引用来自包根 `.bindings` JSON，三�
 
 ### 安装包制作
 
-从 hosting 根目录运行 `deploy.cmd` 并选择源目录、方案、环境、网络、编译配置、平台、架构和框架覆盖。Linux 安装验证选择 off、linux 及匹配架构。失败停止后续流程。
+从 hosting 根目录运行 `deploy.cmd` 并选择源目录、方案、环境、网络、编译配置、平台和架构。Linux 安装验证选择 Release、linux 及匹配架构。失败停止后续流程。
 
-部署成功后，单独运行根目录 `pack.cmd`，选择相同宿主、编译配置、架构、方案、环境、网络及框架，再选择 tar、deb 或 rpm。它只打包已有文件：
+部署成功后，单独运行根目录 `pack.cmd`，选择相同宿主、编译配置、架构、方案、环境和网络，再选择 tar、deb 或 rpm。它只打包已有文件：
 
 ```powershell
 Set-Location D:/Zongsoft/hosting
@@ -319,7 +321,7 @@ Set-Location D:/Zongsoft/hosting
 | 架构 | `x64`；可选 `arm64`，必须与程序和升迁执行器匹配 |
 | 源目录 | 从自动发现的宿主中选择；存在 daemon 时默认选中，否则选中首项。`pack.cmd <source>` 可预选目录 |
 | 方案、网络 | default、internal；应与已有部署一致，打包不重新渲染配置 |
-| 框架覆盖 | 留空使用 .env；填写时显式传给工具 |
+| 框架 | 自动读取 hosting 根目录 `.env` 顶层 `framework`，不再询问 |
 | 输出目录 | .packages；相对于所选源目录 |
 | 升迁输入名称或路径（`--migration`） | 留空跳过；如 `zongsoft`，详见下文 |
 
@@ -331,7 +333,7 @@ Set-Location D:/Zongsoft/hosting
 
 所有脚本排除 `logs/`；Web 还排除构建目录中的 `*.staticwebassets.*` 和 `plugins/**`，插件载荷统一来自部署后的站点插件目录。Web 显式包含生成的 `web.option` 与 `${application:name}.option`。`:~` 表示把所选目录的内容展平到安装根，不保留原来的 `bin/...` 层级。Web 的服务与 Nginx 配置详见 [Web README](web/README.zh-Hans.md#默认站点打包)。terminal 禁用 systemd 服务，因此 `--daemon-environments` 不会给交互式运行的终端设置进程环境。
 
-输出默认位于所选宿主的 `.packages/`，如 `zongsoft.daemon@1.0.0-x64.deb`；Edition 非空时追加到包名。tar 生成同名 `.tar.gz` 和 `.sh` 安装入口，须配套保留；deb/rpm 各生成一个包文件。脚本未启用 `--overwrite`，同名产物已存在时制包失败。
+输出默认位于所选宿主的 `.packages/`，如 `zongsoft.daemon@1.0.0-x64.deb`；Edition 非空时追加到包名。tar 生成同名 `.tar.gz` 和 `.sh` 安装入口，须配套保留；deb/rpm 各生成一个包文件。打包传入 `--overwrite=true`，同名产物会被覆盖；tar 归档和安装脚本成组替换。
 
 制包成功后，源目录存在 `.edition` 时同时回写 `.edition` 和 `.version`（缺失则创建），只有 `.version` 时只更新它，两者均无时成组创建。安装包内始终包含最终身份的 `.version`，不交付源目录直属 `.edition`。安装和升级安装包是另外的操作，脚本不会自动安装。
 

@@ -73,7 +73,7 @@ Aliyun 使用唯一的公共模板 `Zongsoft.Externals.Aliyun.option.template`�
 
 部署工具通过 `.deploy` 文件的指引进行文件复制等操作，更详细的内容参考 `dotnet-deploy` 工具的相关文档和代码。
 
-`daemon/deploy.cmd`、`terminal/deploy.cmd` 和 `web/default/deploy.cmd` 是本地 Debug 快捷入口：调用根目录 `deploy.cmd <source> --local`，固定源目录为自身宿主，跳过编译配置、平台、架构和框架提示，使用 Debug、windows、x64 及现有框架默认值；方案、环境和网络仍按原有提示和默认值输入。快捷入口使用 `--overwrite:alway` 始终覆盖，普通根目录部署保持 `newest`。
+`daemon/deploy.cmd`、`terminal/deploy.cmd` 和 `web/default/deploy.cmd` 是本地 Debug 快捷入口：调用根目录 `deploy.cmd <source> --local`，固定源目录为自身宿主，跳过编译配置、平台、架构和框架提示，使用 Debug、windows、x64 及现有框架默认值；方案、环境和网络使用选择菜单。根目录部署默认 Release、Linux；快捷入口和根目录部署均使用 `--overwrite=alway` 始终覆盖。
 
 hosting 根目录的 `deploy.cmd`、`pack.cmd`、`containerize.cmd` 和 `migrate.cmd` 分别调用同名 `.ps1` 脚本，各自负责对应工具的流程与参数。四个 PowerShell 入口点加载 `.shared.ps1`，共用交互、菜单、宿主发现、工具执行和错误处理；共享脚本不分发工具操作，加载时不启动任何工具流程。部署和打包扫描调用时当前目录及子目录中的宿主项目，以分层方向键菜单选择源目录；父目录只显示分组，不可选择，只有宿主叶子项带编号。`deploy.cmd` 进入所选宿主运行 Cake，再用 `--source`/`--output` 调用部署器；只负责构建和部署，成功后返回 0。安装包由根目录 `pack.cmd` 独立制作。
 
@@ -133,7 +133,7 @@ hosting 根目录的 `deploy.cmd`、`pack.cmd`、`containerize.cmd` 和 `migrate
 
 > 如果是在独立的 Linux 环境中测试宿主程序，最好通过该脚本制作相应格式的安装包进行测试验证。
 
-根目录 `pack.cmd` 从自动发现的宿主菜单中选择源目录，默认 tar、Release、x64 和 Linux，只打包已有输出。打包时选择与部署一致的源目录、编译配置、架构、方案、环境、网络及框架覆盖。输出默认是所选 source 下的 `.packages/`，也可另选。环境直接接受输入；留空保留进程 Environment，未定义时用 development。框架覆盖留空时，工具使用 `.env`，Cake 使用 build.cake 默认值，须保持一致；分别在 deploy.cmd 与 pack.cmd 中输入相同的显式框架覆盖。构建、部署或打包失败显示阶段和原始退出码。交互模式下成功和失败均等待按键，菜单 Esc 取消返回 2；重定向时采用编号菜单、纯文本输出且不暂停，输入耗尽即取消。所有出口保留调用者的目录与环境。
+根目录 `pack.cmd` 从自动发现的宿主菜单中选择源目录，默认 tar、Release、x64 和 Linux，只打包已有输出，显式使用 `--overwrite=true` 覆盖同名产物。打包时选择与部署一致的源目录、编译配置、架构、方案、环境、网络及框架。输出默认是所选 source 下的 `.packages/`，也可另选。部署和打包的 Scheme 菜单列出 hosting/.deploy 直属、名称不以 `.` 开头的目录；存在 `default` 时默认选中它，否则选中按名称排序后的首项。升迁脚本复用相同的 Scheme 菜单。Environment 提供 Development、Test、Production，传给工具及配置路径的值保持小写；进程 `Environment` 匹配选项时预选该项，否则预选 Development。Network 默认 internal。不再询问 Framework。脚本读取 hosting 根目录 `.env` 顶层 `framework` 的字面值，并统一传给 Cake、部署器和打包器，本地 Debug 快捷入口也使用该值。此项应填写目标框架名，不使用模板表达式。其余 `.env` 变量和导入仍由工具处理，脚本不会将整份文件导出为进程环境变量。构建、部署或打包失败显示阶段和原始退出码。交互模式下成功和失败均等待按键，菜单 Esc 取消返回 2；重定向时采用编号菜单、纯文本输出且不暂停，输入耗尽即取消。所有出口保留调用者的目录与环境。
 
 根目录 `migrate.cmd` 调用独立 `dotnet-migrate` 制作配套升迁归档和启动脚本，输出在 `.migration/`；默认输入是 `.deploy/${scheme}/migration/${version}/*.migration`。宿主打包脚本通过 `--migration` 传入升迁名称或路径，仅查找已有产物，不制作升迁；必须匹配最终 Edition、版本与 RID。归档内部不套 `.migration`，安装包仅把配套文件收纳到安装根 `.migration/`，执行时解压到独立临时目录。详细参数和版本回写见 [README](README.zh-Hans.md#安装包与升迁包)。
 

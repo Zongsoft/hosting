@@ -14,13 +14,13 @@ This repository currently provides the `default` site. Additional site directori
 
 ## Local debugging deployment
 
-Run [default/deploy.cmd](default/deploy.cmd) to build and deploy the default site for local debugging. The shortcut fixes the source to this site and uses Debug, Windows, x64, and the existing framework defaults. It only asks for scheme, environment, and network, with the same defaults as the root script. Deployment uses `--overwrite:alway` to always overwrite existing files.
+Run [default/deploy.cmd](default/deploy.cmd) to build and deploy the default site for local debugging. The shortcut fixes the source to this site and uses Debug, Windows, x64, and the existing framework defaults. It only asks for scheme, environment, and network, with the same defaults as the root script. Deployment uses `--overwrite=alway` to always overwrite existing files.
 
 ## Packaging the default site
 
-From the hosting root, run `deploy.cmd web/default` to build and deploy, then run `pack.cmd web/default` to package existing files. Defaults are tar, Release, x64, and Linux; output defaults to the site’s `.packages/`. An empty framework override uses `.env` for tools and build.cake defaults for Cake; use the same explicit override in both scripts. See the [hosting README](../README.md#installation-and-migration-packages).
+From the hosting root, run `deploy.cmd web/default` to build and deploy, then run `pack.cmd web/default` to package existing files. Defaults are tar, Release, x64, and Linux; output defaults to the site’s `.packages/`. Framework is read automatically from the root-level `framework` entry in hosting/.env and passed to Cake and the tools. Packaging uses `--overwrite=true` to replace existing output packages. See the [hosting README](../README.md#installation-and-migration-packages).
 
-The application name must be `Zongsoft.Hosting.Web` so the generated service starts `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`; the title and service identifier are `Zongsoft.Web` and `zongsoft.web`. The generated service receives `Environment`, `DOTNET_ENVIRONMENT`, and `ASPNETCORE_ENVIRONMENT`. Both root scripts accept environment input directly; service identity comes from `[application]` in `web/.env`.
+The application name must be `Zongsoft.Hosting.Web` so the generated service starts `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`; the title and service identifier are `Zongsoft.Web` and `zongsoft.web`. The generated service receives `Environment`, `DOTNET_ENVIRONMENT`, and `ASPNETCORE_ENVIRONMENT`. Both root scripts offer Development, Test, and Production in a menu and pass lowercase environment values; service identity comes from `[application]` in `web/.env`.
 
 `default/web.profile` defines IPv4/IPv6 HTTP listeners on ports 80 and 8080. Omitting `server` selects application binding routes by protocol and base path. The generated `web.option` declares `http://*:8069/` with `http1` by default, using `[web]` values from `web/.env`; the zongsoft.tools.binding PI reads those same endpoint fields. No listener command-line argument is generated. Root `pack.cmd` uses `--daemon:${application:daemon} --web:nginx` to generate the systemd service and Nginx configuration, replacing `.deploy/default/systemd` and `.deploy/default/nginx`.
 

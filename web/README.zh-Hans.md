@@ -18,13 +18,13 @@
 
 ## 本地调试部署
 
-运行 [default/deploy.cmd](default/deploy.cmd) 即可为默认站点构建和部署本地 Debug 配置。脚本固定使用该站点作为源目录，启用调试，使用 Windows、x64 和现有框架默认值；仅询问方案、环境和网络，默认值与根目录脚本相同。部署时使用 `--overwrite:alway` 始终覆盖已有文件。
+运行 [default/deploy.cmd](default/deploy.cmd) 即可为默认站点构建和部署本地 Debug 配置。脚本固定使用该站点作为源目录，启用调试，使用 Windows、x64 和现有框架默认值；仅询问方案、环境和网络，默认值与根目录脚本相同。部署时使用 `--overwrite=alway` 始终覆盖已有文件。
 
 ## 默认站点打包
 
-从 hosting 根目录运行 `deploy.cmd web/default` 构建和部署；单独运行 `pack.cmd web/default` 打包已有文件，默认 tar、Release、x64 和 Linux。输出默认是站点 `.packages/`。框架覆盖留空时工具用 `.env`，Cake 用 build.cake 默认值；显式覆盖须在两个脚本中保持一致。完整说明见 [hosting README](../README.zh-Hans.md#安装包与升迁包)。
+从 hosting 根目录运行 `deploy.cmd web/default` 构建和部署；单独运行 `pack.cmd web/default` 打包已有文件，默认 tar、Release、x64 和 Linux。输出默认是站点 `.packages/`。Framework 自动读取 hosting 根目录 `.env` 顶层 `framework`，并传给 Cake 和工具。打包使用 `--overwrite=true` 覆盖同名产物。完整说明见 [hosting README](../README.zh-Hans.md#安装包与升迁包)。
 
-应用名必须为 `Zongsoft.Hosting.Web`，使生成的服务启动 `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`；标题和服务标识分别为 `Zongsoft.Web`、`zongsoft.web`。生成服务写入 `Environment`、`DOTNET_ENVIRONMENT`、`ASPNETCORE_ENVIRONMENT`。两个根脚本都直接接受环境输入；服务身份来自 `web/.env` 的 `[application]`。
+应用名必须为 `Zongsoft.Hosting.Web`，使生成的服务启动 `/opt/zongsoft/web/Zongsoft.Hosting.Web.dll`；标题和服务标识分别为 `Zongsoft.Web`、`zongsoft.web`。生成服务写入 `Environment`、`DOTNET_ENVIRONMENT`、`ASPNETCORE_ENVIRONMENT`。两个根脚本均从 Development、Test、Production 菜单选择环境，并传递小写值；服务身份来自 `web/.env` 的 `[application]`。
 
 `default/web.profile` 定义 HTTP 80 与 8080 的 IPv4/IPv6 入口。省略 `server` 后按协议和基路径选择应用绑定路由。生成的 `web.option` 默认声明 `http://*:8069/` 与 `http1`，值来自 `web/.env` 的 `[web]` 节；zongsoft.tools.binding PI 读取同一端点字段，不生成监听命令行参数。根目录 `pack.cmd` 使用 `--daemon:${application:daemon} --web:nginx` 生成 systemd 服务与 Nginx 配置，不再引用 `.deploy/default/systemd` 或 `.deploy/default/nginx`。
 

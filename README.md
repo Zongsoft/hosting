@@ -47,9 +47,9 @@ The host projects copy Main.plugin (plus Terminal.plugin for Terminal) into buil
 
 Hosts initialize the runtime; plugins and their configuration, certificates, and other assets provide application features.
 
-Run root [`deploy.cmd`](deploy.cmd) to choose a discovered host from a menu. Both deployment and packaging scan the calling directory and its subdirectories for `.deploy` files alongside `Zongsoft.Hosting.Daemon.csproj`, `Zongsoft.Hosting.Terminal.csproj`, or `Zongsoft.Hosting.Web.csproj`. Hosts such as `daemon`, `terminal`, and `web/default` appear automatically, including newly added sites. Hidden directories, directory links, `bin`, `obj`, `packages`, and `node_modules` are skipped. `deploy.cmd web/default` preselects a source relative to the calling directory; absolute paths are also accepted. The script asks for scheme, environment, network, build configuration, platform, architecture, and an optional framework override. It runs Cake inside the selected host, then executes that host's `.deploy` through `dotnet deploy --source:<host> --output:<target>`.
+Run root [`deploy.cmd`](deploy.cmd) to choose a discovered host from a menu. Both deployment and packaging scan the calling directory and its subdirectories for `.deploy` files alongside `Zongsoft.Hosting.Daemon.csproj`, `Zongsoft.Hosting.Terminal.csproj`, or `Zongsoft.Hosting.Web.csproj`. Hosts such as `daemon`, `terminal`, and `web/default` appear automatically, including newly added sites. Hidden directories, directory links, `bin`, `obj`, `packages`, and `node_modules` are skipped. `deploy.cmd web/default` preselects a source relative to the calling directory; absolute paths are also accepted. The script asks for scheme, environment, network, build configuration, platform, and architecture. It runs Cake inside the selected host, then executes that host's `.deploy` through `dotnet deploy --source:<host> --output:<target>`.
 
-For local Debug deployment, run [daemon/deploy.cmd](daemon/deploy.cmd), [terminal/deploy.cmd](terminal/deploy.cmd), or [web/default/deploy.cmd](web/default/deploy.cmd). These shortcuts call root `deploy.cmd <source> --local`, fixing the source to their own host directory and using `configuration=Debug`, `platform=windows`, `architecture=x64`, and the existing framework defaults without prompting for these settings. They use `--overwrite:alway` to always overwrite existing files. Only scheme, environment, and network retain their usual prompts and defaults. Calling a shortcut from another directory still selects its own host.
+For local Debug deployment, run [daemon/deploy.cmd](daemon/deploy.cmd), [terminal/deploy.cmd](terminal/deploy.cmd), or [web/default/deploy.cmd](web/default/deploy.cmd). These shortcuts call root `deploy.cmd <source> --local`, fixing the source to their own host directory and using `configuration=Debug`, `platform=windows`, `architecture=x64`, and the existing framework defaults without prompting for these settings. They use `--overwrite=alway` to always overwrite existing files. Only scheme, environment, and network retain their usual prompts and defaults. Calling a shortcut from another directory still selects its own host.
 
 Host menus follow the directory hierarchy. Only actual hosts have numbers; parent directories such as `web` are non-selectable group headings and arrow keys skip them. Deployment and packaging select one host at a time, for example:
 
@@ -60,15 +60,17 @@ web
   3. default
 ```
 
-Each deployment selects one environment and one network. Network internal/external selects service connectivity. Build configuration (Debug/Release) and target platform are selected independently; the general script defaults to Debug and Windows. Deployer does not encode these combinations or prescribe output directories. The script uses `bin/${edition}/${framework}` for daemon/terminal and the host root for Web; direct tool calls may choose any `--output`. Deployer processes assets declared by `.deploy`; Cake builds the host.
+Each deployment selects one environment and one network. Network internal/external selects service connectivity. Build configuration (Debug/Release) and target platform are selected independently; the general script defaults to Release and Linux. Deployer does not encode these combinations or prescribe output directories. The script uses `bin/${edition}/${framework}` for daemon/terminal and the host root for Web; direct tool calls may choose any `--output`. Deployer processes assets declared by `.deploy`; Cake builds the host.
 
-Normal deployment uses `--overwrite:newest`; local Debug shortcuts use `--overwrite:alway` (the deployer spelling for always overwrite). Both use `--prerelease:true --verbosity:quiet`. Build or deployment failure stops the sequence and identifies the failed stage and original exit code. Successful deployment returns 0. Run root [`pack.cmd`](pack.cmd) separately to create an installation package. Both scripts preserve the caller's directory and environment.
+Root deployment and local Debug shortcuts both use `--overwrite=alway` (the deployer enum for always overwrite; it does not accept `true`). Both use `--prerelease:true --verbosity:quiet`. Build or deployment failure stops the sequence and identifies the failed stage and original exit code. Successful deployment returns 0. Run root [`pack.cmd`](pack.cmd) separately to create an installation package. Both scripts preserve the caller's directory and environment.
 
 `deploy.cmd`, `pack.cmd`, `containerize.cmd`, and `migrate.cmd` launch their corresponding Windows PowerShell scripts: [`deploy.ps1`](deploy.ps1), [`pack.ps1`](pack.ps1), [`containerize.ps1`](containerize.ps1), and [`migrate.ps1`](migrate.ps1). Each PowerShell entry point owns its tool's workflow and arguments, and dot-sources [`.shared.ps1`](.shared.ps1) for headings, prompts, menus, host discovery, tool execution, and error handling. The shared script does not dispatch tool operations or run a workflow when loaded.
 
 The layout uses cyan section titles, gray hints below each input, highlighted menu selections, and an execution summary. Use Up/Down or Home/End to choose, Enter to confirm, and Esc in a menu to cancel (exit code 2). Redirected input or output uses numbered choices; an empty answer selects the default, and exhausted input cancels before execution. Redirected output is plain text; `NO_COLOR` disables console colors. Deployment and packaging wait for a key after interactive success or failure; redirected runs do not pause.
 
-With an empty framework override, deployment and packaging query `.env`, while Cake uses each host's build.cake default. Cake does not read `.env`; keep these values aligned. deploy.cmd passes an explicit override to build and deployment; enter the same framework in pack.cmd. The scripts do not parse or export `.env`.
+Framework is no longer prompted. The scripts read the literal root-level `framework` entry in hosting/.env and pass that value to Cake, deployer, and packager, including local Debug shortcuts. Keep this entry as a target framework name rather than a template expression. Other `.env` variables and imports remain the responsibility of the tools; scripts do not export the file into the process environment.
+
+Deployment and packaging select Scheme from the immediate directories of hosting/.deploy whose names do not start with a dot; the default is `default` when present, otherwise the first directory by name. Migration uses the same Scheme menu. Environment offers Development, Test, and Production; values passed to tools and configuration paths remain lowercase. A matching process `Environment` value is preselected; otherwise Development is selected. Network defaults to internal.
 
 Package identity is defined in the host `.env` under `[application]`; the script explicitly passes `${application:name}`, `${application:title}`, and `${application:daemon}`. Daemon uses zongsoft.daemon; terminal uses zongsoft.terminal with services disabled. Web uses entry name Zongsoft.Hosting.Web, title Zongsoft.Web, and service zongsoft.web. Services receive Environment and DOTNET_ENVIRONMENT; Web also receives ASPNETCORE_ENVIRONMENT.
 
@@ -252,7 +254,7 @@ Set-Location D:/Zongsoft/hosting
 .\deploy.cmd
 ```
 
-Root scripts accept environment input directly; empty input retains process Environment or defaults to development when undefined.
+Root scripts select the environment from Development, Test, and Production. A matching process Environment is preselected; otherwise Development is the default. Values passed to tools are lowercase.
 
 ### Container delivery
 
@@ -304,9 +306,9 @@ Deploy container applications with scheme `container` and local Debug hosts with
 
 ### Create an installation package
 
-From the hosting root, run deploy.cmd and select source, scheme, environment, network, build configuration, platform, architecture, and framework override. For Linux installation verification choose off, linux, and the matching architecture. Failure stops subsequent stages.
+From the hosting root, run deploy.cmd and select source, scheme, environment, network, build configuration, platform, and architecture. For Linux installation verification choose Release, linux, and the matching architecture. Failure stops subsequent stages.
 
-After deployment, run root `pack.cmd` separately. Select the same host, compilation configuration, architecture, scheme, environment, network, and framework, then choose tar, deb, or rpm. This script packages existing files only:
+After deployment, run root `pack.cmd` separately. Select the same host, compilation configuration, architecture, scheme, environment, and network, then choose tar, deb, or rpm. This script packages existing files only:
 
 ```powershell
 Set-Location D:/Zongsoft/hosting
@@ -322,7 +324,7 @@ Set-Location D:/Zongsoft/hosting
 | Architecture | `x64`; `arm64` is supported and must match the application and migration executor |
 | Source | Choose a discovered host; `daemon` is selected initially when available, otherwise the first host. `pack.cmd <source>` preselects a directory |
 | Scheme, network | default, internal; match existing deployment, as packaging does not render configuration again |
-| Framework override | Empty uses .env; an explicit value is passed to the tool |
+| Framework | Read automatically from the root-level `framework` entry of hosting/.env; no prompt |
 | Output directory | .packages, relative to selected source |
 | Migration input name or path (`--migration`) | Empty skips integration; for example `zongsoft`. See below |
 
@@ -334,7 +336,7 @@ Set-Location D:/Zongsoft/hosting
 
 All scripts exclude `logs/`; Web additionally excludes build-directory `*.staticwebassets.*` and `plugins/**`, because its deployed site plugin directory supplies the plugin payload. Web explicitly includes generated `web.option` and `${application:name}.option`. The `:~` alias places directory contents at the installation root without retaining the original `bin/...` hierarchy. See the [Web README](web/README.md#packaging-the-default-site) for its service and Nginx configuration. Terminal disables systemd services, so `--daemon-environments` does not set process variables for an interactively launched terminal.
 
-Output defaults to the selected host's `.packages/`, for example `zongsoft.daemon@1.0.0-x64.deb`; a nonempty Edition is appended to the package name. Tar produces a matching `.tar.gz` archive and `.sh` installation entry; keep both together. Deb/rpm each produce one package file. These scripts do not enable `--overwrite`, so an existing output of the same name causes generation to fail.
+Output defaults to the selected host's `.packages/`, for example `zongsoft.daemon@1.0.0-x64.deb`; a nonempty Edition is appended to the package name. Tar produces a matching `.tar.gz` archive and `.sh` installation entry; keep both together. Deb/rpm each produce one package file. Packaging passes `--overwrite=true` to replace outputs with the same name; the tar archive and its installer are replaced together.
 
 After successful packaging, an existing source `.edition` and `.version` are both rewritten, creating `.version` if absent. If only `.version` exists, only it is updated; if neither exists, both are created together. The installation payload always contains `.version` for the final identity and excludes the source directory's direct `.edition`. Installing or upgrading an installation package is a separate action; these scripts do not install it.
 

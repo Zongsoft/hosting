@@ -18,12 +18,12 @@
 
 确认或从上下文取得以下参数：
 
-- `scheme`，默认通常为 `default`。
-- `environment`，通常为 `development`、`test` 或 `production`。
-- `compilation`：Debug 或 Release；正式 Linux 发布通常使用 Release。
-- `platform`，Linux 发布必须输入 `linux`。
+- `scheme`：从 hosting/.deploy 中名称不以 `.` 开头的直属目录选择，默认通常为 `default`。
+- `environment`：菜单提供 Development、Test、Production，传给工具的值为小写。
+- `compilation`：Debug 或 Release；根入口默认 Release，宿主本地快捷入口保持 Debug。
+- `platform`：根入口默认 linux，宿主本地快捷入口保持 windows。
 - `architecture`，通常为 `x64` 或 `arm64`。
-- `framework`：框架覆盖留空时工具查询 .env，Cake 使用 build.cake 默认值，须保持一致；两个脚本须输入相同的显式框架覆盖。
+- `framework`：不再询问，由脚本读取 hosting 根目录 `.env` 顶层字面值并统一传给 Cake、部署器和打包器。
 - `network`：internal 或 external，与编译配置独立，按基础服务地址选择。
 - 安装包格式：`.deb`、`.rpm` 或 `.tar.gz`，分别在脚本中输入 `deb`、`rpm`、`tar`。
 - `version`，不能为空。
@@ -35,7 +35,7 @@
 
 1. 进入 hosting 根目录 `<repo-root>`。
 2. 执行 `.\deploy.cmd daemon`，按已确认参数回答脚本提示。
-   依次填写 scheme、environment、network、compilation、platform、architecture 和可选 framework；部署结束后单独运行 `.\pack.cmd daemon`，选择与部署一致的参数，再填 format、edition、version、migration 和 output。需要升迁时先用根目录 migrate.cmd 生成匹配产物。
+   依次选择 scheme、environment、network、compilation、platform 和 architecture；部署结束后单独运行 `.\pack.cmd daemon`，选择与部署一致的参数，再填 format、edition、version、migration 和 output。需要升迁时先用根目录 migrate.cmd 生成匹配产物。
 3. 脚本成功后，按时间、版本、架构和格式定位新安装包。
 4. 将安装包复制到目标 Linux 的 `/opt`。
 5. 按包格式安装：

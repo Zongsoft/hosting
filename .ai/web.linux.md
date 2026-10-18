@@ -18,12 +18,12 @@
 
 确认或从上下文取得以下参数：
 
-- `scheme`，默认通常为 `default`。
-- `environment`，通常为 `development`、`test` 或 `production`。
-- `compilation`：Debug 或 Release；正式 Linux 发布通常使用 Release。
-- `platform`，Linux 发布必须输入 `linux`。
+- `scheme`：从 hosting/.deploy 中名称不以 `.` 开头的直属目录选择，默认通常为 `default`。
+- `environment`：菜单提供 Development、Test、Production，传给工具的值为小写。
+- `compilation`：Debug 或 Release；根入口默认 Release，宿主本地快捷入口保持 Debug。
+- `platform`：根入口默认 linux，宿主本地快捷入口保持 windows。
 - `architecture`，通常为 `x64` 或 `arm64`。
-- `framework`：框架覆盖留空时工具查询 .env，Cake 使用 build.cake 默认值，须保持一致；两个脚本须输入相同的显式框架覆盖。
+- `framework`：不再询问，由脚本读取 hosting 根目录 `.env` 顶层字面值并统一传给 Cake、部署器和打包器。
 - `network`：internal 或 external，与编译配置独立，按基础服务地址选择。
 - 安装包格式：`.deb`、`.rpm` 或 `.tar.gz`，分别在脚本中输入 `deb`、`rpm`、`tar`。
 - `version`，不能为空。
@@ -50,8 +50,8 @@
 ### 自动化执行提示
 
 - `deploy.cmd` 和 `pack.cmd` 分别调用根目录 `deploy.ps1` 和 `pack.ps1`，由它们点加载 `.shared.ps1` 共用交互与执行辅助函数。未预选源目录时，先扫描当前目录中的宿主并显示菜单；交互模式使用方向键和 Enter，菜单 Esc 取消。输入或输出重定向时使用编号菜单，也可输入列出的值，输出为纯文本，输入耗尽则取消。交互模式的成功或失败结果等待按键；重定向模式不暂停。
-- `.cmd`、各工具的 `.ps1` 与共享 PowerShell 脚本保持 CRLF 换行。
-- 部署依次选择或填写 scheme、environment、network、compilation、platform、architecture、framework。部署完成后单独执行 `pack.cmd web/default`，依次选择或填写 scheme、environment、network、compilation、architecture、framework、format、edition、version、migration 和 output；两个脚本的相关值应保持一致。需要升迁时先用 migrate.cmd 准备配套文件。容器交付时，pack.cmd 的 migration 留空，containerize.cmd 选择升迁目录，在基础服务就绪后统一执行；直接安装应用包时才在 pack.cmd 中集成升迁。
+- `.cmd` 保持 CRLF 换行；各工具的 `.ps1` 与共享 PowerShell 脚本保持既有换行。
+- 部署依次选择或填写 scheme、environment、network、compilation、platform 和 architecture。部署完成后单独执行 `pack.cmd web/default`，依次选择或填写 scheme、environment、network、compilation、architecture、format、edition、version、migration 和 output；两个脚本的相关值应保持一致。需要升迁时先用 migrate.cmd 准备配套文件。容器交付时，pack.cmd 的 migration 留空，containerize.cmd 选择升迁目录，在基础服务就绪后统一执行；直接安装应用包时才在 pack.cmd 中集成升迁。
 - 自动化输入必须覆盖全部提示，空行采用默认值；菜单接受编号或列出的值。可将 stdout/stderr 重定向到日志文件，检查脚本退出码及工具诊断。
 - 根目录 `pack.cmd` 用 web/.env 的 application 变量显式传入名称 Zongsoft.Hosting.Web、标题 Zongsoft.Web、服务 zongsoft.web：Debian 包名为 `zongsoft.web`，systemd 服务仍为 `zongsoft.web.service`。
 - `dotnet-pack` 生成 service 时按 `--name` 定位宿主 DLL；如果改回 `--name:Zongsoft.Web`，会生成 `ExecStart=dotnet /opt/zongsoft/web/Zongsoft.Web.dll ...`，这是类库入口，会启动失败。

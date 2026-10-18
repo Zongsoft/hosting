@@ -25,7 +25,7 @@ function Invoke-Migration
 
 	$platform = Read-Choice 'Target platform' @('linux', 'windows') 'linux' 'Default: linux.'
 	$architecture = Read-Choice 'Architecture' @('x64', 'arm64') 'x64' 'Default: x64.'
-	$scheme = Read-Setting 'Deployment scheme' 'default' 'Enter: default.'
+	$scheme = Read-DeploymentScheme 'Deployment scheme'
 
 	Write-Heading '2. Migration inputs'
 	[Console]::WriteLine("  $($style.Dim)Add one file or pattern per line; leave the next line empty to finish.$($style.Reset)")

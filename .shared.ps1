@@ -163,13 +163,59 @@ function Read-Setting([string]$Label, [string]$Default = '', [string]$Hint = '',
 	return $answer
 }
 
+function Read-DeploymentScheme([string]$Label = 'Scheme')
+{
+	$directory = Join-Path $PSScriptRoot '.deploy'
+	$schemes = @(Get-ChildItem -LiteralPath $directory -Directory -Force |
+		Where-Object { -not $_.Name.StartsWith('.') } | Sort-Object Name | ForEach-Object { $_.Name })
+
+	if($schemes.Count -eq 0)
+	{
+		throw "No deployment schemes found in $directory."
+	}
+
+	$default = if($schemes -contains 'default') { 'default' } else { $schemes[0] }
+
+	return Read-Choice $Label $schemes $default "Choose a directory from hosting/.deploy. Default: $default."
+}
+
+function Get-HostingFramework
+{
+	$path = Join-Path $PSScriptRoot '.env'
+	$framework = ''
+
+	# Read only the root-level literal shared by the host builds and packaging.
+	foreach($line in Get-Content -LiteralPath $path)
+	{
+		if($line -match '^\s*\[')
+		{
+			break
+		}
+
+		if($line -match '^\s*framework\s*=(.*)$')
+		{
+			$framework = $Matches[1].Trim()
+		}
+	}
+
+	if($framework -notmatch '^net(?:standard|coreapp)?\d+(?:\.\d+)*(?:-[a-zA-Z0-9.]+)?$')
+	{
+		throw "Define a literal target framework in the root-level framework entry of $path."
+	}
+
+	return $framework
+}
+
 function Read-DeploymentSettings
 {
 	Write-Heading '2. Deployment settings'
 
-	$scheme = Read-Setting 'Scheme' 'default' 'Enter: default.'
-	$defaultEnvironment = if([string]::IsNullOrWhiteSpace($env:Environment)) { 'development' } else { $env:Environment }
-	$environment = Read-Setting 'Environment' $defaultEnvironment "Enter: $defaultEnvironment. Examples: development, test, production."
+	$scheme = Read-DeploymentScheme
+	$environments = @('Development', 'Test', 'Production') | ForEach-Object {
+		[pscustomobject]@{ Value = $_.ToLowerInvariant(); Label = $_ }
+	}
+	$defaultEnvironment = if($env:Environment -in $environments.Value) { $env:Environment } else { 'development' }
+	$environment = (Read-Menu 'Environment' $environments $defaultEnvironment "Default: $defaultEnvironment.").Value
 	$network = Read-Choice 'Network' @('internal', 'external') 'internal' 'Choose the network used by this deployment.'
 	$env:Environment = $environment
 
@@ -607,6 +653,7 @@ function Invoke-HostingOperation([scriptblock]$Action, [string]$Directory = '')
 {
 	$script:result = 1
 	$script:stage = 'Selection'
+	$originalEnvironment = $env:Environment
 
 	try
 	{
@@ -638,6 +685,10 @@ function Invoke-HostingOperation([scriptblock]$Action, [string]$Directory = '')
 		[Console]::WriteLine("  $($style.Red)[ERROR] $stage failed with exit code $($style.Magenta)$result$($style.Red).$($style.Reset)")
 		[Console]::WriteLine("  $($style.Dim)$($_.Exception.Message)$($style.Reset)")
 		Wait-Finish
+	}
+	finally
+	{
+		$env:Environment = $originalEnvironment
 	}
 }
 #endregion

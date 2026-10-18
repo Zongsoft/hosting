@@ -10,12 +10,12 @@ function Invoke-Packaging
 	$selectedHost = Read-HostProject $root
 	$source = $selectedHost.Directory.Replace('\', '/')
 	$settings = Read-DeploymentSettings
+	$framework = Get-HostingFramework
 
 	Write-Heading '3. Build settings'
 
 	$compilation = Read-Choice 'Compilation' @('Release', 'Debug') 'Release' 'Match the existing host output.'
 	$architecture = Read-Choice 'Architecture' @('x64', 'arm64') 'x64' 'Default: x64.'
-	$framework = Read-Setting 'Framework' '' 'Enter: .env; match the existing host output.'
 
 	Write-Heading '4. Package settings'
 
@@ -33,12 +33,10 @@ function Invoke-Packaging
 	Write-Detail 'Configuration' $compilation
 	Write-Detail 'Target' "linux-$architecture"
 
-	if($framework)
-	{
-		Write-Detail 'Framework' $framework
-	}
+	Write-Detail 'Framework' $framework
 
 	Write-Detail 'Output' $output
+	Write-Detail 'Overwrite' 'true'
 	[Console]::WriteLine()
 
 	$script:stage = 'Packaging'
@@ -53,6 +51,8 @@ function Invoke-Packaging
 		"--compilation:$compilation",
 		'--platform:linux',
 		"--architecture:$architecture",
+		"--framework:$framework",
+		'--overwrite=true',
 		"--scheme:$($settings.Scheme)",
 		"--network:$($settings.Network)",
 		"--migration:$migration",
@@ -60,11 +60,6 @@ function Invoke-Packaging
 		"--DOTNET_ENVIRONMENT:$($settings.Environment)",
 		"--output:$output"
 	)
-
-	if($framework)
-	{
-		$toolArguments += "--framework:$framework"
-	}
 
 	if($selectedHost.Type -eq 'Web')
 	{

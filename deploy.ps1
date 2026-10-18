@@ -11,28 +11,24 @@ function Invoke-Deployment
 	$selectedHost = Read-HostProject $root
 	$source = $selectedHost.Directory.Replace('\', '/')
 	$settings = Read-DeploymentSettings
+	$framework = Get-HostingFramework
 
 	if($local)
 	{
 		$compilation = 'Debug'
 		$platform = 'windows'
 		$architecture = 'x64'
-
-		# Omit the framework override so Cake and .env retain their defaults.
-		$framework = ''
 	}
 	else
 	{
 		Write-Heading '3. Build settings'
 
-		$compilation = Read-Choice 'Configuration' @('Debug', 'Release') 'Debug' 'Default: Debug.'
-		$platform = Read-Choice 'Platform' @('windows', 'linux', 'mac') 'windows' 'Default: windows.'
+		$compilation = Read-Choice 'Configuration' @('Release', 'Debug') 'Release' 'Default: Release.'
+		$platform = Read-Choice 'Platform' @('linux', 'windows', 'mac') 'linux' 'Default: linux.'
 		$architecture = Read-Choice 'Architecture' @('x64', 'arm64') 'x64' 'Default: x64.'
-		$framework = Read-Setting 'Framework' '' 'Enter: Cake default and .env.'
 	}
 
 	$output = if($selectedHost.Type -eq 'Web') { '.' } else { 'bin/${edition}/${framework}' }
-	$overwrite = if($local) { 'alway' } else { 'newest' }
 
 	Write-Heading 'Execution'
 	Write-Detail 'Source' $source
@@ -42,13 +38,10 @@ function Invoke-Deployment
 	Write-Detail 'Configuration' $compilation
 	Write-Detail 'Target' "$platform-$architecture"
 
-	if($framework)
-	{
-		Write-Detail 'Framework' $framework
-	}
+	Write-Detail 'Framework' $framework
 
 	Write-Detail 'Output' $output
-	Write-Detail 'Overwrite' $overwrite
+	Write-Detail 'Overwrite' 'alway'
 	[Console]::WriteLine()
 
 	$script:stage = 'Build'
@@ -59,12 +52,7 @@ function Invoke-Deployment
 	}
 
 	Write-Heading '[1/2] Build host'
-	$buildArguments = @('cake', "--edition=$compilation", "--platform=$platform", "--architecture=$architecture")
-
-	if($framework)
-	{
-		$buildArguments += "--framework=$framework"
-	}
+	$buildArguments = @('cake', "--edition=$compilation", "--platform=$platform", "--architecture=$architecture", "--framework=$framework")
 
 	Invoke-HostTool 'dotnet' $buildArguments $source
 
@@ -80,15 +68,11 @@ function Invoke-Deployment
 		"--edition:$compilation",
 		"--platform:$platform",
 		"--architecture:$architecture",
+		"--framework:$framework",
 		'--verbosity:quiet',
-		"--overwrite:$overwrite",
+		'--overwrite=alway',
 		'--prerelease:true'
 	)
-
-	if($framework)
-	{
-		$toolArguments += "--framework:$framework"
-	}
 
 	Invoke-HostTool 'dotnet' $toolArguments $root
 
