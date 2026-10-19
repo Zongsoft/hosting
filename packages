@@ -8,7 +8,7 @@ nuget:Zongsoft.Hardwares@0.3.1
 nuget:Zongsoft.Intelligences@0.7.1
 
 [plugins zongsoft net]
-nuget:Zongsoft.Net@7.3.0
+nuget:Zongsoft.Net@7.4.0
 
 [plugins zongsoft data]
 nuget:Zongsoft.Data@7.32.0
