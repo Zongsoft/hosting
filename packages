@@ -1,14 +1,14 @@
 [plugins zongsoft diagnostics]
-nuget:Zongsoft.Diagnostics@1.13.0
+nuget:Zongsoft.Diagnostics@1.14.0
 
 [plugins zongsoft hardwares]
 nuget:Zongsoft.Hardwares@0.3.1
 
 [plugins zongsoft intelligences]
-nuget:Zongsoft.Intelligences@0.7.1
+nuget:Zongsoft.Intelligences@0.8.0
 
 [plugins zongsoft net]
-nuget:Zongsoft.Net@7.4.0
+nuget:Zongsoft.Net@7.5.0
 
 [plugins zongsoft data]
 nuget:Zongsoft.Data@7.32.0
@@ -29,7 +29,7 @@ nuget:Zongsoft.Data.PostgreSql@1.8.0
 nuget:Zongsoft.Data.ClickHouse@2.13.0
 
 [plugins zongsoft commands]
-nuget:Zongsoft.Commands@7.15.0
+nuget:Zongsoft.Commands@7.16.0
 
 [plugins zongsoft reporting]
 nuget:Zongsoft.Reporting@7.1.0
@@ -65,12 +65,12 @@ nuget:Zongsoft.Externals.Scriban@2.1.0
 nuget:Zongsoft.Externals.ClosedXml@4.7.0
 
 [plugins zongsoft externals hangfire]
-nuget:Zongsoft.Externals.Hangfire@2.10.0
+nuget:Zongsoft.Externals.Hangfire@2.11.0
 [plugins zongsoft externals hangfire redis]
 nuget:Zongsoft.Externals.Hangfire.Storages.Redis@3.2.0
 
 [plugins zongsoft messaging mqtt]
-nuget:Zongsoft.Messaging.Mqtt@7.6.0
+nuget:Zongsoft.Messaging.Mqtt@7.7.0
 
 [plugins zongsoft messaging kafka]
 nuget:Zongsoft.Messaging.Kafka@7.5.0
@@ -79,4 +79,4 @@ nuget:Zongsoft.Messaging.Kafka@7.5.0
 nuget:Zongsoft.Messaging.RabbitMQ@1.4.0
 
 [plugins zongsoft messaging zeromq]
-nuget:Zongsoft.Messaging.ZeroMQ@2.5.0
+nuget:Zongsoft.Messaging.ZeroMQ@2.6.0

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Hosting;
 
@@ -6,24 +7,18 @@ namespace Zongsoft.Hosting.Daemon;
 
 internal class Program
 {
-	static void Main(string[] args)
+	static async Task Main(string[] args)
 	{
-		#if WINDOWS
-		Zongsoft.Plugins.Hosting.Application
-			.Daemon("zongsoft.daemon", [.. args, "host=daemon", "site=daemon"], builder =>
+		var host = await Zongsoft.Plugins.Hosting.Application.DaemonAsync(
+			"zongsoft.daemon", [.. args, "host=daemon", "site=daemon"], builder =>
 			{
+				#if WINDOWS
 				builder.Services.AddWindowsService(options => options.ServiceName = builder.Environment.ApplicationName);
-			}).Run();
-		#elif LINUX
-		Zongsoft.Plugins.Hosting.Application
-			.Daemon("zongsoft.daemon", [.. args, "host=daemon", "site=daemon"], builder =>
-			{
+				#elif LINUX
 				builder.Services.AddSystemd();
-			}).Run();
-		#else
-		Zongsoft.Plugins.Hosting.Application
-			.Daemon("zongsoft.daemon", [.. args, "host=daemon", "site=daemon"])
-			.Run();
-		#endif
+				#endif
+			});
+
+		await host.RunAsync();
 	}
 }

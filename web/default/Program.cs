@@ -9,14 +9,14 @@ namespace Zongsoft.Hosting.Web;
 
 internal class Program
 {
-	static void Main(string[] args)
+	static async Task Main(string[] args)
 	{
-		var app = Zongsoft.Web.Application.Web([.. args, "host=web", "site=default", "daemon=zongsoft.web"]);
+		var app = await Zongsoft.Web.Application.WebAsync([.. args, "host=web", "site=default", "daemon=zongsoft.web"]);
 
 		//如果要启用私有部署模式则打开下行代码注释
 		//app.Configuration["Deployment"] = "private";
 
 		app.Map("/", ctx => { ctx.Response.Redirect("/Application"); return Task.CompletedTask; });
-		app.Run();
+		await app.RunAsync();
 	}
 }
