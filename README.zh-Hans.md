@@ -35,11 +35,13 @@
 
 部署清单仅复制本次选中的环境和网络片段，同一部署目录只保留一套环境和网络配置。配置更新遵循部署工具的覆盖策略，无需先用 `delete:` 删除目标文件；部署清单不承担历史配置清理。普通入口可声明多个可选环境导入，仅加载部署目录中实际存在的片段。新增配置时应同步维护导入和对应部署项。`app.option.template` 按入口程序集名生成宿主配置，Web 对应 `Zongsoft.Hosting.Web.option`；`web.option.template` 生成独立的 `web.option`，声明本站点的 Web 配置，无需导入公共宿主配置。清单只列出有实际资产或模板生成来源的配置，不为不存在的文件预留复制、导入或删除项。
 
-daemon、terminal 仅使用 `Microsoft.NETCore.App`，部署通用 `Zongsoft.Diagnostics`，通过 OTLP → Collector → Prometheus 导出指标。`Zongsoft.Diagnostics.Web` 及其 Kestrel 依赖只部署到 Web 宿主。此次版本为 Diagnostics 1.13.0、Diagnostics.Web 1.0.0；正式部署前先提供相应构建包。
+daemon、terminal 仅使用 `Microsoft.NETCore.App`，部署通用 `Zongsoft.Diagnostics`，通过 OTLP → Collector → Prometheus 导出指标。`Zongsoft.Diagnostics.Web` 及其 Kestrel 依赖只部署到 Web 宿主。依赖版本为 Diagnostics 1.14.0、Diagnostics.Web 1.1.0；正式部署前先提供相应构建包。
 
 所有宿主统一渲染 `Zongsoft.Diagnostics.option.template`。方案 `.env` 默认 `[diagnostics.telemetry] enabled=true`；各 Web 站点 `.env` 在导入方案后设为 `enabled=false`，运行时不执行禁用的 OTLP 导出器，再由 `Zongsoft.Diagnostics.Web.option.template` 添加 Prometheus 导出器。公共模板的 `server` 设置 Collector：default 为 `http://127.0.0.1:4317`，container 为 `http://otel:4317`。Web 的 `[diagnostics.prometheus] server/port` 默认 `127.0.0.1:9465`，container 监听 `0.0.0.0`，可经 Nginx 暴露 `/metrics`。这组宿主模板只启用指标，追踪须另配后端。Collector/Prometheus 的 YAML、自定义模板及清单用法见 [.containerized 配置说明](.containerized/README.zh-Hans.md)。
 
 公共 Diagnostics 模板现使用 `driver="opentelemetry"`；Console 导出器使用 `driver="opentelemetry.console"`。设置由插件内部强类型解析；旧驱动名 `telemetry`、`OpenTelemetry`、`Console` 仍兼容。`exporter.name`、`diagnostics.telemetry` 和 `diagnostics.logging` 变量名称保持不变。无效类型、超范围时间及非法批量参数会在导出器配置时失败；参数和默认值见 [Diagnostics 设置说明](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Diagnostics/README.zh-Hans.md#强类型导出设置)。新配置须与包含此次改造的 Diagnostics 插件一起部署。
+
+Web 范例通过 gRPC/HTTP2 在 `http://*:4317/opentelemetry` 接收 OTLP 数据，可设置 `[diagnostics.server] port` 或覆盖完整 `url`。接收监听与 `[diagnostics.telemetry] server` 的出站 Collector 地址独立；同一台机器的不同接收服务需要使用不同端口。
 
 日志使用独立的 `[diagnostics.logging] enabled/server/protocol`，默认关闭；server 默认引用最终 `diagnostics.telemetry:server`，protocol 默认 grpc。启用后公共模板生成的 `<logs>` 自动导出 Microsoft `ILogger` 日志，级别沿用宿主 `Logging:LogLevel`。Web 关闭 OTLP 指标不影响日志开关。接收端须支持 OTLP 日志；现有 Collector YAML 仍只配置指标，使用它接收日志前须增加 logs 管线及日志后端。Zongsoft 自有日志尚未接入。修改后重新部署配置并重启宿主。
 
@@ -169,7 +171,7 @@ default 方案的 `.env` 提供公共服务连接表达式所需的完整基础�
 | `tdengine` | `TDengine` | [TDengineConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/tdengine/src/Configuration/TDengineConnectionSettings.cs) |
 | `influx` | `Influx` | [InfluxConnectionSettings](https://github.com/Zongsoft/framework/blob/main/Zongsoft.Data/drivers/influx/src/Configuration/InfluxConnectionSettings.cs)：InfluxDB 3 的完整 URL、`Token`、`Organization`、`Precision` |
 
-新增服务器数据库的密码和 Influx Token 留空，由方案填写。SQLite、DuckDB 的相对文件路径由运行时数据库提供程序解释，不相对于部署源目录；它们不需要服务器或账号。这两种本地数据库无需在组合文件中增加条目。MySQL、PostgreSQL、ClickHouse 和原生 TDengine 使用独立端口，默认分别为 3306、5432、8123 和 6030；公共连接表达式包含这些端口变量。
+新增服务器数据库的密码和 Influx Token 留空，由方案填写。SQLite、DuckDB 的相对文件路径由运行时数据库提供程序解释，不相对于部署源目录；它们不需要服务器或账号。这两种本地数据库无需在组合文件中增加条目。MySQL、PostgreSQL、ClickHouse 和 TDengine 使用独立端口，默认分别为 3306、5432、8123 和 6041；TDengine 连接采用 WebSocket；公共连接表达式包含这些端口变量。
 
 S3 文件系统使用 `[amazon.s3]` 和 `${amazon.s3:connection}`，模板写入 `/Externals/Amazon/connectionSettings`，驱动名为 `amazon.s3`。字段以 [S3ConnectionSettings](https://github.com/Zongsoft/framework/blob/main/externals/amazon/src/IO/Configuration/S3ConnectionSettings.cs) 为准：`Server`、`Region`、`AccessKey`、`SecretKey`、`AccountId`、`Client`、`Timeout`。默认方案指向网络地址的 9000 端口，并复用 hosting 根 `.env` 的 `${rustfs:access_key}`、`${rustfs:secret_key}`。AWS S3 方案可将 server 留空，配置 region 和凭据；自定义 server 会由驱动自动启用路径式寻址。Bucket 属于 `zfs.s3:/<bucket>/<key>` 路径，不是连接参数。
 
@@ -795,7 +797,7 @@ zongsoft.compose(stop).cmd "*" --clean
 
 MySQL 与 PostgreSQL 在该模式下使用不同的服务名和网络别名，可以同时启动。
 
-ClickHouse 首次初始化会创建 `zongsoft` 数据库和 `program` 账号；应用数据表需另行创建。TDengine 默认使用 `root` 账号，不会自动创建 `web/default/Zongsoft.Hosting.Web.option` 配置的 `zongsoft` 数据库及 `program` 账号；使用该连接前应先建库、建账号。Windows 上使用 6030 端口的 TDengine 原生客户端时，`tdengine` 必须能解析到容器端点；6041 端口的 HTTP/WebSocket 接口不需要原生客户端的端点解析。
+ClickHouse 首次初始化会创建 `zongsoft` 数据库和 `program` 账号；应用数据表需另行创建。TDengine 默认使用 `root` 账号，不会自动创建 `web/default/Zongsoft.Hosting.Web.option` 配置的 `zongsoft` 数据库及 `program` 账号；使用该连接前应先建库、建账号。Zongsoft TDengine 驱动使用 6041 端口的 WebSocket 接口，宿主应配置此端点。
 
 容器访问 Windows 宿主机时使用 `host.containers.internal`。例如 Windows 服务监听 `8080` 端口，容器内使用：
 

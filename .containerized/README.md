@@ -62,7 +62,3 @@ The scrape `up` signal reports Collector availability, not every application's h
 ## Other container workflows
 
 The existing `zongsoft.compose.yaml` and `zongsoft.pod-*.yaml` workflows remain available. These assets apply only to Containerizer manifests that select the custom templates; they are not added automatically to the existing Compose/Pod definitions. With manual Docker/Podman Compose, mount files at the paths above. With Kubernetes, provide them through ConfigMaps or equivalent and adjust service DNS. The infrastructure images do not contain this project's .NET plugins.
-
-## Validation scope
-
-The actual Containerizer plan command checked both templates and YAML input paths. YAML syntax and structure were checked separately. No make/run, image fetches or container lifecycle operations were performed. promtool/otelcol are not installed locally; full configuration validation with the selected images and live Collector → Prometheus transport remain unverified.

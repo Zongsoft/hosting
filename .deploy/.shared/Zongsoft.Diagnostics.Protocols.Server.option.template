@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<?zongsoft.tools.binding name="telemetry"
+	path="Kestrel/Endpoints/telemetry"
+	template="\${this.Url}"
+	protocols="\${this.Protocols}"
+	required="true"?>
+
+<options>
+	<option path="kestrel">
+		<endpoints>
+			<telemetry url="${diagnostics.server:url#xml}" protocols="grpc+http2" />
+		</endpoints>
+	</option>
+</options>

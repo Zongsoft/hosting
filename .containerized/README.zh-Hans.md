@@ -62,7 +62,3 @@ Collector 汇总后的 `up` 反映 Collector 抓取状态；不能用它代表�
 ## 与其它容器方式配合
 
 仓库原有 `zongsoft.compose.yaml` 和 `zongsoft.pod-*.yaml` 两套方式继续保留。此目录配置只由选择上述自定义模板的 Containerizer 清单使用，不会自动加入旧 Compose/Pod 定义。手工使用 Docker/Podman Compose 时挂载到表中对应容器路径；Kubernetes 使用 ConfigMap 等方式提供同样的文件，并调整服务 DNS。容器镜像不包含本项目的 .NET 插件。
-
-## 验证范围
-
-已运行真实 Containerizer 的 plan，检查两个模板及 YAML 输入存在；YAML 另做语法和结构检查。未运行 make/run、未拉取镜像、未启停容器。本机没有 promtool/otelcol 可执行文件，尚未用所选镜像校验完整配置或验证 Collector → Prometheus 的实际传输。
