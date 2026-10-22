@@ -11,7 +11,7 @@ nuget:Zongsoft.Intelligences@0.8.0
 nuget:Zongsoft.Net@7.5.0
 
 [plugins zongsoft data]
-nuget:Zongsoft.Data@7.33.0
+nuget:Zongsoft.Data@7.33.1
 
 [plugins zongsoft data mysql]
 nuget:Zongsoft.Data.MySql@7.15.0
