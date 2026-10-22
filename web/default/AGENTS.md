@@ -33,7 +33,7 @@ Linux 编译、部署、打包和安装验证优先参考 [../../.ai/web.linux.m
 需要身份验证的 API 接口，通常通过 `Authorization` 头来传递身份凭证。
 
 如果凭证已过期或未定义，则需要先使用 `/Zongsoft/framework/Zongsoft.Security/docs/http/authentication.http` 中的 `Signin` 接口进行登录。
-> 提示：在调试环境中可以尝试以 `Administrator` 账号（密码默认为空）进行登录；如果不行再来询问。
+> 提示：数据库密码为 `null` 或空二进制数据时，传入 `null` 或空字符串可以登录，包括已启用的 `Administrator` 账号；非空输入验证失败。登录后可以提交空旧密码设置新密码。
 
 如果不方便通过 _HttpYac_ 调用 `*.http` 文件中定义的接口，也可以通过类似于 `curl` 或自行构建脚本的方式调用 API 接口，因为 `*.http` 文件本质上就是对 HTTP 请求的简单包装模拟，所以很容易将它的定义转换成 `curl` 或其他工具、脚本的调用方式。
 
