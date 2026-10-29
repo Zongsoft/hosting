@@ -10,6 +10,7 @@
 - 保持已有文件的换行符，新文件使用 CRLF 换行格式；代码文件采用 Tab 缩进。
 - `README.md` 为英文文档，`README.zh-Hans.md` 为简体中文文档；修改用户文档时应同步维护两种语言的结构和技术内容。
 - 宿主项目本身不应包含业务代码，业务能力应由 `plugins/` 目录下的插件提供。
+- 所有宿主项目通常遵循 **编译 → 部署（`deploy.cmd`）→ 运行** 的流程。编译完成后执行部署，生成或更新 `plugins` 目录，再启动宿主；维护构建脚本时保留与此流程配套的 `clean` 任务依赖。
 - 修改宿主项目时，优先关注 `Program.cs`、`appsettings.json`、`*.csproj`、`.deploy`、部署脚本和相关配置文件。
 
 ## 操作边界
@@ -38,7 +39,7 @@
 - 检查 Compose 配置时，可以运行不创建容器的 `podman compose --file zongsoft.compose.yaml --project-name zongsoft config`；未经明确要求，不运行 Compose 启停脚本或实际创建服务。
 - 检查 K8s Pod YAML 时以静态审查为主；`podman kube play` 会创建或替换 Pod，未经明确要求不得作为验证命令执行。
 - 除非任务明确涉及启动、配置、部署或承载行为，通常无需修改宿主代码，因为宿主程序不含具体业务或功能代码 _(可以将它理解成程序的启动器)_。
-- 需要通过宿主程序验证特定插件改动时，通常应先停止宿主程序，然后手动将插件部署到对应的插件目录，再重启宿主程序进行验证。
+- 需要通过宿主程序验证插件改动时，先编译相关项目，再执行 `deploy.cmd` 部署，最后启动或重启宿主；已运行的宿主应在部署前停止。局部调试需要时可按“手工部署”说明仅更新相关插件。
 - Web 的 Diagnostics.Protocols.Server 接收选项通过共享模板渲染，保留 telemetry 的部署绑定。diagnostics.server 设置 OTLP 接收监听，diagnostics.telemetry 设置出站 Collector；多个同机服务的监听端口分别配置。
 - 修改 Web API 相关内容后，可参考 `web/.http` 目录下的请求定义，或将其转换为 `curl` 等方式进行接口验证。
 - 如果验证失败是因为插件、容器或 `/Zongsoft/framework`、`/Zongsoft/tools` 等外部依赖不可用，应在结果中说明，不要用临时业务代码绕过。
