@@ -8,7 +8,7 @@ enum Flags
 
 var flags = Argument("flags", Flags.None);
 var target = Argument("target", "default");
-var edition = Argument("edition", "Debug");
+var compilation = Argument("compilation", "Debug");
 var platform = Argument("platform", "Windows");
 var framework = Argument("framework", "net10.0");
 var architecture = Argument("architecture", "x64");
@@ -60,7 +60,7 @@ Task("build")
 	var settings = new DotNetBuildSettings
 	{
 		NoRestore = true,
-		Configuration = edition,
+		Configuration = compilation,
 		MSBuildSettings = new DotNetMSBuildSettings()
 	};
 

@@ -52,7 +52,7 @@ function Invoke-Deployment
 	}
 
 	Write-Heading '[1/2] Build host'
-	$buildArguments = @('cake', "--edition=$compilation", "--platform=$platform", "--architecture=$architecture", "--framework=$framework")
+	$buildArguments = @('cake', "--compilation=$compilation", "--platform=$platform", "--architecture=$architecture", "--framework=$framework")
 
 	Invoke-HostTool 'dotnet' $buildArguments $source
 
