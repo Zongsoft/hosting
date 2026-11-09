@@ -32,6 +32,7 @@
 
 	<ItemGroup>
 		<None Include="$(MSBuildThisFileDirectory)zongsoft-logo.png" Pack="true" PackagePath="\" Visible="false"  />
+		<None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" Visible="false" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(MSBuildProjectExtension)' == '.csproj'">

@@ -880,3 +880,7 @@ RustFS | `rustfsadmin` | `rustfsadmin`
 
 这些凭据仅用于本地开发。Compose 模式可以通过 `ZONGSOFT_REDIS_PASSWORD`、`ZONGSOFT_MYSQL_PASSWORD`、`ZONGSOFT_MYSQL_ROOT_PASSWORD`、`ZONGSOFT_POSTGRES_PASSWORD`、`ZONGSOFT_CLICKHOUSE_PASSWORD`、`ZONGSOFT_TDENGINE_ROOT_PASSWORD`、`ZONGSOFT_RUSTFS_ACCESS_KEY` 和 `ZONGSOFT_RUSTFS_SECRET_KEY` 环境变量覆盖默认值。
 安装升迁包时，应确保 MySQL root 密码与 `.env` 中的 `[mysql] root_password` 一致。
+
+## 许可
+
+本项目采用 [MIT](LICENSE) 许可协议。第三方内容保留各自的版权和许可声明。

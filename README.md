@@ -879,3 +879,7 @@ RustFS | `rustfsadmin` | `rustfsadmin`
 
 These credentials are intended only for local development. In Compose mode, override the defaults with the `ZONGSOFT_REDIS_PASSWORD`, `ZONGSOFT_MYSQL_PASSWORD`, `ZONGSOFT_MYSQL_ROOT_PASSWORD`, `ZONGSOFT_POSTGRES_PASSWORD`, `ZONGSOFT_CLICKHOUSE_PASSWORD`, `ZONGSOFT_TDENGINE_ROOT_PASSWORD`, `ZONGSOFT_RUSTFS_ACCESS_KEY`, and `ZONGSOFT_RUSTFS_SECRET_KEY` environment variables.
 When installing a migration package, keep the MySQL root password aligned with `[mysql] root_password` in `.env`.
+
+## License
+
+This project is licensed under the [MIT](LICENSE) license. Third-party content retains its own copyright and license notices.
