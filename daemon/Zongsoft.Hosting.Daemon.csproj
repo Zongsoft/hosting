@@ -49,9 +49,11 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
+
 	<ItemGroup Condition="$(ZongsoftFrameworkPathReferenced) And Exists('$(ZongsoftFrameworkPath)')">
 		<None Include="$(ZongsoftFrameworkPath)/Zongsoft.Plugins/plugins/Main.plugin" Link="plugins/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
 	</ItemGroup>
+
 	<ItemGroup Condition="!$(ZongsoftFrameworkPathReferenced) Or !Exists('$(ZongsoftFrameworkPath)')">
 		<None Include="$(PkgZongsoft_Plugins)/plugins/Main.plugin" Link="plugins/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
 	</ItemGroup>
